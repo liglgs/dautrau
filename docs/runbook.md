@@ -19,7 +19,7 @@ $env:MVP_SOURCE_MODE = 'fixture'
 Trong cửa sổ PowerShell thứ hai, đặt cùng hai token vào biến môi trường phía server Next.js (không đặt `NEXT_PUBLIC_*_TOKEN`), rồi:
 
 ```powershell
-cd vigilens
+cd frontend
 npm ci
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = 'api'
 $env:VIGILENS_API_BASE = 'http://127.0.0.1:8000'

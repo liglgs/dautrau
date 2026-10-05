@@ -50,6 +50,12 @@ Dừng gói demo bằng `docker compose -f docker-compose.mvp.yml down`. Không 
 
 ## CI và giới hạn CD
 
+> **Trạng thái hiện tại (05/10/2026):** thư mục `.github/workflows` **không còn trong repo**
+> (bị xoá ở commit `db5c20f`), nên các workflow dưới đây chưa chạy lại. Mục này giữ nguyên
+> để mô tả bộ CI trước đó và làm bản mẫu khi khôi phục; **đừng coi là bằng chứng CI đang xanh**.
+> Việc khôi phục CI nằm trong danh sách việc còn thiếu của vòng hai
+> (`docs/phan-cong-vong-2/TIEN_DO_THUC_THI.md`).
+
 `.github/workflows/ci.yml` chạy khi push `main`/`develop`/`feat/project-foundation`, PR vào `main` hoặc nhánh `codex/pr-mvp-*`, hoặc chạy thủ công:
 
 1. Backend dùng lockfile, Ruff, test offline và kiểm tra OpenAPI.

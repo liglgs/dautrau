@@ -9,7 +9,7 @@ Cập nhật 03/10/2026 trên main `fa1c1d1`. Lượt lịch sử VinhDang nhậ
 Sau checkout nhánh frontend (hoặc sau khi merge), cài backend dependencies rồi chạy:
 
 ```powershell
-cd vigilens
+cd frontend
 $env:PERSON4_TEST_PYTHON=(Resolve-Path ../.venv/Scripts/python.exe).Path
 $env:MVP_SOURCE_MODE='fixture'
 npm.cmd exec playwright install chromium

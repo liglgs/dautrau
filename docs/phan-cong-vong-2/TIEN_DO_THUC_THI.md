@@ -61,6 +61,14 @@ Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` 
 | 14 | `database "..." does not exist` khi chạy trên máy mới mà container kho đã tồn tại (đổi `ELT_DB_NAME`) | should-fix | `setup_elt.sh` kiểm tra và tạo cơ sở dữ liệu đích trong container trước khi nạp | chạy lại trên clone sạch: tự tạo `vigilens_elt_fresh`, kết thúc `EXIT=0` |
 | 15 | 3 tệp HTML bản tin quốc gia lệch băm so với `manifest.json` của gói nghiên cứu (do lưu lại ở dạng LF khi nhập repo) | should-fix | ghi thêm `sha256_committed`/`bytes_committed` + `normalization` vào manifest; bước kiểm chứng chấp nhận đúng một trong hai băm và báo `normalized_files`; `verify_packet.py` chạy được trên máy mới (bỏ đường dẫn Windows) | `verify_research_packet` → 18/19 tệp đạt, 0 lỗi, 3 tệp chuẩn hoá; 2 bài kiểm thử mới |
 
+### 1.4 Sửa lỗi tài liệu cũ (drift) phát hiện khi kiểm máy mới
+
+| # | Chỗ sai | Cách sửa |
+| --- | --- | --- |
+| 1 | `docs/runbook.md` và `docs/PERSON4_TIENDAT_INTEGRATION.md` hướng dẫn `cd vigilens` — thư mục này không tồn tại (tên đúng là `frontend`) | đổi thành `cd frontend` |
+| 2 | `docs/mvp-deployment.md` mô tả CI như đang chạy, nhưng `.github/workflows` đã bị xoá ở commit `db5c20f` | thêm ghi chú trạng thái: nội dung chỉ là bản mẫu để khôi phục, không phải bằng chứng CI xanh |
+| 3 | `docs/research/2026-10-05/verify_packet.py` đọc cứng đường dẫn Windows `C:/Users/Admin/.codex/...` nên chết ngay trên máy mới | nhận `--fragment` tuỳ chọn, bỏ qua phần fragment/health khi thiếu, chạy được trên Linux/macOS |
+
 ### 1.3 Kiểm chứng tái lập trên máy mới (bản clone sạch)
 
 Lệnh duy nhất `bash scripts/setup_elt.sh --skip-install` chạy trong `/var/tmp/fresh-clone`
