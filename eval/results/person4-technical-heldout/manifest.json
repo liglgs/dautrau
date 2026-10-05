@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-10-02T14:40:55.568747+00:00",
+  "mode": "replay",
+  "synthetic": true,
+  "corpus_sha256": "8e67d6826a44194b44e322ea511fcb2348b6116406d5bab97a47d11763c3d6f5",
+  "cutoff": "2026-09-30T00:00:00+00:00",
+  "source_versions": {
+    "dictionary": "fixture-v1",
+    "parser": "whole-text-v1",
+    "policy": "no-clinical-claims-v1"
+  },
+  "claims_sha256": "dec7555c56302cddc6661a5723f54816dff3063e5339519465f0576c628563ea",
+  "annotations_sha256": "5ccc3c0883893509f0fdf031a258ab9b291ae8d151377841c29a23b18f38c82c",
+  "recordings_sha256": "c52b942c52f390811b956b87ad1f4ca041b549daccff2b2d7e8f08510fa227f4",
+  "model": "synthetic-fixture-v1",
+  "prompt_sha256": "382b5029dfaf403ffe2602e08bac4fe043bc5142575c24ec6342952eaa6e4a41",
+  "code_commit": "a2e9c76b8193755a4fff7b912e0a5caeb938dff3",
+  "code_sha256": {
+    "eval/__init__.py": "74425c02312fbb79ee181e7aaf19c9df73d7a0d39c8663581b27326281828f42",
+    "eval/baselines/__init__.py": "72b6eee17d62b46f1fe8f7a9f637cc5659c4ae86dea971c3019d1fde484451d3",
+    "eval/baselines/keyword.py": "3f8b9f42657d4217242b2b4b5ec63b07189bc32d8b2c37e6baab78442c134ef2",
+    "eval/baselines/single_shot_rag.py": "edfa2e8b88ede7040ab3520443de5502201137b99481099f2cf9ddc4b0d0a065",
+    "eval/contracts.py": "e4424c65ec5eeae3fb6becbe6b1f11dccddd7729cfd8de7f62f92927c59ebb82",
+    "eval/corpus.py": "e977e27e990df7dc919ee56f16d261dba7bd53ad9ae1a13cdb3124531cbcb1fa",
+    "eval/metrics.py": "4eade9cbe3a61e296c16d4df9572c99bbd9288a1ddfd9fe136a49cb7471b6611",
+    "eval/replay.py": "deb1bb03a20e618e7e2e1dc601f0b96d6482a78f6cd8775a3e08905909973319",
+    "eval/run_evaluation.py": "bc8fbe4c89c009918db5f33a3c0d10de360846060c6bafa1f59f6d610d53c5d6"
+  },
+  "agent_hook": null,
+  "split": "heldout",
+  "system": "all",
+  "max_documents": 50,
+  "max_steps": 8,
+  "top_k": 20,
+  "tokenizer": "nfkc-casefold-unicode-word-v1",
+  "bm25": {
+    "k1": 1.2,
+    "b": 0.75
+  },
+  "network": "disabled"
+}

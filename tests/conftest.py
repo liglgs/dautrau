@@ -1,0 +1,78 @@
+import ipaddress
+import socket
+from unittest.mock import AsyncMock
+
+import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+
+
+def _loopback_address(host):
+    if isinstance(host, bytes):
+        host = host.decode("ascii")
+    if str(host).lower().rstrip(".") == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(str(host)).is_loopback
+    except ValueError:
+        return False
+
+
+def pytest_configure(config):
+    """Block external network before test collection; allow local test servers."""
+    guard = pytest.MonkeyPatch()
+    connect = socket.socket.connect
+    connect_ex = socket.socket.connect_ex
+    getaddrinfo = socket.getaddrinfo
+
+    def check_address(address):
+        if isinstance(address, tuple) and not _loopback_address(address[0]):
+            raise RuntimeError("External network disabled in pytest; mock the request instead.")
+
+    def guarded_connect(sock, address):
+        check_address(address)
+        return connect(sock, address)
+
+    def guarded_connect_ex(sock, address):
+        check_address(address)
+        return connect_ex(sock, address)
+
+    def guarded_getaddrinfo(host, *args, **kwargs):
+        if host is not None and not _loopback_address(host):
+            raise RuntimeError("External DNS disabled in pytest; mock the request instead.")
+        return getaddrinfo(host, *args, **kwargs)
+
+    guard.setattr(socket.socket, "connect", guarded_connect)
+    guard.setattr(socket.socket, "connect_ex", guarded_connect_ex)
+    guard.setattr(socket, "getaddrinfo", guarded_getaddrinfo)
+    config._p066_offline_network_guard = guard
+
+
+def pytest_unconfigure(config):
+    guard = getattr(config, "_p066_offline_network_guard", None)
+    if guard is not None:
+        guard.undo()
+
+
+@pytest_asyncio.fixture
+async def client():
+    """Async HTTP client for testing API endpoints."""
+    from src.main import app
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest.fixture
+def mock_llm():
+    """Mock LLM to avoid calling OpenAI during tests.
+
+    Usage in test:
+        def test_something(mock_llm):
+            # LLM calls will return mock response instead of hitting OpenAI
+            ...
+    """
+    mock = AsyncMock()
+    mock.ainvoke.return_value = AsyncMock(content="Mocked LLM response")
+    return mock

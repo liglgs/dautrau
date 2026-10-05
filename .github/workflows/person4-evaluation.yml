@@ -1,0 +1,72 @@
+name: Person 4 evaluation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'eval/**'
+      - 'tests/test_eval/**'
+      - 'scripts/seed_demo.py'
+      - 'src/**'
+      - 'data/benchmark/**'
+      - 'requirements.lock.txt'
+      - '.github/workflows/person4-evaluation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'eval/**'
+      - 'tests/test_eval/**'
+      - 'scripts/seed_demo.py'
+      - 'src/**'
+      - 'data/benchmark/**'
+      - 'requirements.lock.txt'
+      - '.github/workflows/person4-evaluation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay-fixtures:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    env:
+      APP_ENV: test
+      OPENAI_API_KEY: test-key
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.lock.txt
+      - run: python -m ruff check eval tests/test_eval scripts/seed_demo.py
+      - run: python -m pytest tests/test_eval -q --basetemp "${{ runner.temp }}/pytest-${{ github.job }}"
+      - name: Seed authored synthetic fixture
+        run: python scripts/seed_demo.py --output data/person4-ci/fixture
+      - name: Run replay baselines on both splits
+        shell: python
+        run: |
+          import subprocess
+          import sys
+
+          for split in ("development", "heldout"):
+              for system in ("keyword", "single_shot_rag"):
+                  subprocess.run([
+                      sys.executable, "-m", "eval.run_evaluation",
+                      "--system", system, "--split", split, "--mode", "replay",
+                      "--manifest", "data/person4-ci/fixture/corpus_manifest.json",
+                      "--claims", "data/person4-ci/fixture/claims.jsonl",
+                      "--annotations", "data/person4-ci/fixture/annotations.jsonl",
+                      "--recordings", "data/person4-ci/fixture/recordings.jsonl",
+                      "--model", "synthetic-fixture-v1", "--allow-synthetic",
+                      "--output", f"data/person4-ci/results/{system}-{split}",
+                  ], check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: person4-replay-fixtures
+          path: data/person4-ci/results
+          if-no-files-found: ignore
+          retention-days: 7

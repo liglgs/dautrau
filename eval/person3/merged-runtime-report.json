@@ -1,0 +1,19 @@
+{
+  "checked_at_utc": "2026-10-03T16:55:42.520376+00:00",
+  "python": "3.12.4",
+  "base_commit": "6d760d4f142ac260bb6210db0210920d34c946c6",
+  "checkout": "current working tree, including uncommitted changes",
+  "all_repository_tests": true,
+  "mode": "offline integration; authored HTTP/model responses",
+  "targets": [
+    "tests"
+  ],
+  "exit_code": 0,
+  "pytest_summary": "560 passed, 1 skipped, 28 subtests passed in 33.34s",
+  "dotenv_isolated": true,
+  "external_network_blocked_by_pytest": true,
+  "ui_browser_verified": false,
+  "live_sources_or_llm_used": false,
+  "clinical_gold_measured": false,
+  "command": "python scripts/test_person3_backend.py --all"
+}

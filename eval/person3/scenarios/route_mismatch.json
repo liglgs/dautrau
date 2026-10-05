@@ -1,0 +1,107 @@
+{
+  "scenario": "route_mismatch",
+  "title": "Claim oral, nguồn intravenous",
+  "mode": "synthetic",
+  "expected_technical_status": "scope_mismatch",
+  "actual_status": "scope_mismatch",
+  "passed": true,
+  "input_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug": "Drug Alpha",
+    "event": "Event Alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days"
+  },
+  "normalized_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug_ingredient": "ingredient_alpha",
+    "drug_synonyms": [
+      "Alpha",
+      "Brand Ambiguous",
+      "Drug Alpha"
+    ],
+    "event_term": "event_alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days",
+    "unknowns": [],
+    "ambiguities": [],
+    "requires_review": false,
+    "version": 1
+  },
+  "source_documents": [
+    {
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "source_id": "synthetic-not-a-pmid",
+      "version": 1,
+      "title": "",
+      "source_url": "https://example.org/synthetic/person3-demo",
+      "text": "Synthetic context: population: adults; dose: 10 mg/day; route: intravenous; time_window: 30 days; comparator: placebo.\nDrug Alpha increased Event Alpha in a fictional controlled comparison.",
+      "hash": "d31c7c2c3b05206b8b8a08c7806e5e9fe8082cf540fbc93e69ede9b68ad14c71",
+      "retrieved_at": "2026-10-02T09:42:25.810237Z",
+      "metadata": {
+        "mode": "synthetic"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-P3-53593deaaf8bece02019b1f1",
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "Drug Alpha increased Event Alpha in a fictional controlled comparison.",
+      "locator": {
+        "start": 119,
+        "end": 189,
+        "section": null
+      },
+      "scope": {
+        "population": "adults",
+        "dose": "10 mg/day",
+        "route": "intravenous",
+        "time_window": "30 days",
+        "study_type": null
+      },
+      "confidence": 0.0,
+      "evidence_type": "rct",
+      "version": 1,
+      "excluded": false,
+      "notes": "{\"schema_version\":\"person3.1\",\"drug_ingredient\":\"ingredient_alpha\",\"event_term\":\"event_alpha\",\"comparator\":\"placebo\",\"direction\":\"increase\",\"uncertainty\":\"low\",\"document_version\":1,\"document_hash\":\"d31c7c2c3b05206b8b8a08c7806e5e9fe8082cf540fbc93e69ede9b68ad14c71\",\"issues\":[]}"
+    }
+  ],
+  "assessment": {
+    "assessment_status": "scope_mismatch",
+    "rationale": "Retrieved evidence differs on a critical scope field.",
+    "evidence_ids": [],
+    "scope_notes": [],
+    "confidence": 0.0
+  },
+  "gaps": [],
+  "budget": {
+    "max_steps": 8,
+    "max_documents": 50,
+    "max_source_requests": 80,
+    "max_llm_calls": 80,
+    "max_input_tokens": 150000,
+    "max_output_tokens": 25000,
+    "steps_used": 0,
+    "documents_used": 1,
+    "source_requests": 0,
+    "llm_calls": 1,
+    "input_tokens": 179,
+    "output_tokens": 106,
+    "reservations": {}
+  },
+  "validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": []
+  },
+  "dossier_markdown": "# Hồ sơ điều tra INV-92b44dd96527 (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Bằng chứng hiện có nằm ngoài phạm vi claim.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: b8ebc52e64fabb7e50706008180751a128bff71fdee36f5a2d6fd6799077dfb5\n\nBằng chứng hiện có nằm ngoài phạm vi claim.\nAudit: INV-92b44dd96527 / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Drug Alpha\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 1/80\n\n\n## Bằng chứng đã truy xuất\nDrug Alpha increased Event Alpha in a fictional controlled comparison.\n\n- [EV-P3-53593deaaf8bece02019b1f1 v1](https://example.org/synthetic/person3-demo) source=SYNTHETIC-DEMO-A v1; sha256=d31c7c2c3b05206b8b8a08c7806e5e9fe8082cf540fbc93e69ede9b68ad14c71\n\nBằng chứng: EV-P3-53593deaaf8bece02019b1f1\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nNo recorded gaps.\n\n## Kết luận trong phạm vi claim\nBằng chứng hiện có nằm ngoài phạm vi claim.\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
+  "approved_dossier": false
+}

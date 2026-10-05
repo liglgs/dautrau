@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "annotator_type": "ai",
+  "annotator_role": "ai_provisional",
+  "annotation_date": "2026-10-03",
+  "independent_expert_reviews": 0,
+  "clinical_metrics_ready": false,
+  "heldout_exposed_to_annotator": true,
+  "candidate_bundle_sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+  "claims_sha256": "ec64fcacb19b10d01e14ddc7712954f55d4f52a69f428e75de7fcc1357706c2e",
+  "policy": "AI manual source review; association is distinct from causation. Apply the existing conservative scope rubric: broader/unstated population, dosage or time cannot inherit source values; overlapping regimens do not establish a subgroup effect. These are silver references, not professional gold. Selected spans are not an exhaustive relevance inventory.",
+  "external_crosscheck": {
+    "url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2021/022348s021lbl.pdf",
+    "purpose": "Historical FDA label confirms IV ibuprofen exists; an oral-only frozen subset cannot prove IV ibuprofen has no GI bleeding association. This external document is not part of retrieval labels or evidence IDs. Current prescribing information was not established."
+  },
+  "variants": {
+    "01": {"status": "insufficient_evidence", "reason": "Nhận định không nêu quần thể, liều, đường dùng và thời gian. Nguồn ghi nhận mối liên hệ trong bối cảnh cụ thể; chưa đủ để xác nhận phạm vi rộng theo rubric hiện tại."},
+    "02": {"status": "insufficient_evidence", "reason": "Đường uống có nguồn nhãn thuốc. Tuy nhiên quần thể nguồn có bệnh nền, chọn lọc hoặc gộp người lớn và trẻ em; chưa xác lập kết quả riêng cho phạm vi adults với liều/thời gian chưa nêu."},
+    "03": {"status": "insufficient_evidence", "reason": "Không có đoạn đã kiểm tra xác lập đồng thời biến cố tại đúng 1000 mg/day và 90 days. Liều khởi đầu, liều tối đa, khoảng liều hoặc thời gian theo dõi không thay thế được kết quả của nhóm phơi nhiễm này. Đây là ca thử phạm vi, không phải khuyến cáo liều."},
+    "04": {"status": "insufficient_evidence", "reason": "Nhãn được chọn thuộc đường uống nên lệch đường intravenous; các abstract còn thiếu đường dùng. Rubric toàn ca giữ insufficient_evidence thay vì khẳng định tất cả tài liệu đều lệch phạm vi. Không có dữ liệu IV thích hợp trong các đoạn đã kiểm tra; không suy ra thuốc IV không tồn tại hoặc không có biến cố."},
+    "05": {"status": "requires_human_review", "reason": "Unresolved brand chưa được xác minh thành hoạt chất. Không dùng family_id, nguồn liên quan hoặc tên hoạt chất trong claim_text để đoán biệt dược; chưa chọn evidence làm đáp án truy xuất."}
+  },
+  "families": {
+    "metformin": {
+      "primary_anchor": "metformin-meta",
+      "reason": "Meta-analysis RCT ghi nhận diarrhoea nhiều hơn ở bệnh nhân type 2 diabetes dùng metformin. Review và nhãn corroborate mối liên hệ. IR/ER khác nhau là khác biệt công thức, không phải bằng chứng phủ nhận biến cố. Số 6% trong nhãn oral solution thuộc thử nghiệm metformin HCl tablets, không phải tỷ lệ mới đo cho oral solution; không đồng nhất ngừng thuốc vì tiêu chảy với tỷ lệ tiêu chảy nói chung.",
+      "anchors": [
+        {"id": "metformin-meta", "doc_id": "pubmed:36187122:1", "quote": "In these studies, metformin use was associated with higher risk of abdominal pain, diarrhea and nausea comparing to control.", "population": "patients with type 2 diabetes mellitus", "dose": null, "route": null, "time_window": null, "study_type": "systematic review/meta-analysis of randomized trials", "scope_basis": "Abstract explicitly states T2D; individual dose, route and exposure time are not established by this abstract."},
+        {"id": "metformin-review", "doc_id": "pubmed:27987248:1", "quote": "GI AEs typically encountered with metformin therapy include diarrhoea, nausea, flatulence, indigestion, vomiting and abdominal discomfort, with diarrhoea and nausea being the most common.", "population": "patients with type 2 diabetes mellitus", "dose": null, "route": null, "time_window": null, "study_type": "narrative review", "scope_basis": "Context is metformin therapy for T2D; no exact requested regimen/time or comparative estimate in this quote."},
+        {"id": "metformin-label", "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9", "quote": "Diarrhea led to discontinuation of metformin HCl tablets in 6% of patients.", "population": "patients with type 2 diabetes mellitus", "dose": "up to 2550 mg/day", "route": "oral", "time_window": null, "study_type": "label clinical trial summary of tablets within oral solution label", "scope_basis": "Section 6.1 describes tablet trial, 141 treated and 145 placebo, up to 2550 mg/day. Metadata route ORAL. The quote is discontinuation, not total event frequency. Do not transfer tablet trial percentages to oral solution."}
+      ]
+    },
+    "ibuprofen": {
+      "primary_anchor": "ibuprofen-meta",
+      "reason": "Meta-analysis ghi nhận GI bleeding với ibuprofen; risk thấp hơn NSAID khác không có nghĩa không có risk. Nhãn OTC cảnh báo stomach bleeding và metadata xác nhận ORAL. Dose tối đa trên nhãn không xác lập biến cố tại 1000 mg/day trong 90 ngày. IV ibuprofen có nhãn FDA lịch sử; chỉ đánh dấu lệch route của các nhãn uống trong corpus này.",
+      "anchors": [
+        {"id": "ibuprofen-meta", "doc_id": "pubmed:40915652:1", "quote": "Among non-selective NSAIDs, ibuprofen had the lowest significant risk (OR 2.28, 95% CI: 1.71-3.03), while ketorolac showed the highest risk (OR 20.67, 95% CI: 14.56-29.34).", "population": "heterogeneous study populations", "dose": null, "route": null, "time_window": null, "study_type": "systematic review/meta-analysis", "scope_basis": "Outcome is GI bleeding in the abstract; substantial heterogeneity is explicitly reported. No requested dose/time/adult-only or IV subgroup."},
+        {"id": "ibuprofen-label", "doc_id": "dailymed:3b9773c6-42a0-4834-bef4-4fd60556af48:1", "quote": "Stomach bleeding warning: This product contains an NSAID, which may cause severe stomach bleeding.", "population": "adults and children 12 years and older; additional high-risk groups in warnings", "dose": null, "route": "oral", "time_window": null, "study_type": "OTC label warning", "scope_basis": "Active ingredient ibuprofen 200 mg in Drug Facts, Directions gives age 12+; metadata ingredients IBUPROFEN and routes ORAL. Warning is not an incidence estimate. Directions are not dose-specific outcome evidence."}
+      ]
+    },
+    "lisinopril": {
+      "primary_anchor": "lisinopril-trial",
+      "reason": "RCT ở người lớn tăng huyết áp có tiền sử ACEI-induced cough cho thấy cough nhiều hơn với lisinopril; quần thể đã được chọn lọc. Nhãn tablet oral ghi nhận cough cao hơn placebo trong tăng huyết áp. Không áp tỷ lệ của quần thể chọn lọc cho mọi adults, không dùng liều thử nghiệm 10 mg làm chứng cứ cho 1000 mg/day.",
+      "anchors": [
+        {"id": "lisinopril-trial", "doc_id": "pubmed:9055135:1", "quote": "The occurrence of a dry, persistent cough was significantly less (P < 0.001) at 3 and 6 weeks with valsartan (19.5%) than with lisinopril (68.9%), with no significant difference between valsartan and hydrochlorothiazide (19.0%).", "population": "adult hypertensive outpatients with prior ACE inhibitor-induced cough", "dose": "10 mg/day", "route": null, "time_window": "6 weeks", "study_type": "randomized double-blind active-controlled trial", "scope_basis": "Abstract includes 129 adult outpatients, prior ACEI cough confirmation, lisinopril 10 mg once daily and six weeks. It does not explicitly state route; do not inherit it from the claim."},
+        {"id": "lisinopril-label", "doc_id": "dailymed:764d51bf-731f-4a37-8e30-e79328cf5a12:9", "quote": "The following adverse reactions (events 2% greater on lisinopril than on placebo) were observed with lisinopril alone: headache (by 3.8%), dizziness (by 3.5%), cough (by 2.5%).", "population": "patients with hypertension", "dose": null, "route": "oral", "time_window": null, "study_type": "label clinical trial summary", "scope_basis": "Section 6.1 Hypertension, oral tablet header and metadata ORAL. 2.5% is excess over placebo, not absolute incidence. No dose/time stated for cough result."}
+      ]
+    },
+    "amoxicillin": {
+      "primary_anchor": "amoxicillin-label",
+      "reason": "Nhãn oral ghi nhận rash trong clinical trials. Pediatric retrospective reactions không chứng minh adults hay dị ứng xác nhận; tái phơi nhiễm dung nạp không phủ nhận rash trước đó. EBV và amoxicillin/clavulanate là bối cảnh cần tách; không quy riêng amoxicillin từ ca dùng phối hợp. Không có nhóm đúng liều/thời gian được hỏi.",
+      "anchors": [
+        {"id": "amoxicillin-label", "doc_id": "dailymed:26c3694b-d7ef-4068-95d3-4f7a9210e117:1", "quote": "The most common adverse reactions (greater than 1%) observed in clinical trials of amoxicillin capsules, tablets or oral suspension were diarrhea, rash, vomiting, and nausea.", "population": "adults and pediatric patients; adverse reaction statement not stratified by age", "dose": null, "route": "oral", "time_window": null, "study_type": "label clinical trial summary", "scope_basis": "Section 6.1; oral capsule header and metadata ORAL. Indications include adults and children but the AE sentence is not age-stratified. Greater than 1% is not a dose-specific rash probability or causal proof."},
+        {"id": "amoxicillin-pediatric", "doc_id": "pubmed:35872212:1", "quote": "Amoxicillin-associated reactions (AARs) in children presenting as  rashes are common, and recent data suggest that >90% tolerate amoxicillin on re-exposure.", "population": "children presenting to emergency or urgent care with amoxicillin-associated reactions", "dose": null, "route": null, "time_window": "typically days 7 to 10 of amoxicillin", "study_type": "retrospective pediatric chart review", "scope_basis": "668 children, median age 1.8 years. Observed reactions are not confirmed allergy; no adult subgroup. Different population descriptions are conservatively unknown, not string-based proof of disjointness."}
+      ]
+    }
+  },
+  "document_notes": {
+    "pubmed:26780750:1": "Gut mechanisms/formulations background; not a precise requested subgroup outcome.",
+    "pubmed:37414069:1": "Impaired glucose regulation RCT, oral 850 to 1700 mg/day, two years; aggregate GI events not exact diarrhoea subgroup at 1000/90.",
+    "pubmed:34907435:1": "PCOS women 18-40, metformin 0.5 g three times/day, four months. Three-month follow-up is not 90-day treatment at 1000 mg/day.",
+    "pubmed:39466269:1": "Peptic-ulcer/NSAID review; class discussion cannot become agent-specific dose evidence.",
+    "pubmed:34376069:1": "NSAID class GI discussion and interactions; contextual, not target regimen proof.",
+    "pubmed:23137151:1": "Observational upper GI complications; composite outcome broader than bleeding and no exact 1000/90 subgroup.",
+    "pubmed:35585779:1": "Relative GI safety and dose/comparator heterogeneity; lower risk does not negate association.",
+    "pubmed:37417783:1": "ACEI network meta-analysis; class-level estimates/ranking are not an individual lisinopril incidence for the requested subgroup.",
+    "pubmed:9089428:1": "Elderly hypertensive prior-ACEI-cough rechallenge population, ten weeks, 10 mg/day; selected population.",
+    "pubmed:7619667:1": "Retrospective ACE inhibitor class study; not a separate exact lisinopril-dose subgroup estimate.",
+    "pubmed:10344043:1": "Prior-ACEI-cough hypertension, eight weeks, lisinopril 20 mg; selection prevents general adult risk transfer.",
+    "pubmed:38055983:1": "Case report: amoxicillin/clavulanate plus EBV; combination and infection confounding, no isolated-amoxicillin causal estimate.",
+    "pubmed:36756024:1": "EBV-associated rash case context; not broad or exact adult-dose-time evidence.",
+    "pubmed:38690250:1": "Dental trials include aggregated complications; not a rash-only exact 1000 mg/day/90-day result.",
+    "pubmed:10718859:1": "Selected hypersensitivity patients and mechanistic penicillin/amoxicillin discussion, not general population comparative risk."
+  }
+}

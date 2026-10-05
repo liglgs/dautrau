@@ -1,0 +1,13 @@
+# Shared backend and Person 3 graph/API demo; no live retrieval/model calls.
+fastapi>=0.115.0
+uvicorn>=0.34.0
+pydantic>=2.10.0
+pydantic-settings>=2.7.0
+python-multipart>=0.0.20
+langgraph>=0.2.0
+sqlalchemy>=2.0,<3
+psycopg[binary]>=3.2,<4
+pwdlib[argon2]>=0.2,<1
+httpx>=0.28.0
+pytest>=8.0.0
+pytest-asyncio>=0.24.0

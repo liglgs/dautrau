@@ -1,0 +1,237 @@
+{
+  "checked_at_utc": "2026-10-03T16:43:41.710285+00:00",
+  "version": "scoped-rag-v3",
+  "split": "development",
+  "mode": "offline retrieval preview only",
+  "live_model_calls": 0,
+  "heldout_rerun": false,
+  "prediction_accuracy_measured": false,
+  "clinical_validation_claimed": false,
+  "reference_kind": "ai_provisional",
+  "protocol": {
+    "version": "scoped-rag-v3",
+    "postprocessor_version": "scope-validation-v6",
+    "dictionary_sha256": "10dd2e7b7e825ab63b00edcddd4410da887c5d6cf44ce0733366a312c0c0853e",
+    "source_quotas": {
+      "pubmed": 8,
+      "dailymed": 8,
+      "faers": 4
+    },
+    "max_units_per_document": 3,
+    "rrf_constant": 60,
+    "spellings": {
+      "diarrhoea": "diarrhea",
+      "haemorrhage": "hemorrhage",
+      "oedema": "edema"
+    },
+    "max_context_chars": 55000,
+    "implementation_sha256": {
+      "eval/baselines/scoped_rag.py": "a5ca08639ee2d61c6ef71d3232dc43f5eee5727a290420b0101277b683f05eee",
+      "eval/baselines/keyword.py": "d0d6e6c6026657cc4bc1a33794f699be6d432eacd55bee70090f28940c27fd50",
+      "eval/contracts.py": "edea1d7d5e8d2b568aa76631e5ffe550db8ac4e9b7ccb2c13cbe86df9f679064",
+      "src/services/evidence/normalize.py": "f6e29b1440e78e59c0d6d1d986d9c0069d01f0356dbb917b2e904a73daf54c51",
+      "src/services/prompts.py": "fec1aac2e2115eecf06367e2e3a9a5cfb709a6711ccad121e04a4dd465471808"
+    }
+  },
+  "corpus_manifest_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+  "claims": [
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "normalization_requires_review": false,
+      "units": 9,
+      "source_counts": {
+        "pubmed": 3,
+        "dailymed": 6,
+        "faers": 0
+      },
+      "queries": [
+        "metformin diarrhea",
+        "metformin diarrhoea",
+        "metformin hydrochloride diarrhoea"
+      ],
+      "required_span_recall": {
+        "value": 1.0,
+        "numerator": 1,
+        "denominator": 1
+      },
+      "rendered_context_chars": 23078
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "normalization_requires_review": false,
+      "units": 9,
+      "source_counts": {
+        "pubmed": 3,
+        "dailymed": 6,
+        "faers": 0
+      },
+      "queries": [
+        "metformin diarrhea",
+        "metformin diarrhoea",
+        "metformin hydrochloride diarrhoea"
+      ],
+      "required_span_recall": {
+        "value": 1.0,
+        "numerator": 1,
+        "denominator": 1
+      },
+      "rendered_context_chars": 23078
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "normalization_requires_review": false,
+      "units": 9,
+      "source_counts": {
+        "pubmed": 3,
+        "dailymed": 6,
+        "faers": 0
+      },
+      "queries": [
+        "metformin diarrhea",
+        "metformin diarrhoea",
+        "metformin hydrochloride diarrhoea"
+      ],
+      "required_span_recall": {
+        "value": 1.0,
+        "numerator": 1,
+        "denominator": 1
+      },
+      "rendered_context_chars": 23078
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "normalization_requires_review": false,
+      "units": 9,
+      "source_counts": {
+        "pubmed": 3,
+        "dailymed": 6,
+        "faers": 0
+      },
+      "queries": [
+        "metformin diarrhea",
+        "metformin diarrhoea",
+        "metformin hydrochloride diarrhoea"
+      ],
+      "required_span_recall": {
+        "value": 1.0,
+        "numerator": 1,
+        "denominator": 1
+      },
+      "rendered_context_chars": 23078
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "normalization_requires_review": true,
+      "units": 0,
+      "source_counts": {
+        "pubmed": 0,
+        "dailymed": 0,
+        "faers": 0
+      },
+      "queries": [],
+      "required_span_recall": {
+        "value": null,
+        "numerator": 0,
+        "denominator": 0
+      },
+      "rendered_context_chars": 0
+    }
+  ],
+  "aggregate": {
+    "claims": 5,
+    "successful": 5,
+    "evidence_recall_at_20": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 4
+    },
+    "precision_at_20": {
+      "macro": 0.2222222222222222,
+      "samples": 4,
+      "denominator": 36
+    },
+    "citation_precision": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "citation_completeness": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "unsupported_claim_rate": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "abstention_confusion": {
+      "abstain_correct": 0,
+      "answer_correct": 0,
+      "false_abstain": 0,
+      "false_answer": 0
+    },
+    "scope_mismatch": {
+      "precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "recall": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      }
+    },
+    "contradiction": {
+      "precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "recall": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      }
+    }
+  },
+  "note": "This command measures selected-span retrieval only; model synthesis reports are separate. No clinical entailment review.",
+  "backend_tests": {
+    "checked_at_utc": "2026-10-03T16:41:44.079544+00:00",
+    "python": "3.12.4",
+    "base_commit": "6d760d4f142ac260bb6210db0210920d34c946c6",
+    "checkout": "current working tree, including uncommitted changes",
+    "all_repository_tests": true,
+    "mode": "offline integration; authored HTTP/model responses",
+    "targets": [
+      "tests"
+    ],
+    "exit_code": 0,
+    "pytest_summary": "560 passed, 1 skipped, 28 subtests passed in 27.24s",
+    "dotenv_isolated": true,
+    "external_network_blocked_by_pytest": true,
+    "ui_browser_verified": false,
+    "live_sources_or_llm_used": false,
+    "clinical_gold_measured": false,
+    "command": "python scripts/test_person3_backend.py --all"
+  },
+  "development_synthesis_report": "scoped-rag-validation-v4-development-report.json",
+  "development_synthesis_postprocessor_version": "scope-validation-v4",
+  "historical_before_validation_fix_report": "scoped-rag-v3-development-report.json",
+  "development_AI_assessment_agreement": {
+    "correct": 5,
+    "total": 5
+  },
+  "development_fully_validated_findings": {
+    "valid": 3,
+    "total": 12
+  },
+  "heldout_reprocessing_report": "scoped-rag-validation-v6-heldout-report.json",
+  "heldout_new_model_calls_pending": 0,
+  "heldout_processing_errors_after_reprocessing": 0,
+  "heldout_reprocessed_claims": 15,
+  "original_baseline_and_labels_unchanged": true,
+  "final_scoped_rag_report": "scoped-rag-final-ai-evaluation-report.json",
+  "all_20_replayed_without_processing_errors": true
+}

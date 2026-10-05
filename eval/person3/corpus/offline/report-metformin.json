@@ -1,0 +1,336 @@
+{
+  "sources": "real_frozen_candidates",
+  "provider": "offline",
+  "family": "metformin",
+  "bundle_sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+  "live_search": false,
+  "clinical_metrics_measured": false,
+  "live_provider_requested": false,
+  "actual_model_responses_received": 0,
+  "gateway_usage_is_simulated": true,
+  "documents_checked": 10,
+  "valid_quotes": 14,
+  "failures": [],
+  "results": [
+    {
+      "doc_id": "pubmed:27987248:1",
+      "source": "pubmed",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/27987248/",
+      "document_hash": "f42fe3ad369e2d9202637f94519078190f65c19c3a19d420ed175265bd635380",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            1749
+          ]
+        ],
+        "examined_chars": 1749,
+        "total_chars": 1749,
+        "complete": true
+      },
+      "valid_quotes": 1,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "pubmed:26780750:1",
+      "source": "pubmed",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26780750/",
+      "document_hash": "a4ec761e842e87d82110539fa695cc0bc2490ca10482a023c4ef3f4d3512b872",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            1145
+          ]
+        ],
+        "examined_chars": 1145,
+        "total_chars": 1145,
+        "complete": true
+      },
+      "valid_quotes": 0,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "pubmed:37414069:1",
+      "source": "pubmed",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/37414069/",
+      "document_hash": "7a776921bd6ac1df82981338b25495e6f95cd359f507f174973a25e4424753b0",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            3410
+          ]
+        ],
+        "examined_chars": 3410,
+        "total_chars": 3410,
+        "complete": true
+      },
+      "valid_quotes": 0,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "pubmed:34907435:1",
+      "source": "pubmed",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/34907435/",
+      "document_hash": "7348f021bb7e8a8ad3c6fa503ce6c6a95753647e01504f1d70a15c29bd8c0b97",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            4089
+          ]
+        ],
+        "examined_chars": 4089,
+        "total_chars": 4089,
+        "complete": true
+      },
+      "valid_quotes": 1,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "pubmed:36187122:1",
+      "source": "pubmed",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/36187122/",
+      "document_hash": "49ea28c27dc0e1540b9cf9bf5390a0785b6a135b308a4f8bde04e8d2256a8350",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            1740
+          ]
+        ],
+        "examined_chars": 1740,
+        "total_chars": 1740,
+        "complete": true
+      },
+      "valid_quotes": 2,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "source": "dailymed",
+      "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=e087ce3b-8d7f-43a3-8d20-54513da7617d",
+      "document_hash": "f82cda79667aa8d60bcae9b9a41234e76bcabf1003b1a050de13ca407351cbdd",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            10000
+          ],
+          [
+            8000,
+            18000
+          ],
+          [
+            40000,
+            50000
+          ]
+        ],
+        "examined_chars": 28000,
+        "total_chars": 52966,
+        "complete": false
+      },
+      "valid_quotes": 3,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+      "source": "dailymed",
+      "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0ef9de1a-b786-4b6c-a250-3f5ac532b16a",
+      "document_hash": "2763eac2378664297f1cccdd4245369a12fb2d4bd4c844aaa1a84774c8ddab07",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            10000
+          ],
+          [
+            8000,
+            18000
+          ],
+          [
+            40000,
+            50000
+          ]
+        ],
+        "examined_chars": 28000,
+        "total_chars": 55410,
+        "complete": false
+      },
+      "valid_quotes": 4,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "faers:10004629:1",
+      "source": "faers",
+      "source_url": "https://api.fda.gov/drug/event.json?search=safetyreportid%3A%2210004629%22",
+      "document_hash": "af3dccd4552ada06d97d24f3b871584ff1617b9cb2810428b84900b96c3b6d56",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            10000
+          ],
+          [
+            8000,
+            18000
+          ],
+          [
+            16000,
+            20188
+          ]
+        ],
+        "examined_chars": 20188,
+        "total_chars": 20188,
+        "complete": true
+      },
+      "valid_quotes": 1,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "faers:10005223:3",
+      "source": "faers",
+      "source_url": "https://api.fda.gov/drug/event.json?search=safetyreportid%3A%2210005223%22",
+      "document_hash": "596ae4d702dbc9df1e41e356ea96412e76e9c9c177f76a0b240a3124cd392b39",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            10000
+          ],
+          [
+            8000,
+            18000
+          ],
+          [
+            56000,
+            62792
+          ]
+        ],
+        "examined_chars": 24792,
+        "total_chars": 62792,
+        "complete": false
+      },
+      "valid_quotes": 1,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    },
+    {
+      "doc_id": "faers:10005995:2",
+      "source": "faers",
+      "source_url": "https://api.fda.gov/drug/event.json?search=safetyreportid%3A%2210005995%22",
+      "document_hash": "bd2dda5f6437361949e5b2a240f574b20258f8544d49d026254320a5b81c643b",
+      "family": "metformin",
+      "provider": "offline",
+      "clinical_gold": false,
+      "error": null,
+      "coverage": {
+        "ranges": [
+          [
+            0,
+            10000
+          ],
+          [
+            8000,
+            18000
+          ],
+          [
+            48000,
+            56563
+          ]
+        ],
+        "examined_chars": 26563,
+        "total_chars": 56563,
+        "complete": false
+      },
+      "valid_quotes": 1,
+      "excluded_quotes": 0,
+      "citation_errors": [],
+      "assessment_status": "insufficient_evidence",
+      "dossier_errors": [],
+      "model_responses_received": 0,
+      "budget_scope": "per_document_check_not_full_investigation"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "ambiguous_brand",
+  "synthetic": true,
+  "description": "Tên thương mại khớp 2 hoạt chất -> phải dừng ở checkpoint normalization để reviewer chọn.",
+  "claim": {
+    "claim_text": "Vigilax gây buồn ngủ.",
+    "drug": "Vigilax",
+    "event": "somnolence",
+    "population": null,
+    "dose": null,
+    "route": null,
+    "time_window": null
+  },
+  "source_results": [],
+  "documents": [],
+  "evidence": [],
+  "normalization": {
+    "drug_ingredient": "",
+    "drug_synonyms": [],
+    "event_term": "somnolence",
+    "unknowns": [
+      "drug_ingredient",
+      "population",
+      "dose",
+      "route"
+    ],
+    "ambiguities": [
+      "Tên thương mại 'Vigilax' khớp hai hoạt chất: vigilaxine (kháng histamine) và vigilaxol (an thần)."
+    ],
+    "candidates": [
+      {
+        "ingredient": "vigilaxine",
+        "class": "antihistamine",
+        "source": "dailymed:spl-index"
+      },
+      {
+        "ingredient": "vigilaxol",
+        "class": "antipsychotic",
+        "source": "dailymed:spl-index"
+      }
+    ],
+    "requires_review": true
+  },
+  "expected": {
+    "assessment_status": null,
+    "stop_reason": "needs_review",
+    "checkpoint": "normalization",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "Chưa gọi nguồn nào trước khi reviewer chốt hoạt chất."
+  }
+}

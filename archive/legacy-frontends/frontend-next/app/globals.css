@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+/* Tailwind v4: dark mode theo class trên <html> (toggle ở topbar, lưu localStorage). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Token ngữ nghĩa Clinical AI (light/dark) — Chuẩn Enterprise Medical SaaS
+   --------------------------------------------------------------------------- */
+:root {
+  --canvas: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --ink: #0f172a;
+  --ink-soft: #334155;
+  --muted: #64748b;
+
+  /* Primary Clinical Teal & Cyan */
+  --brand: #0d9488;
+  --brand-soft: #f0fdfa;
+  --brand-ink: #0f766e;
+  --brand-hover: #0b7a70;
+
+  /* Deep Navy Accent */
+  --navy: #0f172a;
+  --navy-2: #1e293b;
+
+  /* Semantic Alerts */
+  --ok: #059669;
+  --ok-soft: #ecfdf5;
+  --warn: #d97706;
+  --warn-soft: #fffbeb;
+  --danger: #e11d48;
+  --danger-soft: #fff1f2;
+  --info: #2563eb;
+  --info-soft: #eff6ff;
+
+  --ring: #0d9488;
+
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+  --shadow-card-hover: 0 10px 20px -5px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-pop: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  --shadow-glow: 0 0 20px -3px rgba(13, 148, 136, 0.25);
+}
+
+.dark {
+  --canvas: #070c14;
+  --surface: #0d1522;
+  --surface-2: #131e30;
+  --surface-3: #1a2940;
+  --line: #1e2f47;
+  --line-strong: #2d4363;
+  --ink: #f8fafc;
+  --ink-soft: #cbd5e1;
+  --muted: #8da0b6;
+
+  /* Vibrant Teal in Dark Mode */
+  --brand: #14b8a6;
+  --brand-soft: #0a2e2b;
+  --brand-ink: #5eead4;
+  --brand-hover: #2dd4bf;
+
+  --navy: #020617;
+  --navy-2: #0f172a;
+
+  --ok: #10b981;
+  --ok-soft: #064e3b;
+  --warn: #f59e0b;
+  --warn-soft: #451a03;
+  --danger: #f43f5e;
+  --danger-soft: #4c0519;
+  --info: #3b82f6;
+  --info-soft: #172554;
+
+  --ring: #14b8a6;
+
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 25px 35px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 25px -3px rgba(20, 184, 166, 0.35);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-heading), var(--font-sans), ui-sans-serif, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ring: var(--ring);
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-glow: var(--shadow-glow);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    font-size: 13.5px;
+    letter-spacing: -0.011em;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
+  h1 {
+    font-size: clamp(1.5rem, 1.1rem + 1.25vw, 2.15rem);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  h3 {
+    font-size: 0.975rem;
+    font-weight: 650;
+  }
+  p {
+    line-height: 1.65;
+  }
+  a {
+    color: var(--brand-ink);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: var(--brand);
+  }
+  ::placeholder {
+    color: var(--muted);
+  }
+  :where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+}
+
+@layer components {
+  /* Khối trích dẫn nguồn y tế bảo mật */
+  .quote-block {
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 1rem 1.15rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+  .quote-block mark {
+    background: rgba(245, 158, 11, 0.18);
+    color: inherit;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 0.15rem 0.35rem;
+    border-bottom: 2px solid rgba(245, 158, 11, 0.5);
+  }
+
+  /* Glassmorphism panel */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+  .dark .glass-panel {
+    background: rgba(13, 21, 34, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(30, 47, 71, 0.8);
+  }
+
+  /* Interactive card with lift */
+  .card-lift {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  }
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--line-strong);
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+}

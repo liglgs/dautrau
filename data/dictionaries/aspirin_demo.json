@@ -1,0 +1,25 @@
+{
+  "version": "aspirin-label-terms-2026-10-02.1",
+  "mode": "verified",
+  "description": "Small source-checked term mapping for a proposed demo. No brand expansion, event ontology code, translation, or clinical gold label.",
+  "verified_at": "2026-10-02",
+  "source_label_updated_at": "2026-06-25",
+  "drugs": [
+    {
+      "canonical": "aspirin",
+      "aliases": [],
+      "source_ref": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=0b27c0fd-7ea8-4588-9169-5ad4e8df77ef",
+      "license": "Team-authored mapping of short ingredient names checked against the public DailyMed label; no label republication.",
+      "source_section": "Active ingredient"
+    }
+  ],
+  "events": [
+    {
+      "canonical": "stomach bleeding",
+      "aliases": [],
+      "source_ref": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=0b27c0fd-7ea8-4588-9169-5ad4e8df77ef",
+      "license": "Team-authored mapping of a short warning term checked against the public DailyMed label; no label republication.",
+      "source_section": "Warnings"
+    }
+  ]
+}

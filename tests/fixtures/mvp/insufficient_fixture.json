@@ -1,0 +1,79 @@
+{
+  "name": "insufficient",
+  "synthetic": true,
+  "description": "Chỉ có báo cáo FAERS tự nguyện, không có nhãn/nghiên cứu -> insufficient_evidence.",
+  "claim": {
+    "claim_text": "Orlistat gây viêm tụy cấp.",
+    "drug": "orlistat",
+    "event": "acute pancreatitis",
+    "population": null,
+    "dose": "120 mg three times daily",
+    "route": "oral",
+    "time_window": null
+  },
+  "source_results": [
+    {
+      "source": "pubmed",
+      "status": "empty",
+      "doc_ids": []
+    },
+    {
+      "source": "dailymed",
+      "status": "empty",
+      "doc_ids": []
+    },
+    {
+      "source": "faers",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-FAERS-ORLISTAT"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-FAERS-ORLISTAT",
+      "source": "faers",
+      "source_id": "faers:2026q2:orlistat:pancreatitis",
+      "version": 1,
+      "title": "FAERS quarterly extract — orlistat / acute pancreatitis",
+      "source_url": "https://open.fda.gov/apis/drug/event/",
+      "text": "openFDA — FAERS Adverse Event Reporting System — Quarterly extract, suspect drug: orlistat.\nTotal reports matching the query (orlistat + acute pancreatitis): 37.\n\nCase narrative (representative, report 10023451-7):\nA 46-year-old female with obesity started orlistat 120 mg three times daily with meals.\nSix weeks later she presented with epigastric pain; serum lipase was elevated (3.4 x ULN) and\nacute pancreatitis was diagnosed. Orlistat was discontinued and the event resolved.\nReporter causality: possible. Confounders: gallstone disease, alcohol use not documented.\n\nNote: FAERS reports are voluntary and unverified; they do not establish causation and cannot be\nused to compute incidence because total exposure is unknown.",
+      "hash": "26ac933deb93fd19621417fe495116b52da80d904f928ae008a9866d045aeb81",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVI-FAERS-PANCREATITIS",
+      "doc_id": "DOC-FAERS-ORLISTAT",
+      "source": "faers",
+      "stance": "uncertain",
+      "quote": "Reporter causality: possible. Confounders: gallstone disease, alcohol use not documented.",
+      "locator": {
+        "start": 481,
+        "end": 570,
+        "section": "Case narrative"
+      },
+      "scope": {
+        "population": null,
+        "dose": "120 mg three times daily",
+        "route": "oral",
+        "time_window": null,
+        "study_type": "spontaneous_report"
+      },
+      "confidence": 0.2,
+      "evidence_type": "faers_report",
+      "version": 1,
+      "excluded": false,
+      "notes": "Báo cáo tự nguyện, không xác minh, không tính được tỷ lệ."
+    }
+  ],
+  "expected": {
+    "assessment_status": "insufficient_evidence",
+    "stop_reason": "insufficient_evidence",
+    "checkpoint": "assessment",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "FAERS-only KHÔNG BAO GIỜ được tự động kết luận supported."
+  }
+}

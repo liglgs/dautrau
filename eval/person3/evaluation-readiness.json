@@ -1,0 +1,30 @@
+{
+  "documents": 50,
+  "retrieval_units": 727,
+  "claims": 20,
+  "split_counts": {
+    "development": 5,
+    "heldout": 15
+  },
+  "clinical_metrics_ready": false,
+  "synthetic": false,
+  "unit_policy": "unicode-fixed-2000-v1",
+  "labels_generated_by_model": false,
+  "corpus_manifest_sha256": "4e7e10fd995169447c1652afd22b2716a51b6b62fbaaa2d9fccea191fa4f9a34",
+  "review_packet_sha256": "b9b879967a7368e98d6f803d97d14f8c03db00385ccc019ef3c23902ed785a92",
+  "review_packet_files": 62,
+  "expert_reviews_completed": 0,
+  "model_recordings_created": true,
+  "api_keys_included": false,
+  "report_scope": "Expert review packet metadata with current AI technical evaluation status",
+  "recording_reference_kind": "ai_provisional",
+  "recording_dataset": "data/person3/evaluation-ai",
+  "recording_corpus_manifest_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+  "recorded_claims": {
+    "development": 5,
+    "heldout": 15
+  },
+  "three_system_replay_rows": 60,
+  "replay_processing_errors": 0,
+  "current_results": "eval/person3/final-ai-evaluation-report.json"
+}

@@ -1,0 +1,389 @@
+{
+  "claims": 20,
+  "ready_for_team_adjudication": [],
+  "pending": [
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-01",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-02",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-03",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-04",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-05",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-01",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-02",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-03",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-04",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-05",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-01",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-02",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-03",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-04",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-05",
+      "issues": {
+        "reviewer_a": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ],
+        "reviewer_b": [
+          "Independent expert review is pending",
+          "Annotator identity/timestamp required",
+          "Declared specialist role required; credentials must be checked by the team",
+          "Expected assessment label is missing or invalid",
+          "Expected abstention must be a boolean"
+        ]
+      }
+    }
+  ],
+  "disagreements": [],
+  "clinical_gold_published": false,
+  "credential_verification": "Team responsibility; this check validates declared fields only."
+}

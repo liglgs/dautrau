@@ -1,0 +1,119 @@
+{
+  "scenario": "fake_quote",
+  "title": "Quote không có trong nguồn",
+  "mode": "synthetic",
+  "expected_technical_status": "insufficient_evidence",
+  "actual_status": "insufficient_evidence",
+  "passed": true,
+  "input_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug": "Drug Alpha",
+    "event": "Event Alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days"
+  },
+  "normalized_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug_ingredient": "ingredient_alpha",
+    "drug_synonyms": [
+      "Alpha",
+      "Brand Ambiguous",
+      "Drug Alpha"
+    ],
+    "event_term": "event_alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days",
+    "unknowns": [],
+    "ambiguities": [],
+    "requires_review": false,
+    "version": 1
+  },
+  "source_documents": [
+    {
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "source_id": "synthetic-not-a-pmid",
+      "version": 1,
+      "title": "",
+      "source_url": "https://example.org/synthetic/person3-demo",
+      "text": "Synthetic context: population: adults; dose: 10 mg/day; route: oral; time_window: 30 days; comparator: placebo.\nDrug Alpha increased Event Alpha in a fictional controlled comparison.",
+      "hash": "13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7",
+      "retrieved_at": "2026-10-02T09:42:25.908767Z",
+      "metadata": {
+        "mode": "synthetic"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-P3-c102c10dfaeb4c3957e0e365",
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "This invented quotation never appeared in the document.",
+      "locator": {
+        "start": 112,
+        "end": 182,
+        "section": null
+      },
+      "scope": {
+        "population": "adults",
+        "dose": "10 mg/day",
+        "route": "oral",
+        "time_window": "30 days",
+        "study_type": null
+      },
+      "confidence": 0.0,
+      "evidence_type": "rct",
+      "version": 1,
+      "excluded": true,
+      "notes": "{\"schema_version\":\"person3.1\",\"drug_ingredient\":\"ingredient_alpha\",\"event_term\":\"event_alpha\",\"comparator\":\"placebo\",\"direction\":\"increase\",\"uncertainty\":\"low\",\"document_version\":1,\"document_hash\":\"13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7\",\"issues\":[\"quote_mismatch\"]}"
+    }
+  ],
+  "assessment": {
+    "assessment_status": "insufficient_evidence",
+    "rationale": "No precise evidence with an established claim target and applicable scope.",
+    "evidence_ids": [],
+    "scope_notes": [],
+    "confidence": 0.0
+  },
+  "gaps": [
+    {
+      "gap_id": "GAP-P3-CITATION-EV-P3-c102c10dfaeb4c3957e0e365",
+      "kind": "missing_evidence",
+      "field": "citation",
+      "description": "Excluded invalid citation: EV-P3-c102c10dfaeb4c3957e0e365",
+      "priority": 4,
+      "created_step": 0
+    }
+  ],
+  "budget": {
+    "max_steps": 8,
+    "max_documents": 50,
+    "max_source_requests": 80,
+    "max_llm_calls": 80,
+    "max_input_tokens": 150000,
+    "max_output_tokens": 25000,
+    "steps_used": 0,
+    "documents_used": 1,
+    "source_requests": 0,
+    "llm_calls": 1,
+    "input_tokens": 179,
+    "output_tokens": 100,
+    "reservations": {}
+  },
+  "validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": [
+      "Hồ sơ kết luận chưa đủ bằng chứng — chỉ dùng như bản ghi nhận khoảng trống.",
+      "Hồ sơ còn 1 khoảng trống chưa giải quyết."
+    ]
+  },
+  "dossier_markdown": "# Hồ sơ điều tra INV-82d24bda7190 (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Chưa đủ bằng chứng để kết luận.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: 8ebc7b253c9eb717f4a1b57c14f72e84720f8589b222838934edbfcd901aef66\n\nChưa đủ bằng chứng để kết luận.\nAudit: INV-82d24bda7190 / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Drug Alpha\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 1/80\n\n\n## Bằng chứng đã truy xuất\nNo usable evidence retrieved.\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nExcluded invalid citation: EV-P3-c102c10dfaeb4c3957e0e365\n\n## Kết luận trong phạm vi claim\nChưa đủ bằng chứng để kết luận.\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n- Excluded evidence retained for audit: EV-P3-c102c10dfaeb4c3957e0e365\n",
+  "approved_dossier": false
+}

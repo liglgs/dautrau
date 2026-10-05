@@ -1,0 +1,11 @@
+{
+  "mode": "fake_dotenv_and_fake_inherited_gemini_keys",
+  "before_fix_reproduction": "1 failed, 9 passed, 3 subtests passed; key-1 missing from [key-2]",
+  "targeted_after_fix": "20 passed, 3 subtests passed",
+  "full_suite_exit_code": 0,
+  "full_suite_summary": "378 passed, 28 subtests passed in 63.59s (0:01:03)",
+  "dotenv_user_file_read": false,
+  "real_credentials_used": false,
+  "external_network_blocked": true,
+  "clinical_metrics_measured": false
+}

@@ -1,0 +1,91 @@
+{
+  "scenario": "ambiguous_brand",
+  "title": "Brand có hai hoạt chất ứng viên",
+  "mode": "synthetic",
+  "expected_technical_status": "requires_human_review",
+  "actual_status": "requires_human_review",
+  "passed": true,
+  "input_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug": "Brand Ambiguous",
+    "event": "Event Alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days"
+  },
+  "normalized_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug_ingredient": "Brand Ambiguous",
+    "drug_synonyms": [],
+    "event_term": "event_alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days",
+    "unknowns": [],
+    "ambiguities": [
+      "ingredient: ingredient_alpha, ingredient_beta"
+    ],
+    "requires_review": true,
+    "version": 1
+  },
+  "source_documents": [
+    {
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "source_id": "synthetic-not-a-pmid",
+      "version": 1,
+      "title": "",
+      "source_url": "https://example.org/synthetic/person3-demo",
+      "text": "Synthetic context: population: adults; dose: 10 mg/day; route: oral; time_window: 30 days; comparator: placebo.\nDrug Alpha increased Event Alpha in a fictional controlled comparison.",
+      "hash": "13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7",
+      "retrieved_at": "2026-10-02T09:42:25.987449Z",
+      "metadata": {
+        "mode": "synthetic"
+      }
+    }
+  ],
+  "evidence": [],
+  "assessment": {
+    "assessment_status": "requires_human_review",
+    "rationale": "Claim target is ambiguous: ingredient: ingredient_alpha, ingredient_beta",
+    "evidence_ids": [],
+    "scope_notes": [],
+    "confidence": 0.0
+  },
+  "gaps": [
+    {
+      "gap_id": "GAP-P3-AMBIGUITY",
+      "kind": "ambiguity",
+      "field": null,
+      "description": "Claim target is ambiguous: ingredient: ingredient_alpha, ingredient_beta",
+      "priority": 5,
+      "created_step": 0
+    }
+  ],
+  "budget": {
+    "max_steps": 8,
+    "max_documents": 50,
+    "max_source_requests": 80,
+    "max_llm_calls": 80,
+    "max_input_tokens": 150000,
+    "max_output_tokens": 25000,
+    "steps_used": 0,
+    "documents_used": 1,
+    "source_requests": 0,
+    "llm_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reservations": {}
+  },
+  "validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": [
+      "Hồ sơ còn 1 khoảng trống chưa giải quyết."
+    ]
+  },
+  "dossier_markdown": "# Hồ sơ điều tra INV-8b6bfa184e81 (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Cần người có chuyên môn phân xử.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: 5c5b83f6a04e2cb6e3ce4ed6de9e586a9a8c147371d30495ac98889a81e70857\n\nCần người có chuyên môn phân xử.\nAudit: INV-8b6bfa184e81 / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Brand Ambiguous\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 0/80\n\n\n## Bằng chứng đã truy xuất\nNo usable evidence retrieved.\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nClaim target is ambiguous: ingredient: ingredient_alpha, ingredient_beta\n\n## Kết luận trong phạm vi claim\nCần người có chuyên môn phân xử.\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
+  "approved_dossier": false
+}

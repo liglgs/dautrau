@@ -1,0 +1,284 @@
+{
+  "mode": "offline readiness with historical raw responses; zero new model calls",
+  "postprocessor_version": "scope-validation-v5",
+  "clinical_validation_claimed": false,
+  "heldout_is_blind": false,
+  "raw_responses_sha256": "3faf8e984ebe2df5237d724a8d6d04aff9d9f734f8d6c6f6c5be67425f08ac92",
+  "pending_claim_ids": [
+    "P3-IBUPROFEN-01",
+    "P3-IBUPROFEN-02",
+    "P3-IBUPROFEN-03",
+    "P3-IBUPROFEN-04"
+  ],
+  "reusable_claims": 11,
+  "claims": [
+    {
+      "claim_id": "P3-IBUPROFEN-01",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 0,
+        "faers": 4
+      },
+      "fallback_used": true,
+      "cached_under_corrected_validation": false,
+      "needs_new_model_call": true,
+      "status": null,
+      "accepted_findings": null,
+      "excluded_findings": null,
+      "study_type_normalizations": [],
+      "original_request_sha256": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-02",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 0,
+        "faers": 4
+      },
+      "fallback_used": true,
+      "cached_under_corrected_validation": false,
+      "needs_new_model_call": true,
+      "status": null,
+      "accepted_findings": null,
+      "excluded_findings": null,
+      "study_type_normalizations": [],
+      "original_request_sha256": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-03",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 0,
+        "faers": 4
+      },
+      "fallback_used": true,
+      "cached_under_corrected_validation": false,
+      "needs_new_model_call": true,
+      "status": null,
+      "accepted_findings": null,
+      "excluded_findings": null,
+      "study_type_normalizations": [],
+      "original_request_sha256": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-04",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 0,
+        "faers": 4
+      },
+      "fallback_used": true,
+      "cached_under_corrected_validation": false,
+      "needs_new_model_call": true,
+      "status": null,
+      "accepted_findings": null,
+      "excluded_findings": null,
+      "study_type_normalizations": [],
+      "original_request_sha256": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-05",
+      "units": 0,
+      "source_counts": {
+        "pubmed": 0,
+        "dailymed": 0,
+        "faers": 0
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "requires_human_review",
+      "accepted_findings": 0,
+      "excluded_findings": 0,
+      "study_type_normalizations": [],
+      "original_request_sha256": "82daddd6aef9875ccbaa3b603852781f842eb4398ea774e221c30910e0285b76"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-01",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 6,
+        "dailymed": 2,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "study_type_normalizations": [
+        {
+          "alias": "E05",
+          "submitted": "cohort",
+          "normalized": "observational"
+        }
+      ],
+      "original_request_sha256": "b36d80851229732a5f205104679ea9a4a35e0f024eeb1816aaea5e943ff5f6b6"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-02",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 6,
+        "dailymed": 2,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "study_type_normalizations": [
+        {
+          "alias": "E05",
+          "submitted": "cohort",
+          "normalized": "observational"
+        }
+      ],
+      "original_request_sha256": "f438792dd11db15c328bd99b782d3fc5e45bda592669bdcc9f1f196dbed9d58d"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-03",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 6,
+        "dailymed": 2,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "study_type_normalizations": [],
+      "original_request_sha256": "f592dcfdcff5f8f6c2a2175e65448ca5956a03a58adc20ad293c33acda2096b9"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-04",
+      "units": 9,
+      "source_counts": {
+        "pubmed": 6,
+        "dailymed": 2,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "study_type_normalizations": [],
+      "original_request_sha256": "e5caff964a7120d340dd994ab1d0d6aad9052011e0cc11f08165b845d1425891"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-05",
+      "units": 0,
+      "source_counts": {
+        "pubmed": 0,
+        "dailymed": 0,
+        "faers": 0
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "requires_human_review",
+      "accepted_findings": 0,
+      "excluded_findings": 0,
+      "study_type_normalizations": [],
+      "original_request_sha256": "accce1023ba01ed811a5b45fe2f3a74d56918c192bd34e7603e36248672accb6"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-01",
+      "units": 12,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 6,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 1,
+      "excluded_findings": 2,
+      "study_type_normalizations": [],
+      "original_request_sha256": "a372a747bcdaf0c744d2c6cffd3a281a1df88dabf239e66a92431107d9ee42db"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-02",
+      "units": 12,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 6,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 2,
+      "excluded_findings": 1,
+      "study_type_normalizations": [],
+      "original_request_sha256": "bb6d9bd75db4f3bdabac3611846d7241aa0d1ea62731d3e04ee8d9147f89af9e"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-03",
+      "units": 12,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 6,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 1,
+      "excluded_findings": 2,
+      "study_type_normalizations": [],
+      "original_request_sha256": "bb2e524cd7e58cbbe4ac493e0e288859712fd4fea6923a4f141ff78d3d11f8ba"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-04",
+      "units": 12,
+      "source_counts": {
+        "pubmed": 5,
+        "dailymed": 6,
+        "faers": 1
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "insufficient_evidence",
+      "accepted_findings": 2,
+      "excluded_findings": 0,
+      "study_type_normalizations": [],
+      "original_request_sha256": "6712e05c7f0227dc4edea488b5807383bc6f7dbdbac7047e978a5b066b6c8fff"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-05",
+      "units": 0,
+      "source_counts": {
+        "pubmed": 0,
+        "dailymed": 0,
+        "faers": 0
+      },
+      "fallback_used": false,
+      "cached_under_corrected_validation": true,
+      "needs_new_model_call": false,
+      "status": "requires_human_review",
+      "accepted_findings": 0,
+      "excluded_findings": 0,
+      "study_type_normalizations": [],
+      "original_request_sha256": "66eaa8b6872fc0fffa5ac252471f5a89705630c2cf1a95f27ce6d30107cb195e"
+    }
+  ],
+  "baseline_and_AI_labels_unchanged": true
+}

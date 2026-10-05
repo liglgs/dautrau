@@ -1,0 +1,105 @@
+{
+  "description": "Payload SAI dùng cho kiểm thử hợp đồng M01 (P01: 'fixture hợp lệ và sai'). Mỗi mục phải bị từ chối.",
+  "cases": [
+    {
+      "id": "invalid_claim_missing_event",
+      "model": "ClaimInput",
+      "payload": {"claim_text": "Metformin gây toan lactic.", "drug": "metformin"},
+      "reason": "Thiếu event -> 422 trước khi gọi nguồn."
+    },
+    {
+      "id": "invalid_claim_extra_field",
+      "model": "ClaimInput",
+      "payload": {"claim_text": "Metformin gây toan lactic.", "drug": "metformin", "event": "lactic acidosis", "severity": "high"},
+      "reason": "Trường lạ không được tự động chấp nhận."
+    },
+    {
+      "id": "invalid_budget_steps",
+      "model": "BudgetState",
+      "payload": {"max_steps": 21},
+      "reason": "Vượt trần cứng 20 bước."
+    },
+    {
+      "id": "invalid_budget_documents",
+      "model": "BudgetState",
+      "payload": {"max_documents": 101},
+      "reason": "Vượt trần cứng 100 tài liệu."
+    },
+    {
+      "id": "invalid_budget_counters",
+      "model": "BudgetState",
+      "payload": {"max_steps": 8, "steps_used": 9},
+      "reason": "Bộ đếm vượt trần."
+    },
+    {
+      "id": "invalid_assessment_causal",
+      "model": "AssessmentResult",
+      "payload": {"assessment_status": "causal", "rationale": "Thuốc gây biến cố."},
+      "reason": "Kết luận nhân quả bị cấm."
+    },
+    {
+      "id": "invalid_evidence_locator",
+      "model": "EvidenceUnit",
+      "payload": {
+        "evidence_id": "EVI-BAD",
+        "doc_id": "DOC-1",
+        "source": "pubmed",
+        "stance": "supports",
+        "quote": "abc",
+        "locator": {"start": 10, "end": 5}
+      },
+      "reason": "Locator đảo ngược."
+    },
+    {
+      "id": "invalid_document_source",
+      "model": "SourceDocument",
+      "payload": {
+        "doc_id": "DOC-1",
+        "source": "wikipedia",
+        "source_id": "W-1",
+        "text": "noi dung",
+        "hash": "0123456789abcdef"
+      },
+      "reason": "Nguồn ngoài allowlist."
+    },
+    {
+      "id": "invalid_review_reject_without_reason",
+      "model": "ReviewDecision",
+      "payload": {
+        "decision_id": "RD-1",
+        "investigation_id": "INV-1",
+        "checkpoint": "assessment",
+        "action": "reject",
+        "reviewer_id": "reviewer-1",
+        "expected_version": 1
+      },
+      "reason": "reject phải kèm lý do."
+    },
+    {
+      "id": "invalid_review_evidence_without_target",
+      "model": "ReviewDecision",
+      "payload": {
+        "decision_id": "RD-2",
+        "investigation_id": "INV-1",
+        "checkpoint": "assessment",
+        "action": "exclude_evidence",
+        "reviewer_id": "reviewer-1",
+        "expected_version": 1,
+        "reason": "Trích dẫn sai."
+      },
+      "reason": "Thao tác trên bằng chứng phải kèm target_evidence_id."
+    },
+    {
+      "id": "invalid_planner_search_without_query",
+      "model": "PlannerDecision",
+      "payload": {"action": "search_source", "reason": "thiếu nguồn"},
+      "reason": "Hành động tìm kiếm phải kèm source và query."
+    },
+    {
+      "id": "invalid_stop_without_reason",
+      "model": "StopDecision",
+      "payload": {"should_stop": true},
+      "reason": "Dừng phải kèm lý do."
+    }
+  ]
+}

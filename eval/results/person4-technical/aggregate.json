@@ -1,0 +1,179 @@
+{
+  "agent": {
+    "claims": 4,
+    "successful": 0,
+    "evidence_recall_at_20": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "precision_at_20": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "citation_precision": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "citation_completeness": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "unsupported_claim_rate": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "abstention_confusion": {
+      "abstain_correct": 0,
+      "answer_correct": 0,
+      "false_abstain": 0,
+      "false_answer": 0
+    },
+    "scope_mismatch": {
+      "precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "recall": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      }
+    },
+    "contradiction": {
+      "precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "recall": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      }
+    }
+  },
+  "keyword": {
+    "claims": 4,
+    "successful": 4,
+    "evidence_recall_at_20": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 6
+    },
+    "precision_at_20": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 6
+    },
+    "citation_precision": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "citation_completeness": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "unsupported_claim_rate": {
+      "macro": null,
+      "samples": 0,
+      "denominator": 0
+    },
+    "abstention_confusion": {
+      "abstain_correct": 0,
+      "answer_correct": 0,
+      "false_abstain": 0,
+      "false_answer": 0
+    },
+    "scope_mismatch": {
+      "precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "recall": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      }
+    },
+    "contradiction": {
+      "precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "recall": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      }
+    }
+  },
+  "single_shot_rag": {
+    "claims": 4,
+    "successful": 4,
+    "evidence_recall_at_20": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 6
+    },
+    "precision_at_20": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 6
+    },
+    "citation_precision": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 4
+    },
+    "citation_completeness": {
+      "macro": 1.0,
+      "samples": 4,
+      "denominator": 4
+    },
+    "unsupported_claim_rate": {
+      "macro": 0.0,
+      "samples": 4,
+      "denominator": 4
+    },
+    "abstention_confusion": {
+      "abstain_correct": 3,
+      "answer_correct": 1,
+      "false_abstain": 0,
+      "false_answer": 0
+    },
+    "scope_mismatch": {
+      "precision": {
+        "macro": 1.0,
+        "samples": 1,
+        "denominator": 1
+      },
+      "recall": {
+        "macro": 1.0,
+        "samples": 1,
+        "denominator": 1
+      }
+    },
+    "contradiction": {
+      "precision": {
+        "macro": 1.0,
+        "samples": 1,
+        "denominator": 1
+      },
+      "recall": {
+        "macro": 1.0,
+        "samples": 1,
+        "denominator": 1
+      }
+    }
+  }
+}

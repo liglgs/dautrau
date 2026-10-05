@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-10-02T11:01:51.184055+00:00",
+  "run_origin": "user_terminal_and_manual_browser",
+  "investigation_id": "INV-d136fcc39e15",
+  "state_version": 39,
+  "sources": "real_frozen_candidates",
+  "provider": "transport",
+  "live_search": false,
+  "run_status": "waiting_for_review",
+  "checkpoint": "assessment",
+  "assessment_status": "insufficient_evidence",
+  "stop_reason": "insufficient_evidence",
+  "sources_examined": [
+    "pubmed",
+    "dailymed",
+    "faers"
+  ],
+  "documents": 10,
+  "evidence_records": 16,
+  "active_quotes": 14,
+  "excluded_quotes": 2,
+  "active_quote_integrity_errors": [],
+  "active_stances": {
+    "uncertain": 14
+  },
+  "budget": {
+    "max_steps": 8,
+    "max_documents": 50,
+    "max_source_requests": 80,
+    "max_llm_calls": 80,
+    "max_input_tokens": 150000,
+    "max_output_tokens": 25000,
+    "steps_used": 5,
+    "documents_used": 10,
+    "source_requests": 5,
+    "llm_calls": 26,
+    "input_tokens": 92317,
+    "output_tokens": 3299,
+    "reservations": {}
+  },
+  "current_extraction_gaps": [],
+  "clinical_gold_accuracy_entailment_measured": false,
+  "current_result_clinically_approved": false,
+  "new_model_calls_made_by_check": false,
+  "ui_status_observed": "User screenshot shows assessment checkpoint after resumed source processing; current dossier review/export not verified."
+}

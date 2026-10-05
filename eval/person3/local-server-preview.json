@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "actual_http_server_verified": true,
+  "investigation_id": "INV-aceaa363e629",
+  "checkpoint": "assessment",
+  "assessment_status": "supported_for_scope",
+  "evidence_count": 2,
+  "reviewer_approval": false,
+  "url": "http://127.0.0.1:8000"
+}

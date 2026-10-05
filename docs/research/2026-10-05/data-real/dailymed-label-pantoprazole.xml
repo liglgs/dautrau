@@ -1,0 +1,2444 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="https://www.accessdata.fda.gov/spl/stylesheet/spl.xsl"?>
+<document xmlns="urn:hl7-org:v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:hl7-org:v3 https://www.accessdata.fda.gov/spl/schema/spl.xsd">
+   <id root="1211fb5b-522a-4df5-8f70-bf6156984f8e"/>
+   <code code="34391-3" codeSystem="2.16.840.1.113883.6.1" displayName="HUMAN PRESCRIPTION DRUG LABEL"/>
+   <title>These highlights do not include all the information needed to use PANTOPRAZOLE SODIUM FOR INJECTION safely and effectively. See full prescribing information for PANTOPRAZOLE SODIUM FOR INJECTION.<br/>
+      <br/>PANTOPRAZOLE SODIUM for injection, for intravenous use<br/>Initial U.S. approval: 2000<br/> 
+</title>
+   <effectiveTime value="20260930"/>
+   <setId root="70378eba-3904-4491-9f6d-00f5d1501c4a"/>
+   <versionNumber value="2"/>
+   <author>
+      <time/>
+      <assignedEntity>
+         <representedOrganization>
+            <id extension="119060628" root="1.3.6.1.4.1.519.1"/>
+            <name>Avenacy, LLC</name>
+            <assignedEntity>
+               <assignedOrganization/>
+            </assignedEntity>
+         </representedOrganization>
+      </assignedEntity>
+   </author>
+   <component>
+      <structuredBody>
+         <component>
+            <section ID="dcl-dpl">
+               <id root="0bd99685-3f41-4ba4-90d7-be864d429662"/>
+               <code code="48780-1" codeSystem="2.16.840.1.113883.6.1" displayName="SPL PRODUCT DATA ELEMENTS SECTION"/>
+               <effectiveTime value="20260930"/>
+               <subject>
+                  <manufacturedProduct>
+                     <manufacturedProduct>
+                        <code code="83634-751" codeSystem="2.16.840.1.113883.6.69"/>
+                        <name>Pantoprazole Sodium</name>
+                        <formCode code="C42957" codeSystem="2.16.840.1.113883.3.26.1.1" displayName="INJECTION, POWDER, LYOPHILIZED, FOR SOLUTION"/>
+                        <asEntityWithGeneric>
+                           <genericMedicine>
+                              <name>pantoprazole sodium</name>
+                           </genericMedicine>
+                        </asEntityWithGeneric>
+                        <ingredient classCode="ACTIM">
+                           <quantity>
+                              <numerator value="40" unit="mg"/>
+                              <denominator value="10" unit="mL"/>
+                           </quantity>
+                           <ingredientSubstance>
+                              <code code="6871619Q5X" codeSystem="2.16.840.1.113883.4.9"/>
+                              <name>pantoprazole sodium</name>
+                              <activeMoiety>
+                                 <activeMoiety>
+                                    <code code="D8TST4O562" codeSystem="2.16.840.1.113883.4.9"/>
+                                    <name>pantoprazole</name>
+                                 </activeMoiety>
+                              </activeMoiety>
+                           </ingredientSubstance>
+                        </ingredient>
+                        <ingredient classCode="IACT">
+                           <quantity>
+                              <numerator value="1" unit="mg"/>
+                              <denominator value="10" unit="mL"/>
+                           </quantity>
+                           <ingredientSubstance>
+                              <code code="7FLD91C86K" codeSystem="2.16.840.1.113883.4.9"/>
+                              <name>edetate disodium</name>
+                           </ingredientSubstance>
+                        </ingredient>
+                        <ingredient classCode="IACT">
+                           <ingredientSubstance>
+                              <code code="55X04QC32I" codeSystem="2.16.840.1.113883.4.9"/>
+                              <name>sodium hydroxide</name>
+                           </ingredientSubstance>
+                        </ingredient>
+                        <asContent>
+                           <quantity>
+                              <numerator value="10" unit="mL"/>
+                              <denominator value="1" unit="1"/>
+                           </quantity>
+                           <containerPackagedProduct>
+                              <code code="83634-751-41" codeSystem="2.16.840.1.113883.6.69"/>
+                              <formCode code="C43215" codeSystem="2.16.840.1.113883.3.26.1.1" displayName="VIAL, SINGLE-DOSE"/>
+                              <asContent>
+                                 <quantity>
+                                    <numerator value="10" unit="1"/>
+                                    <denominator value="1" unit="1"/>
+                                 </quantity>
+                                 <containerPackagedProduct>
+                                    <code code="83634-751-10" codeSystem="2.16.840.1.113883.6.69"/>
+                                    <formCode code="C43182" codeSystem="2.16.840.1.113883.3.26.1.1" displayName="CARTON"/>
+                                 </containerPackagedProduct>
+                                 <subjectOf>
+                                    <marketingAct>
+                                       <code code="C53292" codeSystem="2.16.840.1.113883.3.26.1.1"/>
+                                       <statusCode code="active"/>
+                                       <effectiveTime>
+                                          <low value="20260930"/>
+                                       </effectiveTime>
+                                    </marketingAct>
+                                 </subjectOf>
+                              </asContent>
+                           </containerPackagedProduct>
+                           <subjectOf>
+                              <characteristic>
+                                 <code code="SPLCMBPRDTP" codeSystem="2.16.840.1.113883.1.11.19255"/>
+                                 <value code="C112160" codeSystem="2.16.840.1.113883.3.26.1.1" xsi:type="CV" displayName="Type 0: Not a Combination Product"/>
+                              </characteristic>
+                           </subjectOf>
+                        </asContent>
+                     </manufacturedProduct>
+                     <subjectOf>
+                        <marketingAct>
+                           <code code="C53292" codeSystem="2.16.840.1.113883.3.26.1.1"/>
+                           <statusCode code="active"/>
+                           <effectiveTime>
+                              <low value="20260930"/>
+                           </effectiveTime>
+                        </marketingAct>
+                     </subjectOf>
+                     <subjectOf>
+                        <approval>
+                           <id extension="ANDA219973" root="2.16.840.1.113883.3.150"/>
+                           <code code="C73584" codeSystem="2.16.840.1.113883.3.26.1.1" displayName="ANDA"/>
+                           <author>
+                              <territorialAuthority>
+                                 <territory>
+                                    <code code="USA" codeSystem="2.16.840.1.113883.5.28"/>
+                                 </territory>
+                              </territorialAuthority>
+                           </author>
+                        </approval>
+                     </subjectOf>
+                     <consumedIn>
+                        <substanceAdministration>
+                           <routeCode code="C38276" codeSystem="2.16.840.1.113883.3.26.1.1" displayName="INTRAVENOUS"/>
+                        </substanceAdministration>
+                     </consumedIn>
+                  </manufacturedProduct>
+               </subject>
+            </section>
+         </component>
+         <component>
+            <section ID="s1">
+               <id root="6d2f912c-e901-4cab-a7d5-d5ac65909a9b"/>
+               <code code="34067-9" codeSystem="2.16.840.1.113883.6.1" displayName="INDICATIONS &amp; USAGE SECTION"/>
+               <title>1 INDICATIONS AND USAGE
+</title>
+               <text>
+                  <paragraph>Pantoprazole Sodium for Injection is indicated for treatment of:
+</paragraph>
+                  <list listType="unordered" styleCode="Disc">
+                     <item>gastroesophageal reflux disease (GERD) and a history of erosive esophagitis (EE) for up to 10 days in adults.
+</item>
+                     <item>pathological hypersecretory conditions including Zollinger-Ellison (ZE) Syndrome in adults.
+</item>
+                  </list>
+               </text>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <paragraph>Pantoprazole Sodium for Injection is a proton pump inhibitor (PPI) indicated for treatment of:
+</paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>gastroesophageal reflux disease (GERD) and a history of erosive esophagitis (EE) for up to 10 days in adults. (<linkHtml href="#s1">1</linkHtml>)
+</item>
+                           <item>pathological hypersecretion conditions including Zollinger-Ellison (ZE) Syndrome in adults. (<linkHtml href="#s1">1</linkHtml>)
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="underline">Limitations of Use</content>
+                        </paragraph>
+                        <paragraph>The safety and effectiveness of Pantoprazole Sodium for Injection for the treatment of upper gastrointestinal bleeding have not been established in adult or pediatric patients. (<linkHtml href="#s1">1</linkHtml>)<br/>
+                           <br/>
+                        </paragraph>
+                     </text>
+                  </highlight>
+               </excerpt>
+               <component>
+                  <section ID="s2">
+                     <id root="5bb5da0d-1882-4f87-a01f-7718bda1699e"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">Limitations of Use</content>
+                        </paragraph>
+                        <paragraph>The safety and effectiveness of Pantoprazole Sodium for Injection for the treatment of upper gastrointestinal bleeding have not been established in adult or pediatric patients.
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                           <content styleCode="italics">
+                              <sup>®
+</sup>
+                           </content>
+                           <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.</content>
+                        </paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s3">
+               <id root="e57aa8df-b1ae-448c-ae60-d774959b617f"/>
+               <code code="34068-7" codeSystem="2.16.840.1.113883.6.1" displayName="DOSAGE &amp; ADMINISTRATION SECTION"/>
+               <title>2 DOSAGE AND ADMINISTRATION
+</title>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">GERD and a History of EE</content>
+                        </paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Adults:</content>
+                        </paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>The recommended dosage is 40 mg once daily by intravenous injection (over at least 2 minutes) or intravenous infusion (for 15 minutes) for up to 10 days. (<linkHtml href="#s4">2.1</linkHtml>)
+</item>
+                           <item>Discontinue as soon as the patient is able to receive oral treatment. Switch to an appropriate oral medication within 10 days of starting Pantoprazole Sodium for Injection.  (<linkHtml href="#s4">2.1</linkHtml>)
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="underline">Pathological Hypersecretion Conditions, Including ZE Syndrome</content>
+                        </paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>The recommended adult dosage is 80 mg every 12 hours by intravenous injection (over at least 2 minutes) or intravenous infusion (for 15 minutes). (<linkHtml href="#s6">2.2</linkHtml>)
+</item>
+                           <item>For information on how to adjust dosing for individual patient needs, see the full prescribing information. (<linkHtml href="#s6">2.2</linkHtml>)
+</item>
+                           <item>When switching between intravenous to oral formulations of gastric acid inhibitors, consider the pharmacodynamic action of the drugs to ensure continuity of acid suppression. (<linkHtml href="#s6">2.2</linkHtml>)
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="underline">Preparation and Administration Instructions</content>
+                        </paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>See full prescribing information for preparation and administration instructions by indication. (<linkHtml href="#s7">2.3</linkHtml>, <linkHtml href="#s8">2.4</linkHtml>)
+</item>
+                        </list>
+                     </text>
+                  </highlight>
+               </excerpt>
+               <component>
+                  <section ID="s4">
+                     <id root="d9213a82-bf9e-47f1-9599-b21489b4fcc9"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>2.1 Recommended Dosage for GERD Associated with a History of EE
+</title>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s5">
+                           <id root="6700e8c7-da41-4abf-9a8b-a33b9aa2dbd6"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Adult Patients</content>
+                              </paragraph>
+                              <paragraph>The recommended adult dosage of Pantoprazole Sodium for Injection is 40 mg once daily by intravenous injection (over at least 2 minutes) or intravenous infusion (for 15 minutes) for up to 10 days. Discontinue Pantoprazole Sodium for Injection as soon as the patient is able to tolerate oral treatment. Switch to an appropriate oral medication within 10 days of starting Pantoprazole Sodium for Injection.
+</paragraph>
+                              <paragraph>
+                                 <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                                 <content styleCode="italics">
+                                    <sup>®
+</sup>
+                                 </content>
+                                 <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s6">
+                     <id root="e1fe9391-86cc-4e66-82a0-e96eb9a320b2"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>2.2 Recommended Dosage for Pathological Hypersecretion Including Zollinger-Ellison Syndrome
+</title>
+                     <text>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>The recommended adult dosage of Pantoprazole Sodium for Injection is 80 mg every 12 hours by intravenous injection (over at least 2 minutes) or intravenous infusion (for 15 minutes).
+</item>
+                           <item>Adjust the frequency of dosing to individual patient needs based on acid output measurements. In those patients who need a higher dosage, 80 mg intravenously every 8 hours is expected to maintain acid output below 10 mEq/h.
+</item>
+                           <item>When switching between intravenous to oral formulations of gastric acid inhibitors, consider the pharmacodynamic action of the drugs to ensure continuity of acid suppression.
+</item>
+                        </list>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s7">
+                     <id root="ba24f978-460c-4a3d-bea9-f117217852cc"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>2.3 Preparation and Administration Instructions for GERD Associated with a History of EE
+</title>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">15-Minute Intravenous Infusion for Adult Patients</content>
+                        </paragraph>
+                        <list listType="ordered" styleCode="Arabic">
+                           <item>
+                              <caption>1.
+</caption>Reconstitute each vial of Pantoprazole Sodium for Injection with 10 mL of 0.9% Sodium Chloride Injection.
+</item>
+                           <item>
+                              <caption>2.
+</caption>Dilute the resulting solution to a final concentration as described below:<list listType="unordered" styleCode="Disc">
+                                 <item>
+                                    <content styleCode="underline">Adult patients</content>: Further dilute with 100 mL 5% Dextrose Injection or 0.9% Sodium Chloride Injection to a final concentration of approximately 0.4 mg/mL.
+</item>
+                              </list>
+                           </item>
+                           <item>
+                              <caption>3.
+</caption>Inspect the diluted Pantoprazole Sodium for Injection solution visually for particulate matter and discoloration prior to and during administration.
+</item>
+                           <item>
+                              <caption>4.
+</caption>Withdraw the dose of the diluted Pantoprazole Sodium for Injection solution for an adult dose.
+</item>
+                           <item>
+                              <caption>6.
+</caption>Infuse intravenously over a period of approximately 15 minutes through a dedicated line or through a Y-site <content styleCode="italics">[see Dosage and Administration (<linkHtml href="#s13">2.5</linkHtml>)]</content>.
+</item>
+                           <item>
+                              <caption>7.
+</caption>Flush the intravenous line before and after administration of Pantoprazole Sodium for Injection with either 5% Dextrose Injection or 0.9% Sodium Chloride Injection.
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="italics">Storage</content>
+                        </paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>Store the reconstituted solution may be up to 6 hours at room temperature up to 30°C (86°F) prior to further dilution.
+</item>
+                           <item>Store the diluted solution at room temperature up to 30°C (86°F) and must be used within 24 hours from the time of initial reconstitution.
+</item>
+                           <item>Do not freeze the reconstituted or diluted solution.
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="underline">2-Minute Intravenous Injection for Adult Patients</content>
+                        </paragraph>
+                        <list listType="ordered" styleCode="Arabic">
+                           <item>Reconstitute each vial of Pantoprazole Sodium for Injection with 10 mL of 0.9% Sodium Chloride Injection, to a final concentration of approximately 4 mg/mL.
+</item>
+                           <item>Withdraw the dose of 40 mg of reconstituted Pantoprazole Sodium for Injection solution.
+</item>
+                           <item>Inspect the diluted Pantoprazole Sodium for Injection solution visually for particulate matter and discoloration prior to and during administration.
+</item>
+                           <item>Administer intravenously over a period of at least 2 minutes.
+</item>
+                           <item>Flush the intravenous line before and after administration of Pantoprazole Sodium for Injection with either 5% Dextrose Injection or 0.9% Sodium Chloride Injection.
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="italics">Storage</content>
+                        </paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>Store the reconstituted solution may be stored for up to 24 hours at room temperature up to 30°C (86°F) prior to intravenous infusion.
+</item>
+                           <item>Do not freeze the reconstituted solution.
+</item>
+                        </list>
+                        <paragraph>
+                           <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                           <content styleCode="italics">
+                              <sup>®
+</sup>
+                           </content>
+                           <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.</content>
+                        </paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s8">
+                     <id root="dc6987dd-8d7d-4136-a432-e259eae2e3c0"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>2.4 Preparation and Administration Instructions for Pathological Hypersecretion Including Zollinger-Ellison Syndrome
+</title>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s9">
+                           <id root="1629547e-a844-41c8-b350-19fddf5246a6"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">15-Minute Intravenous Infusion</content>
+                              </paragraph>
+                              <list listType="ordered" styleCode="Arabic">
+                                 <item>Reconstitute each vial of Pantoprazole Sodium for Injection with 10 mL of 0.9% Sodium Chloride Injection.
+</item>
+                                 <item>Combine the contents of the two vials and dilute with 80 mL of 5% Dextrose Injection or Sodium Chloride Injection to a total volume of 100 mL with a final concentration of approximately 0.8 mg/mL.
+</item>
+                                 <item>Inspect the diluted Pantoprazole Sodium for Injection solution visually for particulate matter and discoloration prior to and during administration.
+</item>
+                                 <item>Administer intravenously over a period of approximately 15 minutes at a rate of approximately 7 mL/min.
+</item>
+                                 <item>Flush the intravenous line before and after administration of Pantoprazole Sodium for Injection with either 5% Dextrose Injection or 0.9% Sodium Chloride Injection.
+</item>
+                              </list>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s10">
+                           <id root="1240b35e-cb3a-4346-bb16-6f2addecb374"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="italics">Storage</content>
+                              </paragraph>
+                              <list listType="unordered" styleCode="Disc">
+                                 <item>The reconstituted solution can be stored at room temperature up to 30°C (86°F) for up to 6 hours prior to further dilution.
+</item>
+                                 <item>Once further diluted, the diluted solution can be stored at room temperature up to 30°C (86°F) for up to 24 hours from the time of initial reconstitution.
+</item>
+                                 <item>Do not freeze the reconstituted or diluted solution.
+</item>
+                              </list>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s11">
+                           <id root="6046a5af-11cd-4dd3-a22f-d897083f12f1"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">2-Minute Intravenous Injection</content>
+                              </paragraph>
+                              <list listType="ordered" styleCode="Arabic">
+                                 <item>Reconstitute each vial of Pantoprazole Sodium for Injection  with 10 mL of 0.9% Sodium Chloride Injection, per vial to a final concentration of approximately 4 mg/mL.
+</item>
+                                 <item>Inspect the diluted Pantoprazole Sodium for Injection  solution visually for particulate matter and discoloration prior to and during administration.
+</item>
+                                 <item>Administer the total volume from both vials intravenously over a period of at least 2 minutes.
+</item>
+                                 <item>Flush the intravenous line before and after administration of Pantoprazole Sodium for Injection with either 5% Dextrose Injection or 0.9% Sodium Chloride Injection.
+</item>
+                              </list>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s12">
+                           <id root="a09e3ba4-28f6-47a9-a10a-1161c91815d5"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="italics">Storage</content>
+                              </paragraph>
+                              <list listType="unordered" styleCode="Disc">
+                                 <item>The reconstituted solution may be stored for up to 24 hours at room temperature.
+</item>
+                                 <item>Do not freeze the reconstituted solution.
+</item>
+                              </list>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s13">
+                     <id root="4d6e0e3b-ba9a-4bf4-b7fd-d54c11131ab6"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>2.5 Compatibility Information
+</title>
+                     <text>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>Administer Pantoprazole Sodium for Injection intravenously through a dedicated line or through a Y-site.
+</item>
+                           <item>When administering through a Y-site, Pantoprazole Sodium for Injection is compatible with the following solutions:<list listType="unordered" styleCode="Circle">
+                                 <item>5% Dextrose Injection
+</item>
+                                 <item>0.9% Sodium Chloride Injection
+</item>
+                              </list>
+                           </item>
+                           <item>Midazolam hydrochloride is incompatible with Y-site administration of Pantoprazole Sodium for Injection.
+</item>
+                           <item>Pantoprazole Sodium for Injection may not be compatible with products containing zinc <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s19">5.3</linkHtml>)].</content>
+                           </item>
+                           <item>Stop administering Pantoprazole Sodium for Injection immediately through a Y-site if precipitation or discoloration occurs.
+</item>
+                        </list>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s14">
+               <id root="0f64b12a-045e-42b3-a41b-93f10c7d4e42"/>
+               <code code="43678-2" codeSystem="2.16.840.1.113883.6.1" displayName="DOSAGE FORMS &amp; STRENGTHS SECTION"/>
+               <title>3  DOSAGE FORMS AND STRENGTHS
+</title>
+               <text>
+                  <paragraph>For Injection: 40 mg of pantoprazole white to off-white freeze-dried powder in a single-dose vial for reconstitution or dilution.
+</paragraph>
+               </text>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <paragraph>For Injection: 40 mg pantoprazole freeze-dried powder in a single-dose vial for reconstitution or dilution. (<linkHtml href="#s14">3</linkHtml>)<br/>
+                           <br/>
+                        </paragraph>
+                     </text>
+                  </highlight>
+               </excerpt>
+            </section>
+         </component>
+         <component>
+            <section ID="s15">
+               <id root="5fba9c74-8b1d-471b-85db-9e398bd67812"/>
+               <code code="34070-3" codeSystem="2.16.840.1.113883.6.1" displayName="CONTRAINDICATIONS SECTION"/>
+               <title>4  CONTRAINDICATIONS
+</title>
+               <text>
+                  <list listType="unordered" styleCode="Disc">
+                     <item>Pantoprazole Sodium for Injection is contraindicated in patients with known hypersensitivity reactions including anaphylaxis to the formulation or any substituted benzimidazole. Hypersensitivity reactions may include anaphylaxis, anaphylactic shock, angioedema, bronchospasm, acute tubulointerstitial nephritis, and urticaria <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s18">5.2</linkHtml>, <linkHtml href="#s20">5.4</linkHtml>) and Adverse Reactions (<linkHtml href="#s31">6</linkHtml>)]</content>.
+</item>
+                     <item>Proton pump inhibitors (PPIs), including Pantoprazole Sodium for Injection, are contraindicated in patients receiving rilpivirine-containing products <content styleCode="italics">[see Drug Interactions (<linkHtml href="#s37">7</linkHtml>)]</content>.
+</item>
+                  </list>
+               </text>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>Known hypersensitivity to any component of the formulation or to substituted benzimidazoles. (<linkHtml href="#s15">4</linkHtml>)
+</item>
+                           <item>Patients receiving rilpivirine-containing products. (<linkHtml href="#s15">4</linkHtml>, <linkHtml href="#s37">7</linkHtml>)
+</item>
+                        </list>
+                     </text>
+                  </highlight>
+               </excerpt>
+            </section>
+         </component>
+         <component>
+            <section ID="s16">
+               <id root="f684ee46-a0e3-4686-ac0e-d593b5bd38c5"/>
+               <code code="43685-7" codeSystem="2.16.840.1.113883.6.1" displayName="WARNINGS AND PRECAUTIONS SECTION"/>
+               <title>5  WARNINGS AND PRECAUTIONS
+</title>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>
+                              <content styleCode="underline">Gastric Malignancy</content>: In adults, symptomatic response to therapy with Pantoprazole Sodium for Injection does not preclude the presence of gastric malignancy. Consider additional follow-up and diagnostic testing. (<linkHtml href="#s17">5.1</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Injection Site Reactions</content>: Thrombophlebitis is associated with the administration of Pantoprazole Sodium for Injection. Assess the patient and remove the catheter if clinically indicated. (<linkHtml href="#s18">5.2</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Potential Exacerbation of Zinc Deficiency</content>: Consider zinc supplementation in patients who are prone to zinc deficiency. Caution should be used when other EDTA containing products are also co-administered intravenously. (<linkHtml href="#s19">5.3</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Acute Tubulointerstitial Nephritis</content>: Discontinue treatment and evaluate patients. (<linkHtml href="#s20">5.4</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="italics underline">Clostridioides difficile</content>
+                              <content styleCode="underline">-Associated Diarrhea</content>: PPI therapy may be associated with increased risk. (<linkHtml href="#s21">5.5</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Bone Fracture</content>: Long-term and multiple daily dose PPI therapy may be associated with an increased risk for osteoporosis-related fractures of the hip, wrist, or spine. (<linkHtml href="#s22">5.6</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Severe Cutaneous Adverse Reactions</content>: Discontinue at the first signs or symptoms of severe cutaneous adverse reactions or other signs of hypersensitivity and consider further evaluation. (<linkHtml href="#s23">5.7</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Cutaneous and Systemic Lupus Erythematosus</content>: Mostly cutaneous; new onset or exacerbation of existing disease; discontinue treatment and refer to specialist for evaluation. (<linkHtml href="#s24">5.8</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Hepatic Effects</content>: Elevations of transaminases observed. (<linkHtml href="#s25">5.9</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Hypomagnesemia and Mineral Metabolism</content>: Reported rarely with prolonged treatment with PPIs. (<linkHtml href="#s26">5.10</linkHtml>)
+</item>
+                           <item>
+                              <content styleCode="underline">Fundic Gland Polyps</content>: Risk increases with long-term use, especially beyond one year. Use the shortest duration of therapy. (<linkHtml href="#s27">5.11</linkHtml>)
+</item>
+                        </list>
+                     </text>
+                  </highlight>
+               </excerpt>
+               <component>
+                  <section ID="s17">
+                     <id root="aacea721-88de-41ff-999e-363078f7759c"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.1 Presence of Gastric Malignancy
+</title>
+                     <text>
+                        <paragraph>In adults, symptomatic response to therapy with Pantoprazole Sodium for Injection does not preclude the presence of gastric malignancy. Consider additional follow-up and diagnostic testing in adult patients who have a suboptimal response or an early symptomatic relapse after completing treatment with a PPI. In older patients, also consider an endoscopy.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s18">
+                     <id root="82ca85c4-e6d6-419b-983f-5eb0975300b3"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.2 Injection Site Reactions
+</title>
+                     <text>
+                        <paragraph>Thrombophlebitis was associated with the administration of Pantoprazole Sodium for Injection. Assess the patient and remove the catheter if clinically indicated.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s19">
+                     <id root="6bb10060-7d4e-47be-9a9f-6b640eee0eb9"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.3 Potential for Exacerbation of Zinc Deficiency
+</title>
+                     <text>
+                        <paragraph>Pantoprazole Sodium for Injection contains edetate disodium (the salt form of EDTA), a chelator of metal ions including zinc. Therefore, zinc supplementation should be considered in patients treated with Pantoprazole Sodium for Injection who are prone to zinc deficiency. Caution should be used when other EDTA containing products are also co-administered intravenously <content styleCode="italics">[see Dosage and Administration (<linkHtml href="#s13">2.5</linkHtml>)]</content>.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s20">
+                     <id root="856fa29a-e691-41c3-8610-03bc3a26c237"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.4 Acute Tubulointerstitial Nephritis
+</title>
+                     <text>
+                        <paragraph>Acute tubulointerstitial nephritis (TIN) has been observed in patients taking PPIs and may occur at any point during PPI therapy. Patients may present with varying signs and symptoms from symptomatic hypersensitivity reactions to non-specific symptoms of decreased renal function (e.g., malaise, nausea, anorexia). In reported case series, some patients were diagnosed on biopsy and in the absence of extra-renal manifestations (e.g., fever, rash or arthralgia). Discontinue Pantoprazole Sodium for Injection and evaluate patients with suspected acute TIN <content styleCode="italics">[see Contraindications (<linkHtml href="#s15">4</linkHtml>)]</content>.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s21">
+                     <id root="13536d8b-b18e-4ff3-85b3-15e0d81eccd0"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.5 <content styleCode="italics">Clostridioides difficile</content>-Associated Diarrhea
+</title>
+                     <text>
+                        <paragraph>Published observational studies suggest that PPI therapy like Pantoprazole Sodium for Injection may be associated with an increased risk of <content styleCode="italics">Clostridioides difficile</content> associated diarrhea, especially in hospitalized patients. This diagnosis should be considered for diarrhea that does not improve <content styleCode="italics">[see Adverse Reactions (<linkHtml href="#s36">6.2</linkHtml>)].</content>
+                        </paragraph>
+                        <paragraph>Patients should use the lowest dose and shortest duration of PPI therapy appropriate to the condition being treated.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s22">
+                     <id root="92cfbb93-ad1f-41c1-8412-8f8427190605"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.6 Bone Fracture
+</title>
+                     <text>
+                        <paragraph>Several published observational studies suggest that PPI therapy may be associated with an increased risk for osteoporosis-related fractures of the hip, wrist, or spine. The risk of fracture was increased in patients who received high-dose, defined as multiple daily doses, and long-term PPI therapy (a year or longer). Patients should use the lowest dose and shortest duration of PPI therapy appropriate to the condition being treated. Patients at risk for osteoporosis-related fractures should be managed according to established treatment guidelines <content styleCode="italics">[see Dosage and Administration (<linkHtml href="#s6">2.2</linkHtml>, <linkHtml href="#s8">2.4</linkHtml>) and Adverse Reactions (<linkHtml href="#s31">6</linkHtml>)]</content>.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s23">
+                     <id root="5fefa60f-5613-4ef3-ad06-dc10fa8dbb65"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.7 Severe Cutaneous Adverse Reactions
+</title>
+                     <text>
+                        <paragraph>Severe cutaneous adverse reactions, including erythema multiforme, Stevens-Johnson syndrome (SJS), toxic epidermal necrolysis (TEN), drug reaction with eosinophilia and systemic symptoms (DRESS), and acute generalized exanthematous pustulosis (AGEP) have been reported in association with the use of PPIs <content styleCode="italics">[see Adverse Reactions (<linkHtml href="#s36">6.2</linkHtml>)].</content> Discontinue Pantoprazole Sodium for Injection at the first signs or symptoms of severe cutaneous adverse reactions or other signs of hypersensitivity and consider further evaluation.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s24">
+                     <id root="0d25c7ad-c5d6-4798-8b47-a86626c0c581"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.8  Cutaneous and Systemic Lupus Erythematosus
+</title>
+                     <text>
+                        <paragraph>Cutaneous lupus erythematosus (CLE) and systemic lupus erythematosus (SLE) have been reported in patients taking PPIs, including pantoprazole sodium. These events have occurred as both new onset and an exacerbation of existing autoimmune disease. The majority of PPI-induced lupus erythematous cases were CLE.
+</paragraph>
+                        <paragraph>The most common form of CLE reported in patients treated with PPIs was subacute CLE (SCLE) and occurred within weeks to years after continuous drug therapy in patients ranging from infants to the elderly. Generally, histological findings were observed without organ involvement.
+</paragraph>
+                        <paragraph>Systemic lupus erythematosus (SLE) is less commonly reported than CLE in patients receiving PPIs. PPI associated SLE is usually milder than non-drug induced SLE. Onset of SLE typically occurred within days to years after initiating treatment primarily in patients ranging from young adults to the elderly. The majority of patients presented with rash; however, arthralgia and cytopenia were also reported.
+</paragraph>
+                        <paragraph>Avoid administration of PPIs for longer than medically indicated. If signs or symptoms consistent with CLE or SLE are noted in patients receiving Pantoprazole Sodium for Injection, discontinue the drug and refer the patient to the appropriate specialist for evaluation. Most patients improve with discontinuation of the PPI alone in 4 to 12 weeks. Serological testing (e.g., ANA) may be positive and elevated serological test results may take longer to resolve than clinical manifestations.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s25">
+                     <id root="0aec4d51-92a2-4daa-8582-4df347743127"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.9 Hepatic Effects
+</title>
+                     <text>
+                        <paragraph>Mild, transient transaminase elevations have been observed in clinical studies. The clinical significance of this finding in a large population of subjects administered Pantoprazole Sodium for Injection is unknown <content styleCode="italics">[see Adverse Reactions (<linkHtml href="#s31">6</linkHtml>)].</content>
+                        </paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s26">
+                     <id root="e8e9fa99-e660-4f00-842f-5a909cab959e"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.10 Hypomagnesemia and Mineral Metabolism
+</title>
+                     <text>
+                        <paragraph>Hypomagnesemia, symptomatic and asymptomatic, has been reported rarely in patients treated with PPIs for at least three months, and in most cases after a year of therapy. Serious adverse events include tetany, arrhythmias, and seizures. Hypomagnesemia may lead to hypocalcemia and/or hypokalemia and may exacerbate underlying hypocalcemia in at-risk patients. In most patients, treatment of hypomagnesemia required magnesium replacement and discontinuation of the PPI.
+</paragraph>
+                        <paragraph>For patients expected to be on prolonged treatment or who take PPIs with medications such as digoxin or drugs that may cause hypomagnesemia (e.g., diuretics), health care professionals may consider monitoring magnesium levels prior to initiation of PPI treatment and periodically <content styleCode="italics">[see Adverse Reactions (<linkHtml href="#s36">6.2</linkHtml>)].</content>
+                        </paragraph>
+                        <paragraph>Consider monitoring magnesium and calcium levels prior to initiation of Pantoprazole Sodium for Injection and periodically while on treatment in patients with a preexisting risk of hypocalcemia (e.g., hypoparathyroidism). Supplement with magnesium and/or calcium as necessary. If hypocalcemia is refractory to treatment, consider discontinuing the PPI.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s27">
+                     <id root="bddeab55-6a74-4a13-8773-a1504715d7eb"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.11 Fundic Gland Polyps
+</title>
+                     <text>
+                        <paragraph>PPI use is associated with an increased risk of fundic gland polyps that increases with long-term use, especially beyond one year. Most PPI users who developed fundic gland polyps were asymptomatic and fundic gland polyps were identified incidentally on endoscopy. Use the shortest duration of PPI therapy appropriate to the condition being treated.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s28">
+                     <id root="83e09edd-433d-4b36-a8db-d48294f46463"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.12 Interference with Investigations for Neuroendocrine Tumors
+</title>
+                     <text>
+                        <paragraph>Serum chromogranin A (CgA) levels increase secondary to drug-induced decreases in gastric acidity. The increased CgA level may cause false positive results in diagnostic investigations for neuroendocrine tumors. Healthcare providers should temporarily stop Pantoprazole Sodium for Injection treatment at least 14 days before assessing CgA levels and consider repeating the test if initial CgA levels are high. If serial tests are performed (e.g., for monitoring), the same commercial laboratory should be used for testing, as reference ranges between tests may vary <content styleCode="italics">[see Clinical Pharmacology (<linkHtml href="#s54">12.2</linkHtml>)]</content>.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s29">
+                     <id root="0159413f-fa6c-4b45-8249-ba6d79ea592a"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.13 Interference with Urine Screen for THC
+</title>
+                     <text>
+                        <paragraph>Pantoprazole sodium may produce false-positive urine screen for THC (tetrahydrocannabinol) <content styleCode="italics">[see Drug Interactions (<linkHtml href="#s37">7</linkHtml>)].</content>
+                        </paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s30">
+                     <id root="fd92eee9-bad6-4315-a7dc-edcfe2202d35"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>5.14 Concomitant Use of Pantoprazole Sodium for Injection with Methotrexate
+</title>
+                     <text>
+                        <paragraph>Literature suggests that concomitant use of PPIs with methotrexate (primarily at high dose; see methotrexate prescribing information) may elevate and prolong serum levels of methotrexate and/or its metabolite, possibly leading to methotrexate toxicities. In high-dose methotrexate administration, a temporary withdrawal of the PPI may be considered in some patients <content styleCode="italics">[see Drug Interactions (<linkHtml href="#s37">7</linkHtml>)].</content>
+                        </paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s31">
+               <id root="37b47671-6ecf-46cd-8bef-e0ff185fe892"/>
+               <code code="34084-4" codeSystem="2.16.840.1.113883.6.1" displayName="ADVERSE REACTIONS SECTION"/>
+               <title>6 ADVERSE REACTIONS
+</title>
+               <text>
+                  <paragraph>The following serious adverse reactions are described below and elsewhere in labeling:
+</paragraph>
+                  <list listType="unordered" styleCode="Disc">
+                     <item>Injection Site Reactions <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s18">5.2</linkHtml>)]</content>
+                     </item>
+                     <item>Potential for Exacerbation of Zinc Deficiency <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s19">5.3</linkHtml>)]</content>
+                     </item>
+                     <item>Acute Tubulointerstitial Nephritis <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s20">5.4</linkHtml>)]</content>
+                     </item>
+                     <item>
+                        <content styleCode="italics">Clostridioides difficile</content>-Associated Diarrhea  <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s21">5.5</linkHtml>)]</content>
+                     </item>
+                     <item>Bone Fracture <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s22">5.6</linkHtml>)]</content>
+                     </item>
+                     <item>Severe Cutaneous Adverse Reactions <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s23">5.7</linkHtml>)]</content>
+                     </item>
+                     <item>Cutaneous and Systemic Lupus Erythematosus <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s24">5.8</linkHtml>)]</content>
+                     </item>
+                     <item>Hepatic Effects <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s25">5.9</linkHtml>)]</content>
+                     </item>
+                     <item>Hypomagnesemia and Mineral Metabolism <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s26">5.10</linkHtml>)]</content>
+                     </item>
+                     <item>Fundic Gland Polyps <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s27">5.11</linkHtml>)]</content>
+                     </item>
+                  </list>
+               </text>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <paragraph>Most common adverse reactions (&gt; 2%) are: headache, diarrhea, nausea, abdominal pain, vomiting, flatulence, dizziness, and arthralgia. (<linkHtml href="#s32">6.1</linkHtml>)<br/>
+                           <br/>
+                        </paragraph>
+                        <paragraph>
+                           <content styleCode="bold">To report SUSPECTED ADVERSE REACTIONS, contact Avenacy at 1-855-283-6229 or FDA at 1-800-FDA-1088 or </content>
+                           <content styleCode="bold underline">www.fda.gov/medwatch</content>
+                           <content styleCode="bold">.</content>
+                           <br/>
+                           <br/>
+                        </paragraph>
+                     </text>
+                  </highlight>
+               </excerpt>
+               <component>
+                  <section ID="s32">
+                     <id root="afcb1b04-7a0f-4a6a-9b3d-02288bfee51a"/>
+                     <code code="90374-0" codeSystem="2.16.840.1.113883.6.1" displayName="CLINICAL TRIALS EXPERIENCE SECTION"/>
+                     <title>6.1 Clinical Trials Experience
+</title>
+                     <text>
+                        <paragraph>Because clinical trials are conducted under widely varying conditions, adverse reaction rates observed in the clinical trials of a drug cannot be directly compared to rates in the clinical trials of another drug and may not reflect the rates observed in clinical practice.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s33">
+                           <id root="7341bd79-f18f-4fb6-a864-a6d35ad601c1"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Gastroesophageal Reflux Disease (GERD)</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                           <component>
+                              <section ID="s34">
+                                 <id root="1786003a-23f4-45b0-83a2-e102d4225fab"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Adults</content>
+                                    </paragraph>
+                                    <paragraph>Safety in nine randomized comparative US clinical trials in patients with GERD included 1,473 patients on oral pantoprazole (20 mg or 40 mg), 299 patients on an H<sub>2</sub>-receptor antagonist, 46 patients on another PPI, and 82 patients on placebo. The most frequently occurring adverse reactions are listed in <linkHtml href="#t2">Table 2</linkHtml>.
+</paragraph>
+                                    <paragraph>The number of patients treated in comparative studies with Pantoprazole Sodium for Injection is limited; however, the adverse reactions seen were similar to those seen in the oral studies. Thrombophlebitis was the only new adverse reaction identified with Pantoprazole Sodium for Injection.
+</paragraph>
+                                    <table ID="t2" width="100%">
+                                       <caption>Table 2: Adverse Reactions Reported in Clinical Trials of Adult Patients with GERD at a Frequency of &gt;2%
+</caption>
+                                       <col width="25.000%" align="left"/>
+                                       <col width="25.000%" align="left"/>
+                                       <col width="25.000%" align="left"/>
+                                       <col width="25.000%" align="left"/>
+                                       <tbody>
+                                          <tr>
+                                             <td align="left" valign="middle" styleCode="Toprule Botrule"/>
+                                             <td align="center" valign="middle" styleCode="Toprule Botrule">
+                                                <content styleCode="bold">Oral Pantoprazole</content>
+                                                <br/>
+                                                <content styleCode="bold">Sodium</content>
+                                                <br/>
+                                                <content styleCode="bold">(n=1473)</content>
+                                                <br/>
+                                                <content styleCode="bold">%</content>
+                                             </td>
+                                             <td align="center" valign="middle" styleCode="Toprule Botrule">
+                                                <content styleCode="bold">Comparators</content>
+                                                <br/>
+                                                <content styleCode="bold">(n=345)</content>
+                                                <br/>
+                                                <content styleCode="bold">%</content>
+                                             </td>
+                                             <td align="center" valign="middle" styleCode="Toprule Botrule">
+                                                <content styleCode="bold">Placebo</content>
+                                                <br/>
+                                                <content styleCode="bold">(n=82)</content>
+                                                <br/>
+                                                <content styleCode="bold">%</content>
+                                             </td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Headache
+</td>
+                                             <td align="center" valign="middle">12.2
+</td>
+                                             <td align="center" valign="middle">12.8
+</td>
+                                             <td align="center" valign="middle">8.5
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Diarrhea
+</td>
+                                             <td align="center" valign="middle">8.8
+</td>
+                                             <td align="center" valign="middle">9.6
+</td>
+                                             <td align="center" valign="middle">4.9
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Nausea
+</td>
+                                             <td align="center" valign="middle">7.0
+</td>
+                                             <td align="center" valign="middle">5.2
+</td>
+                                             <td align="center" valign="middle">9.8
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Abdominal pain
+</td>
+                                             <td align="center" valign="middle">6.2
+</td>
+                                             <td align="center" valign="middle">4.1
+</td>
+                                             <td align="center" valign="middle">6.1
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Vomiting
+</td>
+                                             <td align="center" valign="middle">4.3
+</td>
+                                             <td align="center" valign="middle">3.5
+</td>
+                                             <td align="center" valign="middle">2.4
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Flatulence
+</td>
+                                             <td align="center" valign="middle">3.9
+</td>
+                                             <td align="center" valign="middle">2.9
+</td>
+                                             <td align="center" valign="middle">3.7
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle">Dizziness
+</td>
+                                             <td align="center" valign="middle">3.0
+</td>
+                                             <td align="center" valign="middle">2.9
+</td>
+                                             <td align="center" valign="middle">1.2
+</td>
+                                          </tr>
+                                          <tr>
+                                             <td align="left" valign="middle" styleCode="Botrule">Arthralgia
+</td>
+                                             <td align="center" valign="middle" styleCode="Botrule">2.8
+</td>
+                                             <td align="center" valign="middle" styleCode="Botrule">1.4
+</td>
+                                             <td align="center" valign="middle" styleCode="Botrule">1.2
+</td>
+                                          </tr>
+                                       </tbody>
+                                    </table>
+                                    <paragraph>Additional adverse reactions that were reported for oral pantoprazole sodium in US clinical trials with a frequency of ≤ 2% are listed below by body system:
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Body as a Whole:</content> allergic reaction, fever, photosensitivity reaction, facial edema, thrombophlebitis (intravenous only)
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Gastrointestinal:</content> constipation, dry mouth, hepatitis
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Hematologic:</content> leukopenia (reported in ex-US clinical trials only), thrombocytopenia
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Metabolic/Nutritional:</content> elevated CPK (creatine phosphokinase), generalized edema, elevated triglycerides, liver function tests abnormal
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Musculoskeletal:</content> myalgia
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Nervous:</content> depression, vertigo
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Skin and Appendages:</content> urticaria, rash, pruritus
+</paragraph>
+                                    <paragraph>
+                                       <content styleCode="italics">Special Senses:</content> blurred vision
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s35">
+                           <id root="e04b5c0f-4145-465b-a8de-e729e589dbe8"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Zollinger-Ellison (ZE) Syndrome</content>
+                              </paragraph>
+                              <paragraph>In clinical studies of ZE Syndrome, adverse reactions reported in 35 patients administered Pantoprazole Sodium for Injection doses of 80 mg to 240 mg per day for up to 2 years were similar to those reported in adult patients with GERD.
+</paragraph>
+                              <paragraph>
+                                 <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                                 <content styleCode="italics">
+                                    <sup>®
+</sup>
+                                 </content>
+                                 <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s36">
+                     <id root="b8f58245-6933-4b42-b903-995495d2dc4b"/>
+                     <code code="90375-7" codeSystem="2.16.840.1.113883.6.1" displayName="POSTMARKETING EXPERIENCE SECTION"/>
+                     <title>6.2 Postmarketing Experience
+</title>
+                     <text>
+                        <paragraph>The following adverse reactions have been identified during post approval use of pantoprazole sodium products. Because these reactions are reported voluntarily from a population of uncertain size, it is not always possible to reliably estimate their frequency or establish a causal relationship to drug exposure.
+</paragraph>
+                        <paragraph>These adverse reactions are listed below by body system:
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">General disorders and administration conditions:</content> asthenia, fatigue, malaise
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Immune system disorders:</content> anaphylaxis (including anaphylactic shock), systemic lupus erythematosus
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Investigations:</content> weight changes
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Skin and subcutaneous tissue disorders:</content> severe dermatologic reactions (some fatal), including erythema multiforme, SJS/TEN, DRESS, AGEP, angioedema (Quincke's edema) and cutaneous lupus erythematosus
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Musculoskeletal disorders:</content> rhabdomyolysis, bone fracture
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Renal and genitourinary disorders:</content> acute tubulointerstitial nephritis, erectile dysfunction
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Hepatobiliary disorders:</content> hepatocellular damage leading to jaundice and hepatic failure
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Psychiatric disorder:</content> hallucinations, confusion, insomnia, somnolence
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Metabolism and nutritional disorders:</content> hyponatremia, hypomagnesemia, hypocalcemia, hypokalemia, hyponatremia
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Infections and infestations: Clostridioides difficile</content> associated diarrhea
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Hematologic:</content> pancytopenia, agranulocytosis
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Nervous:</content> ageusia, dysgeusia
+</paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Gastrointestinal disorders:</content> fundic gland polyps
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s37">
+               <id root="02f625f8-e8ed-4bec-8f3f-6859c6f8b94e"/>
+               <code code="34073-7" codeSystem="2.16.840.1.113883.6.1" displayName="DRUG INTERACTIONS SECTION"/>
+               <title>7  DRUG INTERACTIONS
+</title>
+               <text>
+                  <paragraph>
+                     <linkHtml href="#t3">Table 3</linkHtml> includes drugs with clinically important drug interactions and interaction with diagnostics when administered concomitantly with Pantoprazole Sodium for Injection and instructions for preventing or managing them.
+</paragraph>
+                  <paragraph>Consult the labeling of concomitantly used drugs to obtain further information about interactions with PPIs.
+</paragraph>
+                  <table ID="t3" width="100%">
+                     <caption>Table 3: Clinically Relevant Interactions Affecting Drugs Co-Administered with Pantoprazole Sodium for Injection and Interaction with Diagnostics
+</caption>
+                     <col width="18.350%" align="left"/>
+                     <col width="81.650%" align="left"/>
+                     <tbody>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Toprule Botrule Lrule Rrule">
+                              <content styleCode="bold">Antiretrovirals</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">The effect of PPIs on antiretroviral drugs is variable. The clinical importance and the mechanisms behind these interactions are not always known.<br/>
+                              <list listType="unordered" styleCode="Disc">
+                                 <item>Decreased exposure of some antiretroviral drugs (e.g., rilpivirine atazanavir, and nelfinavir) when used concomitantly with pantoprazole may reduce antiviral effect and promote the development of drug resistance.
+</item>
+                                 <item>Increased exposure of other antiretroviral drugs (e.g., saquinavir) when used concomitantly with pantoprazole may increase toxicity of the antiretroviral drugs.
+</item>
+                                 <item>There are other antiretroviral drugs which do not result in clinically relevant interactions with pantoprazole.
+</item>
+                              </list>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">
+                              <content styleCode="underline">Rilpivirine-containing products</content>: Concomitant use with Pantoprazole Sodium for Injection is contraindicated <content styleCode="italics">[see Contraindications (<linkHtml href="#s15">4</linkHtml>)]</content>. See prescribing information.<br/>
+                              <content styleCode="underline">Atazanavir</content>: See prescribing information for atazanavir for dosing information.<br/>
+                              <content styleCode="underline">Nelfinavir</content>: Avoid concomitant use with Pantoprazole Sodium for Injection. See prescribing information for nelfinavir.<br/>
+                              <content styleCode="underline">Saquinavir</content>: See the prescribing information for saquinavir and monitor for potential saquinavir toxicities.<br/>
+                              <content styleCode="underline">Other antiretrovirals</content>: See prescribing information.
+</td>
+                        </tr>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="bold">Warfarin</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Increased INR and prothrombin time in patients receiving PPIs, including pantoprazole, and warfarin concomitantly. Increases in INR and prothrombin time may lead to abnormal bleeding and even death.
+</td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Monitor INR and prothrombin time. Dose adjustment of warfarin may be needed to maintain target INR range. See prescribing information for warfarin.
+</td>
+                        </tr>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="bold">Clopidogrel</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Concomitant administration of pantoprazole and clopidogrel in healthy subjects had no clinically important effect on exposure to the active metabolite of clopidogrel or clopidogrel-induced platelet inhibition <content styleCode="italics">[see Clinical Pharmacology (<linkHtml href="#s59">12.3</linkHtml>)]</content>.
+</td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">No dose adjustment of clopidogrel is necessary when administered with an approved dose of Pantoprazole Sodium for Injection.
+</td>
+                        </tr>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="bold">Methotrexate</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Concomitant use of PPIs with methotrexate (primarily at high dose) may elevate and prolong serum concentrations of methotrexate and/or its metabolite hydroxymethotrexate, possibly leading to methotrexate toxicities. No formal drug interaction studies of high-dose methotrexate with PPIs have been conducted <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s30">5.14</linkHtml>)]</content>.
+</td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">A temporary withdrawal of Pantoprazole Sodium for Injection may be considered in some patients receiving high-dose methotrexate.
+</td>
+                        </tr>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="bold">Drugs Dependent on Gastric pH for Absorption (e.g., iron salts, erlotinib, dasatinib, nilotinib, mycophenolate mofetil, ketoconazole/itraconazole)</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Pantoprazole can reduce the absorption of other drugs due to its effect on reducing intragastric acidity.
+</td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Mycophenolate mofetil (MMF): Co-administration of pantoprazole sodium in healthy subjects and in transplant patients receiving MMF has been reported to reduce the exposure to the active metabolite, mycophenolic acid (MPA), possibly due to a decrease in MMF solubility at an increased gastric pH <content styleCode="italics">[see Clinical Pharmacology (<linkHtml href="#s59">12.3</linkHtml>)]</content>. The clinical relevance of reduced MPA exposure on organ rejection has not been established in transplant patients receiving Pantoprazole Sodium for Injection and MMF. Use Pantoprazole Sodium for Injection with caution in transplant patients receiving MMF.<br/>
+                              <br/>See the prescribing information for other drugs dependent on gastric pH for absorption.
+</td>
+                        </tr>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="bold">Interactions with Investigations of Neuroendocrine Tumors</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">CgA levels increase secondary to PPI-induced decreases in gastric acidity. The increased CgA level may cause false positive results in diagnostic investigations for neuroendocrine tumors <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s28">5.12</linkHtml>) and Clinical Pharmacology (<linkHtml href="#s54">12.2</linkHtml>)]</content>.
+</td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">Temporarily stop Pantoprazole Sodium for Injection treatment at least 14 days before assessing CgA levels and consider repeating the test if initial CgA levels are high. If serial tests are performed (e.g. for monitoring), the same commercial laboratory should be used for testing, as reference ranges between tests may vary.
+</td>
+                        </tr>
+                        <tr>
+                           <td colspan="2" align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="bold">False Positive Urine Tests for THC</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Clinical Impact</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">There have been reports of false positive urine screening tests for tetrahydrocannabinol (THC) in patients receiving PPIs <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s29">5.13</linkHtml>)]</content>.
+</td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top" styleCode="Botrule Lrule Rrule">
+                              <content styleCode="italics">Intervention</content>:
+</td>
+                           <td align="left" valign="top" styleCode="Botrule Rrule">An alternative confirmatory method should be considered to verify positive results.
+</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </text>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <paragraph>See the full prescribing information for a list of clinically important drug interactions. (<linkHtml href="#s37">7</linkHtml>)<br/>
+                           <br/>
+                        </paragraph>
+                     </text>
+                  </highlight>
+               </excerpt>
+            </section>
+         </component>
+         <component>
+            <section ID="s38">
+               <id root="b8303a7d-d09b-4e1a-96ac-9f88af94867a"/>
+               <code code="43684-0" codeSystem="2.16.840.1.113883.6.1" displayName="USE IN SPECIFIC POPULATIONS SECTION"/>
+               <title>8  USE IN SPECIFIC POPULATIONS
+</title>
+               <effectiveTime value="20260531"/>
+               <excerpt>
+                  <highlight>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">Pregnancy</content>: Based on animal data, may cause fetal harm. (<linkHtml href="#s39">8.1</linkHtml>)<br/>
+                           <br/>
+                        </paragraph>
+                        <paragraph>
+                           <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                           <content styleCode="italics">
+                              <sup>®
+</sup>
+                           </content>
+                           <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.<br/>
+                              <br/>
+                           </content>
+                        </paragraph>
+                     </text>
+                  </highlight>
+               </excerpt>
+               <component>
+                  <section ID="s39">
+                     <id root="bd39dde9-2ec5-4d29-a022-7b6839e6f6ba"/>
+                     <code code="42228-7" codeSystem="2.16.840.1.113883.6.1" displayName="PREGNANCY SECTION"/>
+                     <title>8.1 Pregnancy
+</title>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s40">
+                           <id root="2ec88ae5-12b6-404f-a50a-295b0c0c2bb2"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Risk Summary</content>
+                              </paragraph>
+                              <paragraph>Available data from published observational studies did not demonstrate an association of major malformations or other adverse pregnancy outcomes with pantoprazole.
+</paragraph>
+                              <paragraph>In animal reproduction studies, no evidence of adverse development outcomes was observed with pantoprazole sodium. Reproduction studies have been performed in rats at intravenous doses up to 20 mg/kg/day (4 times the recommended human dose) and rabbits at intravenous doses up to 15 mg/kg/day (6 times the recommended human dose) with administration of pantoprazole during organogenesis in pregnant animals and have revealed no evidence of harm to the fetus due to pantoprazole in this study <content styleCode="italics">(see <linkHtml href="#s41">Data</linkHtml>)</content>.
+</paragraph>
+                              <paragraph>A pre-and post-natal development toxicity study in rats with additional endpoints to evaluate the effect on bone development was performed with pantoprazole sodium. Oral pantoprazole doses of 5, 15, and 30 mg/kg/day (approximately 1, 3, and 6 times the human dose of 40 mg/day) were administered to pregnant females from gestation day (GD) 6 through lactation day (LD) 21. Changes in bone morphology were observed in pups exposed to pantoprazole <content styleCode="italics">in utero</content> and through milk during the period of lactation as well as by oral dosing from postnatal day (PND) 4 through PND 21 <content styleCode="italics">[see Use in Specific Populations (<linkHtml href="#s47">8.4</linkHtml>)]</content>. There were no drug-related findings in maternal animals. Advise pregnant women of the potential risk of fetal harm.
+</paragraph>
+                              <paragraph>The estimated background risk of major birth defects and miscarriage for the indicated population is unknown. All pregnancies have a background risk of birth defect, loss or other adverse outcomes. In the U.S. general population, the estimated background risk of major birth defects and miscarriage in the clinically recognized pregnancies is 2 to 4% and 15 to 20%, respectively.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s41">
+                           <id root="90db6dfb-bf7b-42a5-ba1c-c6a8a148a444"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Data</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                           <component>
+                              <section ID="s42">
+                                 <id root="f2c55161-3e25-47b2-a669-794ef888935b"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Human Data</content>
+                                    </paragraph>
+                                    <paragraph>Available data from published observational studies failed to demonstrate an association of adverse pregnancy-related outcomes and pantoprazole use. Methodological limitations of these observational studies cannot definitely establish or exclude any drug-associated risk during pregnancy. In a prospective study by the European Network of Teratology Information Services, outcomes from a group of 53 pregnant women administered median daily doses of 40 mg pantoprazole were compared to a control group of 868 pregnant women who did not take any proton pump inhibitors (PPIs). There was no difference in the rate of major malformations between women exposed to PPIs and the control group, corresponding to a Relative Risk (RR)=0.55, [95% Confidence Interval (CI) 0.08-3.95]. In a population-based retrospective cohort study covering all live births in Denmark from 1996 to 2008, there was no significant increase in major birth defects during analysis of first trimester exposure to pantoprazole in 549 live births. A meta-analysis that compared 1,530 pregnant women exposed to PPIs in at least the first trimester with 133,410 unexposed pregnant women showed no significant increases in risk for congenital malformations or spontaneous abortion with exposure to PPIs (for major malformations OR=1.12 ([95% CI 0.86-1.45] and for spontaneous abortions OR=1.29 [95% CI 0.84-1.97]).
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                           <component>
+                              <section ID="s43">
+                                 <id root="2e4bd413-99de-49b3-bee5-4f1f760f11ca"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Animal Data</content>
+                                    </paragraph>
+                                    <paragraph>Reproduction studies have been performed in rats at intravenous pantoprazole doses up to 20 mg/kg/day (4 times the recommended human dose based on body surface area) and rabbits at intravenous doses up to 15 mg/kg/day (6 times the recommended human dose based on body surface area) with administration of pantoprazole sodium during organogenesis in pregnant animals and have revealed no evidence of impaired fertility or harm to the fetus due to pantoprazole.
+</paragraph>
+                                    <paragraph>A pre- and post-natal development toxicity study in rats with additional endpoints to evaluate the effect on bone development was performed with pantoprazole sodium. Oral pantoprazole doses of 5, 15, and 30 mg/kg/day (approximately 1, 3, and 6 times the human dose of 40 mg/day on a body surface area basis) were administered to pregnant females from gestation day (GD) 6 through lactation day (LD) 21. On postnatal day (PND 4) through PND 21, the pups were administered oral doses at 5, 15, and 30 mg/kg/day (approximately 1, 2.3, and 3.2 times the exposure (AUC) in humans at a dose of 40 mg). There were no drug-related findings in maternal animals. During the preweaning dosing phase (PND 4 to 21) of the pups, there were increased mortality and/or moribundity and decreased body weight and body weight gain at 5 mg/kg/day (approximately equal exposures (AUC) in humans receiving the 40 mg dose) and higher doses. On PND 21, decreased mean femur length and weight and changes in femur bone mass and geometry were observed in the offspring at 5 mg/kg/day (approximately equal exposures (AUC) in humans at the 40 mg dose) and higher doses. The femur findings included lower total area, bone mineral content and density, periosteal and endosteal circumference, and cross-sectional moment of inertia. There were no microscopic changes in the distal femur, proximal tibia, or stifle joints. Changes in bone parameters were partially reversible following a recovery period, with findings on PND 70 limited to lower femur metaphysis cortical/subcortical bone mineral density in female pups at 5 mg/kg/day (approximately equal exposures (AUC) in humans at the 40 mg dose) and higher doses.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s44">
+                     <id root="fcfa2d2e-d22b-485d-a3c7-a7b049f5223a"/>
+                     <code code="77290-5" codeSystem="2.16.840.1.113883.6.1" displayName="LACTATION SECTION"/>
+                     <title>8.2 Lactation
+</title>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s45">
+                           <id root="60f6249b-267f-4a5c-8da3-ea86f8880c8b"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Risk Summary</content>
+                              </paragraph>
+                              <paragraph>The limited data from a single case report the presence of pantoprazole in human breast milk. There were no effects on the breastfed infant <content styleCode="italics">(see <linkHtml href="#s46">Data</linkHtml>)</content>. There are no data on pantoprazole effects on milk production.
+</paragraph>
+                              <paragraph>The developmental and health benefits of breastfeeding should be considered along with the mother's clinical need for Pantoprazole Sodium for Injection and any potential adverse effects on the breastfed child from pantoprazole or from the underlying maternal condition.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s46">
+                           <id root="c16208ac-9262-43f0-bd75-e0c039e758f5"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Data</content>
+                              </paragraph>
+                              <paragraph>The breast milk of a 42-year-old woman receiving 40 mg of oral pantoprazole, at 10 months postpartum, was studied for 24 hours, to demonstrate low levels of pantoprazole present in the breast milk. Pantoprazole was detectable in milk only 2 and 4 hours after the dose with milk levels of approximately 36 mcg/L and 24 mcg/L, respectively. A milk-to-plasma ratio of 0.022 was observed at 2 hours after drug administration. Pantoprazole was not detectable (&lt;10 mcg/L) in milk at 6, 8 and 24 hours after the dose. The relative dose to the infant was estimated to be 7.3 mcg of pantoprazole, which is equivalent to 0.14% of the weight-adjusted maternal dose. No adverse events in the infant were reported by the mother.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s47">
+                     <id root="32532f90-167f-4d04-bb5c-cb20432c01a0"/>
+                     <code code="34081-0" codeSystem="2.16.840.1.113883.6.1" displayName="PEDIATRIC USE SECTION"/>
+                     <title>8.4 Pediatric Use
+</title>
+                     <text>
+                        <paragraph>The safety and effectiveness of Pantoprazole Sodium for Injection have not been established in patients less than 3 months of age for the treatment of GERD and a history of EE.
+</paragraph>
+                        <paragraph>The safety and effectiveness of Pantoprazole Sodium for Injection have not been established in pediatric patients for the treatment of pathological hypersecretory conditions including ZE syndrome.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s48">
+                           <id root="8a326c29-8525-47e0-b3f3-3ec0935b8b69"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Animal Toxicity Data</content>
+                              </paragraph>
+                              <paragraph>In neonatal/juvenile animals (rats and dogs) toxicities were similar to those observed in adult animals, including gastric alterations, decreases in red cell mass, increases in lipids, enzyme induction and hepatocellular hypertrophy. An increased incidence of eosinophilic chief cells in adult and neonatal/juvenile rats, and atrophy of chief cells in adult rats and in neonatal/juvenile dogs, was observed in the fundic mucosa of stomachs in repeated-dose studies. Full to partial recovery of these effects were noted in animals of both age groups following a recovery period.
+</paragraph>
+                              <paragraph>
+                                 <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                                 <content styleCode="italics">
+                                    <sup>®
+</sup>
+                                 </content>
+                                 <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s49">
+                     <id root="a873bbb4-829e-4fee-97f2-b1fe8f4eaac2"/>
+                     <code code="34082-8" codeSystem="2.16.840.1.113883.6.1" displayName="GERIATRIC USE SECTION"/>
+                     <title>8.5 Geriatric Use
+</title>
+                     <text>
+                        <paragraph>Of 286 patients in clinical studies of intravenous pantoprazole sodium in patients with GERD and a history of EE, 86 (43%) were 65 years of age and over. No overall differences in safety or effectiveness were observed between these geriatric and younger adult patients, and other reported clinical experience with oral pantoprazole sodium has not identified differences in responses between geriatric and younger adult patients, but greater sensitivity of some older individuals cannot be ruled out.
+</paragraph>
+                        <paragraph>No clinically meaningful differences in the pharmacokinetics of pantoprazole were observed in geriatric subjects compared to younger adult subjects <content styleCode="italics">[see Clinical Pharmacology (<linkHtml href="#s59">12.3</linkHtml>)]</content>.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s50">
+               <id root="216db912-9e1d-4f22-bca8-9e783f83c743"/>
+               <code code="34088-5" codeSystem="2.16.840.1.113883.6.1" displayName="OVERDOSAGE SECTION"/>
+               <title>10  OVERDOSAGE
+</title>
+               <text>
+                  <paragraph>Experience in patients taking very high doses of pantoprazole (greater than 240 mg) is limited. Adverse reactions seen in spontaneous reports of overdose generally reflect the known safety profile of pantoprazole.
+</paragraph>
+                  <paragraph>Pantoprazole is not removed by hemodialysis. In case of overdose, treatment should be symptomatic and supportive.
+</paragraph>
+                  <paragraph>Single intravenous doses of pantoprazole at 378, 230, and 266 mg/kg (38, 46, and 177 times the recommended human dose based on body surface area) were lethal to mice, rats and dogs, respectively. The symptoms of acute toxicity were hypoactivity, ataxia, hunched sitting, limb-splay, lateral position, segregation, absence of ear reflex, and tremor.
+</paragraph>
+               </text>
+               <effectiveTime value="20260531"/>
+            </section>
+         </component>
+         <component>
+            <section ID="s51">
+               <id root="6708daf0-a017-4dc5-96b5-2ef59d9041c9"/>
+               <code code="34089-3" codeSystem="2.16.840.1.113883.6.1" displayName="DESCRIPTION SECTION"/>
+               <title>11  DESCRIPTION
+</title>
+               <text>
+                  <paragraph>The active ingredient in Pantoprazole Sodium for Injection (pantoprazole sodium), a PPI, is a substituted benzimidazole, sodium 5-(difluoromethoxy)-2-[[(3,4-dimethoxy-2-pyridinyl)methyl] sulfinyl]-1<content styleCode="italics">H</content>-benzimidazole, a compound that inhibits gastric acid secretion. Its empirical formula is C<sub>16</sub>H<sub>14</sub>F<sub>2</sub>N<sub>3</sub>NaO<sub>4</sub>S, with a molecular weight of 405.4. The structural formula is:
+</paragraph>
+                  <renderMultiMedia ID="f01" referencedObject="mm01"/>
+                  <paragraph>Pantoprazole sodium is a white to off-white crystalline powder and is racemic. Pantoprazole has weakly basic and acidic properties. Pantoprazole sodium is freely soluble in water, very slightly soluble in phosphate buffer at pH 7.4, and practically insoluble in n-hexane. The reconstituted solution of Pantoprazole Sodium for Injection is in the pH range of 9.0 to 10.5.
+</paragraph>
+                  <paragraph>Pantoprazole Sodium for Injection is supplied for intravenous administration as a sterile, freeze-dried powder in a single-dose clear glass vial fitted with a rubber stopper and an aluminum-plastic cap. Each vial contains 40 mg pantoprazole (equivalent to 45.1 mg of pantoprazole sodium), edetate disodium (1 mg), and sodium hydroxide to adjust pH.
+</paragraph>
+               </text>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <observationMedia ID="mm01">
+                     <text>Figure
+</text>
+                     <value xsi:type="ED" mediaType="image/jpeg">
+                        <reference value="pan0b-0001-01.jpg"/>
+                     </value>
+                  </observationMedia>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s52">
+               <id root="f2668b68-ca74-4be5-9d2c-3941abb9be65"/>
+               <code code="34090-1" codeSystem="2.16.840.1.113883.6.1" displayName="CLINICAL PHARMACOLOGY SECTION"/>
+               <title>12  CLINICAL PHARMACOLOGY
+</title>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <section ID="s53">
+                     <id root="e86d8c36-5e11-41bc-8012-1a90d5a7bd2b"/>
+                     <code code="43679-0" codeSystem="2.16.840.1.113883.6.1" displayName="MECHANISM OF ACTION SECTION"/>
+                     <title>12.1  Mechanism of Action
+</title>
+                     <text>
+                        <paragraph>Pantoprazole is a PPI that suppresses the final step in gastric acid production by covalently binding to the (H<sup>+</sup>, K<sup>+</sup>)-ATPase enzyme system at the secretory surface of the gastric parietal cell. This effect leads to inhibition of both basal and stimulated gastric acid secretion irrespective of the stimulus. The binding to the (H<sup>+</sup>, K<sup>+</sup>)-ATPase results in a duration of antisecretory effect that persists longer than 24 hours for all doses tested (20 mg to 120 mg).
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s54">
+                     <id root="35b3f0f2-e852-4d2f-b2c0-be4023d9a2c5"/>
+                     <code code="43681-6" codeSystem="2.16.840.1.113883.6.1" displayName="PHARMACODYNAMICS SECTION"/>
+                     <title>12.2  Pharmacodynamics
+</title>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s55">
+                           <id root="ab7241d8-f8aa-4c70-8266-18fda53461d4"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Antisecretory Activity</content>
+                              </paragraph>
+                              <paragraph>The magnitude and time course for inhibition of pentagastrin-stimulated acid output (PSAO) by single doses (20 to 120 mg) of Pantoprazole Sodium for Injection were assessed in a single-dose, open-label, placebo-controlled, dose-response study. The results of this study are shown in <linkHtml href="#t4">Table 4</linkHtml>. Healthy subjects received a continuous infusion for 25 hours of pentagastrin (PG) at 1 mcg/kg/h, a dose known to produce submaximal gastric acid secretion. The placebo group showed a sustained, continuous acid output for 25 hours, validating the reliability of the testing model. Pantoprazole Sodium for Injection had an onset of antisecretory activity within 15 to 30 minutes of administration. Doses of 20 to 80 mg of Pantoprazole Sodium for Injection substantially reduced the 24-hour cumulative PSAO in a dose-dependent manner, despite a short plasma elimination half-life. Complete suppression of PSAO was achieved with 80 mg within approximately 2 hours and no further significant suppression was seen with 120 mg. The duration of action of Pantoprazole Sodium for Injection was 24 hours.
+</paragraph>
+                              <table ID="t4" width="100%">
+                                 <caption>Table 4: Gastric Acid Output (mEq/hr, Mean ± SD) and Percent Inhibition<sup>a</sup> (Mean ± SD) of Pentagastrin Stimulated Acid Output Over 24 Hours Following a Single Dose of Pantoprazole Sodium for Injection<sup>b</sup> in Healthy Subjects
+</caption>
+                                 <col width="11.101%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <col width="11.112%" align="left"/>
+                                 <tfoot>
+                                    <tr>
+                                       <td colspan="9" align="left" valign="top">
+                                          <paragraph styleCode="footnote">
+                                             <sup>a.</sup> Compared to individual subject baseline prior to treatment with Pantoprazole Sodium for Injection.
+</paragraph>
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td colspan="9" align="left" valign="top">
+                                          <paragraph styleCode="footnote">
+                                             <sup>b.</sup> Inhibition of gastric acid output and the percent inhibition of stimulated acid output in response to Pantoprazole Sodium for Injection may be higher after repeated doses.
+</paragraph>
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td colspan="9" align="left" valign="top">
+                                          <paragraph styleCode="footnote">NA = not applicable.
+</paragraph>
+                                       </td>
+                                    </tr>
+                                 </tfoot>
+                                 <tbody>
+                                    <tr>
+                                       <td align="center" valign="middle" styleCode="Toprule Botrule Lrule Rrule"/>
+                                       <td colspan="2" align="center" valign="middle" styleCode="Toprule Botrule Rrule">------2 hours------
+</td>
+                                       <td colspan="2" align="center" valign="middle" styleCode="Toprule Botrule Rrule">-----4 hours-----
+</td>
+                                       <td colspan="2" align="center" valign="middle" styleCode="Toprule Botrule Rrule">-----12 hours-----
+</td>
+                                       <td colspan="2" align="center" valign="middle" styleCode="Toprule Botrule Rrule">------24 hours----
+</td>
+                                    </tr>
+                                    <tr>
+                                       <td align="center" valign="middle" styleCode="Botrule Lrule Rrule">Treatment Dose
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">Acid Output
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">% Inhibition
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">Acid Output
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">% Inhibition
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">Acid Output
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">% Inhibition
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">Acid Output
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">% Inhibition
+</td>
+                                    </tr>
+                                    <tr>
+                                       <td align="center" valign="middle" styleCode="Botrule Lrule Rrule">0 mg<br/>(Placebo, n=4)
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">39±21
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">NA
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">26±14
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">NA
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">32±20
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">NA
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">38±24
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">NA
+</td>
+                                    </tr>
+                                    <tr>
+                                       <td align="center" valign="middle" styleCode="Botrule Lrule Rrule">20 mg<br/>(n=4-6)
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">13±18
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">47±27
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">6±8
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">83±21
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">20±20
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">54±44
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">30±23
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">45±43
+</td>
+                                    </tr>
+                                    <tr>
+                                       <td align="center" valign="middle" styleCode="Botrule Lrule Rrule">40mg<br/>(n=8)
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">5±5
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">82±11
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">4±4
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">90±11
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">11±10
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">81±13
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">16±12
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">52±36
+</td>
+                                    </tr>
+                                    <tr>
+                                       <td align="center" valign="middle" styleCode="Botrule Lrule Rrule">80 mg<br/>(n=8)
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">0.1±0.2
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">96±6
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">0.3±0.4
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">99±1
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">2±2
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">90±7
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">7±4
+</td>
+                                       <td align="center" valign="middle" styleCode="Botrule Rrule">63±18
+</td>
+                                    </tr>
+                                 </tbody>
+                              </table>
+                              <paragraph>In one study of gastric pH in healthy subjects, pantoprazole was administered orally (40 mg enteric coated tablets) or Pantoprazole Sodium for Injection (40 mg) once daily for 5 days and pH was measured for 24 hours following the fifth dose. The outcome measure was median percent of time that pH was ≥4 and the results were similar for intravenous and oral medications; however, the clinical significance of this parameter is unknown.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s56">
+                           <id root="19bc2237-07b6-47d2-bb95-c8d1dc6e6b0b"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Serum Gastrin Effects</content>
+                              </paragraph>
+                              <paragraph>Serum gastrin concentrations were assessed in two placebo-controlled studies.
+</paragraph>
+                              <paragraph>In a 5-day study of oral pantoprazole with 40 and 60 mg doses in healthy subjects, following the last dose on day 5, median 24-hour serum gastrin concentrations were elevated by 3- to 4-fold compared to placebo in both 40 and 60 mg dose groups. However, by 24 hours following the last dose, median serum gastrin concentrations for both groups returned to normal levels.
+</paragraph>
+                              <paragraph>In another placebo-controlled, 7-day study of 40 mg intravenous or oral pantoprazole in patients with GERD and a history of EE, the mean serum gastrin concentration increased approximately 50% from baseline and as compared with placebo, but remained within the normal range.
+</paragraph>
+                              <paragraph>During 6 days of repeated administration of Pantoprazole Sodium for Injection in patients with ZE Syndrome, consistent changes of serum gastrin concentrations from baseline were not observed.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s57">
+                           <id root="385f4300-8d80-4080-99e4-bb8123f0beff"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Enterochromaffin-Like (ECL) Cell Effects</content>
+                              </paragraph>
+                              <paragraph>There are no data available on the effects of intravenous pantoprazole sodium on ECL cells.
+</paragraph>
+                              <paragraph>In a nonclinical study in Sprague-Dawley rats, lifetime exposure (24 months) to oral pantoprazole at doses of 0.5 to 200 mg/kg/day resulted in dose-related increases in gastric ECL-cell proliferation and gastric neuroendocrine (NE)-cell tumors. Gastric NE-cell tumors in rats may result from chronic elevation of serum gastrin concentrations. The high density of ECL cells in the rat stomach makes this species highly susceptible to the proliferative effects of elevated gastrin concentrations produced by PPIs. However, there were no observed elevations in serum gastrin following the administration of oral pantoprazole at a dose of 0.5 mg/kg/day. In a separate study, a gastric NE-cell tumor without concomitant ECL-cell proliferative changes was observed in 1 female rat following 12 months of dosing with oral pantoprazole at 5 mg/kg/day and a 9 month off-dose recovery <content styleCode="italics">[see Nonclinical Toxicology (<linkHtml href="#s78">13.1</linkHtml>)]</content>.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s58">
+                           <id root="526fa3c1-c0ea-4fbb-870d-d0f302bc3267"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Endocrine Effects</content>
+                              </paragraph>
+                              <paragraph>In a clinical pharmacology study, pantoprazole 40 mg given orally once daily for 2 weeks had no effect on the levels of the following hormones: cortisol, testosterone, triiodothyronine (T<sub>3</sub>), thyroxine (T<sub>4</sub>), thyroid-stimulating hormone, thyronine-binding protein, parathyroid hormone, insulin, glucagon, renin, aldosterone, follicle-stimulating hormone, luteinizing hormone, prolactin and growth hormone.
+</paragraph>
+                              <paragraph>In a 1-year study of GERD patients treated with pantoprazole 40 mg or 20 mg, there were no changes from baseline in overall levels of T<sub>3</sub>, T<sub>4</sub>, and TSH.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s59">
+                     <id root="c20d39da-91ed-4ad2-a489-080dbda6f84a"/>
+                     <code code="43682-4" codeSystem="2.16.840.1.113883.6.1" displayName="PHARMACOKINETICS SECTION"/>
+                     <title>12.3  Pharmacokinetics
+</title>
+                     <text>
+                        <paragraph>Pantoprazole peak serum concentration (C<sub>max</sub>) and area under the serum concentration-time curve (AUC) increase in a manner proportional to intravenous doses from 10 mg to 80 mg. Pantoprazole does not accumulate and its pharmacokinetics are unaltered with multiple daily dosing. Following the administration of Pantoprazole Sodium for Injection, the serum concentration of pantoprazole declines biexponentially with a terminal elimination half-life of approximately one hour. In CYP2C19 extensive metabolizers <content styleCode="italics">[see Clinical Pharmacology (<linkHtml href="#s76">12.5</linkHtml>)]</content> with normal liver function receiving a 40 mg dose of Pantoprazole Sodium for Injection by constant rate over 15 minutes, the peak concentration (C<sub>max</sub>) is 5.52 ±1.42 mcg/mL and the total area under the plasma concentration versus time curve (AUC) is 5.4 ±1.5 mcg hr/mL. The total clearance is 7.6 to 14 L/h.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                     <component>
+                        <section ID="s60">
+                           <id root="d8a5e9dc-e1bc-404d-af4e-e71710e2077d"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Distribution</content>
+                              </paragraph>
+                              <paragraph>The apparent volume of distribution of pantoprazole is approximately 11 to 23.6 L, distributing mainly in extracellular fluid. The serum protein binding of pantoprazole is about 98%, primarily to albumin.
+</paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s61">
+                           <id root="5a07304c-5a99-4493-b360-d4bdb74ac8b8"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Elimination</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                           <component>
+                              <section ID="s62">
+                                 <id root="13a92f04-17b0-4dbc-bba6-933093f80edd"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Metabolism</content>
+                                    </paragraph>
+                                    <paragraph>Pantoprazole is extensively metabolized in the liver through the cytochrome P450 (CYP) system. Pantoprazole metabolism is independent of the route of administration (intravenous or oral). The main metabolic pathway is demethylation, by CYP2C19, with subsequent sulfation; other metabolic pathways include oxidation by CYP3A4. There is no evidence that any of the pantoprazole metabolites have significant pharmacologic activity. CYP2C19 displays a known genetic polymorphism due to its deficiency in some sub-populations (e.g., 3% of Whites and African-Americans and 17 to 23% of Asians). Although these sub-populations of slow pantoprazole metabolizers have elimination half-life values from 3.5 to 10 hours, they still have minimal accumulation (23% or less) with once daily dosing.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                           <component>
+                              <section ID="s63">
+                                 <id root="f95fbed3-ad60-4aae-a39d-1d59a3e0f402"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Excretion</content>
+                                    </paragraph>
+                                    <paragraph>After administration of a single intravenous dose of <sup>14</sup>C-labeled pantoprazole sodium to healthy, extensive CYP2C19 metabolizers, approximately 71% of the dose was excreted in the urine with 18% excreted in the feces through biliary excretion. There was no renal excretion of unchanged pantoprazole.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s64">
+                           <id root="89009e73-5eb9-4f48-9824-15c99b191e0a"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Specific Populations</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                           <component>
+                              <section ID="s65">
+                                 <id root="c51faf02-bf2a-430b-a74d-ea2bd98d0d69"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Geriatric Patients</content>
+                                    </paragraph>
+                                    <paragraph>After repeated intravenous administration in elderly subjects (65 to 76 years of age), the AUC and elimination half-life values of pantoprazole were similar to those observed in younger subjects.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                           <component>
+                              <section ID="s66">
+                                 <id root="f30bce15-1b92-4184-894b-98ead248d01d"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Male and Female Patients</content>
+                                    </paragraph>
+                                    <paragraph>After oral administration there was a modest increase in the AUC and C<sub>max</sub> of pantoprazole in women compared to men. However, weight-normalized clearance values are similar in women and men.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                           <component>
+                              <section ID="s67">
+                                 <id root="99c5a255-41ee-4ac1-a669-def87e065feb"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Patients with Renal Impairment</content>
+                                    </paragraph>
+                                    <paragraph>In patients with severe renal impairment, pharmacokinetic parameters for pantoprazole were similar to those of healthy subjects.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                           <component>
+                              <section ID="s68">
+                                 <id root="482c6142-c606-46df-aeac-07dcf439058f"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Patients with Hepatic Impairment</content>
+                                    </paragraph>
+                                    <paragraph>In patients with mild to severe hepatic impairment (Child-Pugh Class A to C), maximum pantoprazole concentrations increased only slightly (1.5-fold) relative to healthy subjects when pantoprazole sodium was administered orally. Although serum half-life values increased to 7 to 9 hours and AUC values increased by 5- to 7-fold in hepatic-impaired patients, these increases were no greater than those observed in CYP2C19 poor metabolizers, where no dosage adjustment is warranted. These pharmacokinetic changes in hepatic-impaired patients result in minimal drug accumulation following once daily, multiple-dose administration. Oral pantoprazole doses higher than 40 mg per day have not been studied in hepatically impaired patients.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                        </section>
+                     </component>
+                     <component>
+                        <section ID="s69">
+                           <id root="b9d81f1c-adaa-4111-b254-2d88b5fa93e0"/>
+                           <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                           <text>
+                              <paragraph>
+                                 <content styleCode="underline">Drug Interaction Studies</content>
+                              </paragraph>
+                           </text>
+                           <effectiveTime value="20260531"/>
+                           <component>
+                              <section ID="s70">
+                                 <id root="61b28879-c640-4f98-a843-8c87ccd4b9fc"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Effect of Other Drugs on Pantoprazole</content>
+                                    </paragraph>
+                                    <paragraph>Pantoprazole is metabolized mainly by CYP2C19 and to minor extents by CYPs 3A4, 2D6 and 2C9.
+</paragraph>
+                                    <paragraph>In <content styleCode="italics">in vivo</content> drug-drug interaction studies with CYP2C19 substrates (diazepam [also a CYP3A4 substrate] and phenytoin [also a CYP3A4 inducer]), nifedipine, midazolam, and clarithromycin (CYP3A4 substrates), metoprolol (a CYP2D6 substrate), diclofenac, naproxen and piroxicam (CYP2C9 substrates) and theophylline (a CYP1A2 substrate) in healthy subjects, the pharmacokinetics of pantoprazole were not significantly altered.
+</paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                              </section>
+                           </component>
+                           <component>
+                              <section ID="s71">
+                                 <id root="ddd00d5b-3446-472a-9c18-0ee50cd05008"/>
+                                 <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                 <text>
+                                    <paragraph>
+                                       <content styleCode="italics">Effect of Pantoprazole on Other Drugs</content>
+                                    </paragraph>
+                                 </text>
+                                 <effectiveTime value="20260531"/>
+                                 <component>
+                                    <section ID="s72">
+                                       <id root="a1baf85a-4025-4b3e-8b6a-fc97a0d8e0af"/>
+                                       <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                       <text>
+                                          <paragraph>
+                                             <content styleCode="italics underline">Clopidogrel</content>
+                                          </paragraph>
+                                          <paragraph>Clopidogrel is metabolized to its active metabolite in part by CYP2C19. In a crossover clinical study, 66 healthy subjects were administered clopidogrel (300 mg loading dose followed by 75 mg per day) alone and with oral pantoprazole (80 mg at the same time as clopidogrel) for 5 days. On Day 5, the mean AUC of the active metabolite of clopidogrel was reduced by approximately 14% (geometric mean ratio was 86%, with 90% CI of 79 to 93%) when pantoprazole sodium was coadministered with clopidogrel as compared to clopidogrel administered alone. Pharmacodynamic parameters were also measured and demonstrated that the change in inhibition of platelet aggregation (induced by 5 micromolar ADP) was correlated with the change in the exposure to clopidogrel active metabolite. The clinical significance of this finding is not clear.
+</paragraph>
+                                       </text>
+                                       <effectiveTime value="20260531"/>
+                                    </section>
+                                 </component>
+                                 <component>
+                                    <section ID="s73">
+                                       <id root="2f38626f-95b7-4f97-85a8-43b0cc97e162"/>
+                                       <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                       <text>
+                                          <paragraph>
+                                             <content styleCode="italics underline">Mycophenolate Mofetil (MMF)</content>
+                                          </paragraph>
+                                          <paragraph>Administration of oral pantoprazole 40 mg twice daily for 4 days and a single 1000 mg dose of MMF approximately one hour after the last dose of pantoprazole to 12 healthy subjects in a cross-over study resulted in a 57% reduction in the C<sub>max</sub> and 27% reduction in the AUC of MPA. Transplant patients receiving approximately 2000 mg per day of MMF (n=12) were compared to transplant patients receiving approximately the same dose of MMF and oral pantoprazole 40 mg per day (n=21). There was a 78% reduction in the C<sub>max</sub> and a 45% reduction in the AUC of MPA in patients receiving both pantoprazole and MMF <content styleCode="italics">[see Drug Interactions(<linkHtml href="#s37">7</linkHtml>)]</content>.
+</paragraph>
+                                       </text>
+                                       <effectiveTime value="20260531"/>
+                                    </section>
+                                 </component>
+                                 <component>
+                                    <section ID="s74">
+                                       <id root="ce45c909-c106-426c-a48a-6e9bbcbaa019"/>
+                                       <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                       <text>
+                                          <paragraph>
+                                             <content styleCode="italics underline">Other Drugs</content>
+                                          </paragraph>
+                                          <paragraph>
+                                             <content styleCode="italics">In vivo</content> studies also suggest that pantoprazole does not significantly affect the kinetics of other drugs (theophylline, diazepam [and its active metabolite, desmethyldiazepam], phenytoin, metoprolol, nifedipine, carbamazepine, midazolam, clarithromycin, diclofenac, naproxen, piroxicam and oral contraceptives [levonorgestrel/ethinyl estradiol]). In other <content styleCode="italics">in vivo</content> studies, digoxin, ethanol, glyburide, antipyrine, caffeine, metronidazole, and amoxicillin had no clinically relevant interactions with pantoprazole.
+</paragraph>
+                                          <paragraph>Although no significant drug-drug interactions have been observed in clinical studies, the potential for significant drug-drug interactions with more than once daily dosing with high doses of pantoprazole has not been studied in poor metabolizers or individuals who are hepatically impaired.
+</paragraph>
+                                       </text>
+                                       <effectiveTime value="20260531"/>
+                                    </section>
+                                 </component>
+                                 <component>
+                                    <section ID="s75">
+                                       <id root="3eb5af10-5869-459d-b6d4-0d35f9f67d40"/>
+                                       <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                                       <text>
+                                          <paragraph>
+                                             <content styleCode="italics underline">Antacids</content>
+                                          </paragraph>
+                                          <paragraph>There was also no interaction with concomitantly administered antacids.
+</paragraph>
+                                          <paragraph>
+                                             <content styleCode="italics">Pediatric use information is approved for Pfizer Inc.'s PROTONIX</content>
+                                             <content styleCode="italics">
+                                                <sup>®
+</sup>
+                                             </content>
+                                             <content styleCode="italics">I.V. (pantoprazole sodium) for Injection. However, due to Pfizer Inc.'s marketing exclusivity rights, this drug product is not labeled with that information.</content>
+                                          </paragraph>
+                                       </text>
+                                       <effectiveTime value="20260531"/>
+                                    </section>
+                                 </component>
+                              </section>
+                           </component>
+                        </section>
+                     </component>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s76">
+                     <id root="c0936dfe-5490-4ea9-8915-45da977236ae"/>
+                     <code code="66106-6" codeSystem="2.16.840.1.113883.6.1" displayName="PHARMACOGENOMICS SECTION"/>
+                     <title>12.5  Pharmacogenomics
+</title>
+                     <text>
+                        <paragraph>CYP2C19 displays a known genetic polymorphism due to its deficiency in some subpopulations (e.g., approximately 3% of Whites and African-Americans and 17% to 23% of Asians are poor metabolizers). Although these subpopulations of pantoprazole poor metabolizers have elimination half-life values of 3.5 to 10 hours in adults, they still have minimal accumulation (23% or less) with once daily dosing. For adult patients who are CYP2C19 poor metabolizers, no dosage adjustment is needed.
+</paragraph>
+                        <paragraph>Similar to adults, pediatric patients who have the poor metabolizer genotype of CYP2C19 (CYP2C19 *2/*2) exhibited greater than a 6-fold increase in AUC compared to pediatric extensive (CYP2C19 *1/*1) and intermediate (CYP2C19 *1/*x) metabolizers. Poor metabolizers exhibited approximately 10-fold lower apparent oral clearance compared to extensive metabolizers.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s77">
+               <id root="c04dde44-632f-4c08-b851-9a5ea25e5150"/>
+               <code code="43680-8" codeSystem="2.16.840.1.113883.6.1" displayName="NONCLINICAL TOXICOLOGY SECTION"/>
+               <title>13  NONCLINICAL TOXICOLOGY
+</title>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <section ID="s78">
+                     <id root="bf4b875f-f202-4462-abef-1e585bf25cde"/>
+                     <code code="34083-6" codeSystem="2.16.840.1.113883.6.1" displayName="CARCINOGENESIS &amp; MUTAGENESIS &amp; IMPAIRMENT OF FERTILITY SECTION"/>
+                     <title>13.1  Carcinogenesis, Mutagenesis, Impairment of Fertility
+</title>
+                     <text>
+                        <paragraph>In a 24-month carcinogenicity study, Sprague-Dawley rats were treated orally with pantoprazole doses of 0.5 to 200 mg/kg/day, about 0.1 to 40 times the exposure on a body surface area basis of a 50-kg person dosed at 40 mg/day. In the gastric fundus, treatment with 0.5 to 200 mg/kg/day produced enterochromaffin-like (ECL) cell hyperplasia and benign and malignant neuroendocrine cell tumors in a dose-related manner. In the forestomach, treatment with 50 and 200 mg/kg/day (about 10 and 40 times the recommended human dose on a body surface area basis) produced benign squamous cell papillomas and malignant squamous cell carcinomas. Rare gastrointestinal tumors associated with pantoprazole treatment included an adenocarcinoma of the duodenum with 50 mg/kg/day and benign polyps and adenocarcinomas of the gastric fundus with 200 mg/kg/day. In the liver, treatment with 0.5 to 200 mg/kg/day produced dose-related increases in the incidences of hepatocellular adenomas and carcinomas. In the thyroid gland, treatment with 200 mg/kg/day produced increased incidences of follicular cell adenomas and carcinomas for both male and female rats.
+</paragraph>
+                        <paragraph>In a 24-month carcinogenicity study, Fischer 344 rats were treated orally with pantoprazole doses of 5 to 50 mg/kg/day, approximately 1 to 10 times the recommended human dose based on body surface area. In the gastric fundus, treatment with 5 to 50 mg/kg/day produced enterochromaffin-like (ECL) cell hyperplasia and benign and malignant neuroendocrine cell tumors. Dose selection for this study may not have been adequate to comprehensively evaluate the carcinogenic potential of pantoprazole.
+</paragraph>
+                        <paragraph>In a 24-month carcinogenicity study, B6C3F1 mice were treated orally with pantoprazole doses of 5 to 150 mg/kg/day, 0.5 to 15 times the recommended human dose based on body surface area. In the liver, treatment with 150 mg/kg/day produced increased incidences of hepatocellular adenomas and carcinomas in female mice. Treatment with 5 to 150 mg/kg/day also produced gastric fundic ECL cell hyperplasia.
+</paragraph>
+                        <paragraph>A 26-week p53 +/- transgenic mouse carcinogenicity study was not positive.
+</paragraph>
+                        <paragraph>Pantoprazole was positive in the <content styleCode="italics">in vitro</content> human lymphocyte chromosomal aberration assays, in one of two mouse micronucleus tests for clastogenic effects, and in the <content styleCode="italics">in vitro</content> Chinese hamster ovarian cell/HGPRT forward mutation assay for mutagenic effects. Equivocal results were observed in the <content styleCode="italics">in vivo</content> rat liver DNA covalent binding assay. Pantoprazole was negative in the <content styleCode="italics">in vitro</content> Ames mutation assay, the <content styleCode="italics">in vitro</content> unscheduled DNA synthesis (UDS) assay with rat hepatocytes, the <content styleCode="italics">in vitro</content> AS52/GPT mammalian cell-forward gene mutation assay, the <content styleCode="italics">in vitro</content> thymidine kinase mutation test with mouse lymphoma L5178Y cells, and the <content styleCode="italics">in vivo</content> rat bone marrow cell chromosomal aberration assay.
+</paragraph>
+                        <paragraph>There were no effects on fertility or reproductive performance when pantoprazole was given at oral doses up to 500 mg/kg/day in male rats (98 times the recommended human dose based on body surface area) and 450 mg/kg/day in female rats (88 times the recommended human dose based on body surface area).
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s79">
+               <id root="387d3b69-6410-4399-a37d-30c12c5ba7ad"/>
+               <code code="34092-7" codeSystem="2.16.840.1.113883.6.1" displayName="CLINICAL STUDIES SECTION"/>
+               <title>14  CLINICAL STUDIES
+</title>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <section ID="s80">
+                     <id root="a3c43aad-6330-4bca-9145-11b7702c0504"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>14.1  Gastroesophageal Reflux Disease (GERD) Associated with a History of Erosive Esophagitis (EE)
+</title>
+                     <text>
+                        <paragraph>A multicenter, double-blind, two-period placebo-controlled study was conducted to assess the ability of Pantoprazole Sodium for Injection to maintain gastric acid suppression in patients switched from pantoprazole sodium delayed-release tablets to Pantoprazole Sodium for Injection GERD patients (n=65, 26 to 64 years; 35 female; 9 Black, 11 Hispanic, 44 White, 1 other) with a history of EE were randomized to receive either 20 or 40 mg of oral pantoprazole once per day for 10 days (period 1), and then were switched in period 2 to either daily Pantoprazole Sodium for Injection or placebo for 7 days, matching their respective dose level from period 1. Patients were administered all test medication with a light meal. Maximum acid output (MAO) and basal acid output (BAO) were determined 24 hours following the last day of oral medication (day 10), the first day (day 1) of intravenous administration and the last day of intravenous administration (day 7). MAO was estimated from a 1 hour continuous collection of gastric contents following subcutaneous injection of 6.0 mcg/kg of pentagastrin.
+</paragraph>
+                        <paragraph>This study demonstrated that, after 10 days of repeated oral administration followed by 7 days of intravenous administration, the oral and intravenous dosage forms of pantoprazole 40 mg are similar in their ability to suppress MAO and BAO in patients with GERD and a history of EE (see <linkHtml href="#t5">Table 5</linkHtml>). Also, patients on oral pantoprazole sodium who were switched to intravenous placebo experienced a significant increase in acid output within 48 hours of their last oral dose (see <linkHtml href="#t5">Table 5</linkHtml>). However, at 48 hours after their last oral dose, patients treated with Pantoprazole Sodium for Injection had a significantly lower mean basal acid output (see <linkHtml href="#t5">Table 5</linkHtml>) than those treated with placebo.
+</paragraph>
+                        <table ID="t5" width="100%">
+                           <caption>Table 5: Antisecretory Effects (mEq/h) of 40 mg Pantoprazole Sodium for Injection and 40 mg Pantoprazole Delayed-Release Tablets in GERD Patients with a History of EE
+</caption>
+                           <col width="25.000%" align="left"/>
+                           <col width="25.000%" align="left"/>
+                           <col width="25.000%" align="left"/>
+                           <col width="25.000%" align="left"/>
+                           <tfoot>
+                              <tr>
+                                 <td colspan="4" align="left" valign="top">
+                                    <paragraph styleCode="footnote">* p&lt;0.0001 Significantly different from Pantoprazole Sodium for Injection
+</paragraph>
+                                 </td>
+                              </tr>
+                           </tfoot>
+                           <tbody>
+                              <tr>
+                                 <td rowspan="2" align="left" valign="middle" styleCode="Toprule Botrule">Parameter
+</td>
+                                 <td align="center" valign="middle" styleCode="Toprule">Pantoprazole Delayed-Release Tablets
+</td>
+                                 <td align="center" valign="middle" styleCode="Toprule">Pantoprazole Sodium for Injection
+</td>
+                                 <td align="center" valign="middle" styleCode="Toprule">Intravenous Placebo
+</td>
+                              </tr>
+                              <tr>
+                                 <td align="center" valign="middle" styleCode="Botrule">DAY 10
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">DAY 7
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">DAY 7
+</td>
+                              </tr>
+                              <tr>
+                                 <td rowspan="2" align="left" valign="middle">Mean maximum acid output
+</td>
+                                 <td align="center" valign="middle">6.49
+</td>
+                                 <td align="center" valign="middle">6.62
+</td>
+                                 <td align="center" valign="middle">29.19*
+</td>
+                              </tr>
+                              <tr>
+                                 <td align="center" valign="middle">n=30
+</td>
+                                 <td align="center" valign="middle">n=23
+</td>
+                                 <td align="center" valign="middle">n=7
+</td>
+                              </tr>
+                              <tr>
+                                 <td rowspan="2" align="left" valign="middle" styleCode="Botrule">Mean basal acid output
+</td>
+                                 <td align="center" valign="middle">0.80
+</td>
+                                 <td align="center" valign="middle">0.53
+</td>
+                                 <td align="center" valign="middle">4.14*
+</td>
+                              </tr>
+                              <tr>
+                                 <td align="center" valign="middle" styleCode="Botrule">n=30
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">n=23
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">n=7
+</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                        <paragraph>To evaluate the effectiveness of Pantoprazole Sodium for Injection as an initial treatment to suppress gastric acid secretion, two studies were conducted.
+</paragraph>
+                        <paragraph>Study 1 was a multicenter, double-blind, placebo-controlled, study of the pharmacodynamic effects of Pantoprazole Sodium for Injection and pantoprazole sodium delayed-release tablets. Patients with GERD and a history of EE (n=78, 20 to 67 years; 39 females; 7 Black, 19 Hispanic, 52 White) were randomized to receive either 40 mg Pantoprazole Sodium for Injection, 40 mg pantoprazole sodium delayed-release tablets, or placebo once daily for 7 days. Following an overnight fast, test medication was administered and patients were given a light meal within 15 minutes. MAO and BAO were determined 24 hours following the last day of study medication. MAO was estimated from a 1 hour continuous collection of gastric contents following subcutaneous injection of 6.0 mcg/kg of pentagastrin to stimulate acid secretion. This study demonstrated that, after treatment for 7 days, patients treated with Pantoprazole Sodium for Injection had a significantly lower MAO and BAO than those treated with placebo (p&lt;0.001), and results were comparable to those of patients treated with pantoprazole sodium delayed-release tablets (see <linkHtml href="#t6">Table 6</linkHtml>).
+</paragraph>
+                        <table ID="t6" width="100%">
+                           <caption>Table 6: Antisecretory Effects (mEq/h) of Initial Treatment with 40 mg Pantoprazole Sodium for Injection and 40 mg Pantoprazole Delayed-Release Tablets in GERD Patients with a History of EE
+</caption>
+                           <col width="27.600%" align="left"/>
+                           <col width="24.950%" align="left"/>
+                           <col width="27.600%" align="left"/>
+                           <col width="19.850%" align="left"/>
+                           <tfoot>
+                              <tr>
+                                 <td colspan="4" align="left" valign="top">
+                                    <paragraph styleCode="footnote">* p&lt;0.001 Significantly different from Pantoprazole Sodium for Injection
+</paragraph>
+                                 </td>
+                              </tr>
+                           </tfoot>
+                           <tbody>
+                              <tr>
+                                 <td rowspan="2" align="left" valign="middle" styleCode="Toprule Botrule">Parameter
+</td>
+                                 <td align="center" valign="middle" styleCode="Toprule">Pantoprazole Sodium for Injection
+</td>
+                                 <td align="center" valign="middle" styleCode="Toprule">Pantoprazole Delayed-Release<br/>Tablets
+</td>
+                                 <td align="center" valign="middle" styleCode="Toprule">Placebo
+</td>
+                              </tr>
+                              <tr>
+                                 <td align="center" valign="middle" styleCode="Botrule">DAY 7
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">DAY 7
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">DAY 7
+</td>
+                              </tr>
+                              <tr>
+                                 <td rowspan="2" align="left" valign="middle">Maximum acid output (mean ± SD)
+</td>
+                                 <td align="center" valign="middle">8.4±5.9
+</td>
+                                 <td align="center" valign="middle">6.3±6.6
+</td>
+                                 <td align="center" valign="middle">20.9±14.5*
+</td>
+                              </tr>
+                              <tr>
+                                 <td align="center" valign="middle">n=25
+</td>
+                                 <td align="center" valign="middle">n=22
+</td>
+                                 <td align="center" valign="middle">n=24
+</td>
+                              </tr>
+                              <tr>
+                                 <td rowspan="2" align="left" valign="middle" styleCode="Botrule">Basal acid output <br/>(mean ± SD)
+</td>
+                                 <td align="center" valign="middle">0.4±0.5
+</td>
+                                 <td align="center" valign="middle">0.6±0.8
+</td>
+                                 <td align="center" valign="middle">2.8±3.0*
+</td>
+                              </tr>
+                              <tr>
+                                 <td align="center" valign="middle" styleCode="Botrule">n=25
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">n=22
+</td>
+                                 <td align="center" valign="middle" styleCode="Botrule">n=23
+</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                        <paragraph>Study 2 was a single-center, double-blind, parallel-group study to compare the clinical effects of Pantoprazole Sodium for Injection and pantoprazole sodium delayed-release tablets. Patients (n=45, median age 56 years, 21 males and 24 females) with acute endoscopically proven reflux esophagitis (Savary/Miller Stage II or III) with at least 1 of 3 symptoms typical for reflux esophagitis (acid eructation, heartburn, or pain on swallowing) were randomized to receive either 40 mg Pantoprazole Sodium for Injection or 40 mg pantoprazole sodium delayed-release tablets once daily for 5 days. After the initial 5 days, all patients were treated with 40 mg oral pantoprazole daily to complete a total of 8 weeks of treatment. Symptom relief was assessed by calculating the daily mean of the sums of the average scores for these 3 symptoms and the daily mean of the average score for each of the symptoms separately. There was no significant difference in symptom relief between Pantoprazole Sodium for Injection and pantoprazole sodium delayed-release tablets within the first 5 days. A repeat endoscopy after 8 weeks of treatment revealed that 20 out of 23 (87%) patients treated with Pantoprazole Sodium for Injection plus pantoprazole sodium delayed-release tablets and 19 out of 22 (86%) of the patients treated with pantoprazole sodium delayed-release tablets had endoscopically proven healing of their esophageal lesions.
+</paragraph>
+                        <paragraph>Data comparing Pantoprazole Sodium for Injection to other PPIs (oral or intravenous) or H<sub>2</sub>-receptor antagonists (oral or intravenous) are limited, and therefore, are inadequate to support any conclusions regarding comparative efficacy.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s81">
+                     <id root="40a1af4e-01b1-4154-8eed-834941f97d30"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <title>14.2  Pathological Hypersecretion Associated with Zollinger-Ellison Syndrome
+</title>
+                     <text>
+                        <paragraph>Two studies measured the pharmacodynamic effects of 6 day treatment with Pantoprazole Sodium for Injection in patients with ZE Syndrome (with and without multiple endocrine neoplasia type I). In one of these studies, an initial treatment with Pantoprazole Sodium for Injection in 21 patients (29 to 75 years; 8 female; 4 Black, 1 Hispanic, 16 White) reduced acid output to the target level (10 mEq/h or less) and significantly reduced H<sup>+</sup> concentration and the volume of gastric secretions; target levels were achieved within 45 minutes of drug administration.
+</paragraph>
+                        <paragraph>In the other study of 14 patients (38 to 67 years; 5 female; 2 Black, 12 White) with ZE Syndrome, treatment was switched from an oral PPI to Pantoprazole Sodium for Injection. Pantoprazole Sodium for Injection maintained or improved control of gastric acid secretion.
+</paragraph>
+                        <paragraph>In both studies, total doses of 160 or 240 mg per day of Pantoprazole Sodium for Injection, administered in divided doses, maintained basal acid secretion below target levels in all patients. Target levels were 10 mEq/h in patients without prior gastric surgery, and 5 mEq/h in all patients with prior gastric acid-reducing surgery. Once gastric acid secretion was controlled, there was no evidence of tolerance during this 7 day study. Basal acid secretion was maintained below target levels for at least 24 hours in all patients and through the end of treatment in these studies (3 to 7 days) in all but 1 patient who required a dose adjustment guided by acid output measurements until acid control was achieved. In both studies, doses were adjusted to the individual patient need, but gastric acid secretion was controlled in greater than 80% of patients by a starting regimen of 80 mg every 12 hours.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s82">
+               <id root="fe54b016-c5a5-4eb2-8d5f-a803e82cb5f9"/>
+               <code code="34069-5" codeSystem="2.16.840.1.113883.6.1" displayName="HOW SUPPLIED SECTION"/>
+               <title>16 HOW SUPPLIED/STORAGE AND HANDLING
+</title>
+               <text>
+                  <paragraph>Pantoprazole Sodium for Injection (pantoprazole sodium) is supplied in a single-dose vial as a white to off-white freeze-dried powder for reconstitution and dilution containing 40 mg of pantoprazole.
+</paragraph>
+                  <paragraph>Pantoprazole Sodium for Injection is supplied as follows:
+</paragraph>
+                  <table width="100%" styleCode="Noautorules">
+                     <col width="21.400%" align="left"/>
+                     <col width="45.267%" align="left"/>
+                     <col width="33.333%" align="left"/>
+                     <tbody>
+                        <tr>
+                           <td align="left" valign="top">
+                              <content styleCode="bold">NDC</content>
+                           </td>
+                           <td align="left" valign="top">
+                              <content styleCode="bold">Pantoprazole Sodium for Injection</content>
+                           </td>
+                           <td align="left" valign="top">
+                              <content styleCode="bold">Package Factor</content>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="left" valign="top">83634-751-10
+</td>
+                           <td align="left" valign="top">40 mg Single-Dose Vial
+</td>
+                           <td align="left" valign="top">10 vials per carton
+</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </text>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <section ID="s83">
+                     <id root="07a04323-e1bb-45e0-b4df-0b0764e1ea66"/>
+                     <code code="44425-7" codeSystem="2.16.840.1.113883.6.1" displayName="STORAGE AND HANDLING SECTION"/>
+                     <text>
+                        <paragraph>
+                           <content styleCode="bold">Storage Conditions</content>
+                        </paragraph>
+                        <paragraph>Store at 20° to 25°C (68° to 77°F); excursions permitted between 15° and 30°C (59° and 86°F). [See USP Controlled Room Temperature.]
+</paragraph>
+                        <paragraph>Discard unused portion.
+</paragraph>
+                        <paragraph>Protect from light.
+</paragraph>
+                        <paragraph>
+                           <content styleCode="bold">Sterile, Nonpyrogenic.<br/>The container closure is not made with natural rubber latex.</content>
+                        </paragraph>
+                        <paragraph>Brands listed are the trademark of their respective owners.
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s84">
+               <id root="6b9e6452-43a9-4e3c-bed2-8a58b1421aee"/>
+               <code code="34076-0" codeSystem="2.16.840.1.113883.6.1" displayName="INFORMATION FOR PATIENTS SECTION"/>
+               <title>17 PATIENT COUNSELING INFORMATION
+</title>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <section ID="s85">
+                     <id root="c778dcfb-00c2-44eb-b4ef-acaf3196f1f7"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">Adverse Reactions</content>
+                        </paragraph>
+                        <paragraph>Advise patients to report to their healthcare provider if they experience any signs or symptoms consistent with:
+</paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>Injection Site Reactions <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s18">5.2</linkHtml>)]</content>
+                           </item>
+                           <item>Potential for Exacerbation of Zinc Deficiency <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s19">5.3</linkHtml>)]</content>
+                           </item>
+                           <item>Acute Tubulointerstitial Nephritis <content styleCode="italics">[see Contraindications (<linkHtml href="#s15">4</linkHtml>) and Warnings and Precautions (<linkHtml href="#s20">5.4</linkHtml>)]</content>
+                           </item>
+                           <item>
+                              <content styleCode="italics">Clostridioides difficile</content>-Associated Diarrhea <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s21">5.5</linkHtml>)]</content>
+                           </item>
+                           <item>Bone Fracture <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s22">5.6</linkHtml>)]</content>
+                           </item>
+                           <item>Severe Cutaneous Adverse Reactions <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s23">5.7</linkHtml>)]</content>
+                           </item>
+                           <item>Cutaneous and Systemic Lupus Erythematosus <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s24">5.8</linkHtml>)]</content>
+                           </item>
+                           <item>Hepatic Effects <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s25">5.9</linkHtml>)]</content>
+                           </item>
+                           <item>Hypomagnesemia and Mineral Metabolism <content styleCode="italics">[see Warnings and Precautions (<linkHtml href="#s26">5.10</linkHtml>)]</content>
+                           </item>
+                        </list>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s86">
+                     <id root="4913f6f1-6d9f-460e-b7c3-ba6815f8cd7d"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">Drug Interactions</content>
+                        </paragraph>
+                        <paragraph>Advise patients to report to their healthcare provider before they start treatment with any of the following:
+</paragraph>
+                        <list listType="unordered" styleCode="Disc">
+                           <item>rilpivirine-containing products <content styleCode="italics">[Contraindications (<linkHtml href="#s15">4</linkHtml>)]</content>
+                           </item>
+                           <item>high dose methotrexate <content styleCode="italics">[Warnings and Precautions (<linkHtml href="#s30">5.14</linkHtml>)]</content>.
+</item>
+                        </list>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+               <component>
+                  <section ID="s87">
+                     <id root="b7f6463e-6404-426c-8ddb-78ee4742c773"/>
+                     <code code="42229-5" codeSystem="2.16.840.1.113883.6.1" displayName="SPL UNCLASSIFIED SECTION"/>
+                     <text>
+                        <paragraph>
+                           <content styleCode="underline">Pregnancy</content>
+                        </paragraph>
+                        <paragraph>Advise a pregnant woman of the potential risk to a fetus. Advise females of reproductive potential to inform their healthcare provider of a known or suspected pregnancy <content styleCode="italics">[see Use in Specific Populations (<linkHtml href="#s39">8.1</linkHtml>)]</content>.
+</paragraph>
+                        <paragraph>
+                           <content styleCode="bold">AVENACY<br/>
+                           </content>Mfd. for Avenacy<br/>Schaumburg, IL 60173 (USA)<br/>Made in China<br/>©2026 Avenacy
+</paragraph>
+                        <paragraph>May 2026
+</paragraph>
+                     </text>
+                     <effectiveTime value="20260531"/>
+                  </section>
+               </component>
+            </section>
+         </component>
+         <component>
+            <section ID="s88">
+               <id root="bb9414ed-79ee-4d93-ae2a-781451ab1863"/>
+               <code code="51945-4" codeSystem="2.16.840.1.113883.6.1" displayName="PACKAGE LABEL.PRINCIPAL DISPLAY PANEL"/>
+               <text>
+                  <paragraph>PACKAGE LABEL – PRINCIPAL DISPLAY PANEL – Vial Label
+</paragraph>
+                  <paragraph>NDC 83634-751-41
+</paragraph>
+                  <paragraph>Pantoprazole Sodium for Injection
+</paragraph>
+                  <paragraph>Equivalent to pantoprazole
+</paragraph>
+                  <paragraph>40 mg per vial
+</paragraph>
+                  <paragraph>Sterile
+</paragraph>
+                  <paragraph>Single-Dose Vial
+</paragraph>
+                  <paragraph>Discard unused portion
+</paragraph>
+                  <paragraph>For Intravenous Infusion ONLY
+</paragraph>
+                  <paragraph>Rx only
+</paragraph>
+                  <renderMultiMedia ID="f02" referencedObject="mm02"/>
+               </text>
+               <effectiveTime value="20260531"/>
+               <component>
+                  <observationMedia ID="mm02">
+                     <text>PACKAGE LABEL – PRINCIPAL DISPLAY PANEL – Vial Label
+</text>
+                     <value xsi:type="ED" mediaType="image/jpeg">
+                        <reference value="pan0b-0001-02.jpg"/>
+                     </value>
+                  </observationMedia>
+               </component>
+            </section>
+         </component>
+      </structuredBody>
+   </component>
+</document>

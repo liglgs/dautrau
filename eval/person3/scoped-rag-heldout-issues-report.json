@@ -1,0 +1,511 @@
+{
+  "phase": "historical heldout before cohort normalization and empty-retrieval fallback",
+  "clinical_validation_claimed": false,
+  "raw_responses_and_labels_preserved": true,
+  "file_sha256": {
+    "data\\person3\\evaluation-ai\\scoped-rag-v3-heldout.responses.jsonl": "3faf8e984ebe2df5237d724a8d6d04aff9d9f734f8d6c6f6c5be67425f08ac92",
+    "data\\person3\\evaluation-ai\\scoped-rag-v3-heldout.report.json": "9e3fd5419cf2ddc30d2ffda43651fdf7d0cc15c9453c8ecfc31d73b1ecdfceba",
+    "data\\person3\\evaluation-ai\\scoped-rag-v3-development.responses.jsonl": "d1b69dd5be2746f36c79aa75a957de8352d79a280e77f02d45a9b8e68d011ca5",
+    "data\\person3\\evaluation-ai\\claims.jsonl": "c4b1dc12f58f74b9fbf3918249b8bd50a8d32e12f9d4e1d4fa87859299b9650c",
+    "data\\person3\\evaluation-ai\\annotations.jsonl": "22134b0ea2ca2fbbfcfec3d0102298971dac6130be0c4b6bfd87c1c9859d96bf",
+    "data\\person3\\evaluation-ai\\corpus_manifest.json": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+    "data\\dictionaries\\mvp_candidates_2026_10_02.json": "10dd2e7b7e825ab63b00edcddd4410da887c5d6cf44ce0733366a312c0c0853e",
+    "eval\\person3\\final-ai-evaluation-report.json": "440186f04fe3ce79f573cc3bc6c1cf3538671152c01df9e5eb78eb974fd7a8cf"
+  },
+  "report": {
+    "version": "scoped-rag-v3",
+    "split": "heldout",
+    "model": "gpt-4o-mini-2024-07-18",
+    "clinical_validation_claimed": false,
+    "interpretation": "post-hoc technical experiment, not blind heldout validation",
+    "reference_kind": "ai_provisional",
+    "gold_sent_to_model": false,
+    "corpus_manifest_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+    "claims_sha256": "c4b1dc12f58f74b9fbf3918249b8bd50a8d32e12f9d4e1d4fa87859299b9650c",
+    "protocol": {
+      "version": "scoped-rag-v3",
+      "postprocessor_version": "scope-validation-v4",
+      "dictionary_sha256": "10dd2e7b7e825ab63b00edcddd4410da887c5d6cf44ce0733366a312c0c0853e",
+      "source_quotas": {
+        "pubmed": 8,
+        "dailymed": 8,
+        "faers": 4
+      },
+      "max_units_per_document": 3,
+      "rrf_constant": 60,
+      "spellings": {
+        "diarrhoea": "diarrhea",
+        "haemorrhage": "hemorrhage",
+        "oedema": "edema"
+      },
+      "max_context_chars": 55000,
+      "implementation_sha256": {
+        "eval/baselines/scoped_rag.py": "4408302c94df97737616dc857dec859e2e5583381aadc70eadbab4134bfc2205",
+        "eval/baselines/keyword.py": "d0d6e6c6026657cc4bc1a33794f699be6d432eacd55bee70090f28940c27fd50",
+        "eval/contracts.py": "edea1d7d5e8d2b568aa76631e5ffe550db8ac4e9b7ccb2c13cbe86df9f679064",
+        "src/services/evidence/normalize.py": "f6e29b1440e78e59c0d6d1d986d9c0069d01f0356dbb917b2e904a73daf54c51",
+        "src/services/prompts.py": "fec1aac2e2115eecf06367e2e3a9a5cfb709a6711ccad121e04a4dd465471808"
+      }
+    },
+    "total_split_claims": 15,
+    "processed_claims": 15,
+    "selected_claim_id": null,
+    "mode": "live-recording",
+    "original_baseline_files_modified": false,
+    "claims": [
+      {
+        "claim_id": "P3-IBUPROFEN-01",
+        "request_sha256": "0d7fc98c66ef4acd803fee685c9022d9ff107b5d5e6ef9990a9c3044b2f4bd70",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-IBUPROFEN-02",
+        "request_sha256": "34391d4cbcc3c9ad6d1d101626ae4d88cb35ee5c872374beeaf08844b82aec8a",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-IBUPROFEN-03",
+        "request_sha256": "88f0320ecffcd7cfc7d15cd83eceaaffb055a02df1f435f88e5481a328905ac3",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-IBUPROFEN-04",
+        "request_sha256": "d04697949761724b1fe7864cb115e25a3afe51b8ec011dd5665de0651469aabf",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-IBUPROFEN-05",
+        "request_sha256": "82daddd6aef9875ccbaa3b603852781f842eb4398ea774e221c30910e0285b76",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "requires_human_review",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-LISINOPRIL-01",
+        "request_sha256": "b36d80851229732a5f205104679ea9a4a35e0f024eeb1816aaea5e943ff5f6b6",
+        "retrieved_units": 9,
+        "source_counts": {
+          "pubmed": 6,
+          "dailymed": 2,
+          "faers": 1
+        },
+        "error": {
+          "type": "ValidationError",
+          "message": "1 validation error for Response\nfindings.3.study_type\n  Input should be 'rct', 'observational', 'review', 'label', 'spontaneous' or 'unknown' [type=literal_error, input_value='cohort', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error"
+        },
+        "recording": "ERROR"
+      },
+      {
+        "claim_id": "P3-LISINOPRIL-02",
+        "request_sha256": "f438792dd11db15c328bd99b782d3fc5e45bda592669bdcc9f1f196dbed9d58d",
+        "retrieved_units": 9,
+        "source_counts": {
+          "pubmed": 6,
+          "dailymed": 2,
+          "faers": 1
+        },
+        "error": {
+          "type": "ValidationError",
+          "message": "1 validation error for Response\nfindings.3.study_type\n  Input should be 'rct', 'observational', 'review', 'label', 'spontaneous' or 'unknown' [type=literal_error, input_value='cohort', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error"
+        },
+        "recording": "ERROR"
+      },
+      {
+        "claim_id": "P3-LISINOPRIL-03",
+        "request_sha256": "f592dcfdcff5f8f6c2a2175e65448ca5956a03a58adc20ad293c33acda2096b9",
+        "retrieved_units": 9,
+        "source_counts": {
+          "pubmed": 6,
+          "dailymed": 2,
+          "faers": 1
+        },
+        "error": null,
+        "recording": "recorded",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 0,
+        "excluded_findings": 4,
+        "excluded_finding_details": [
+          {
+            "alias": "E01",
+            "reason": "Unverified scope anchor: time_window",
+            "reasons": [
+              "Unverified scope anchor: time_window"
+            ]
+          },
+          {
+            "alias": "E02",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit"
+            ]
+          },
+          {
+            "alias": "E03",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit"
+            ]
+          },
+          {
+            "alias": "E05",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit"
+            ]
+          }
+        ],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": true
+      },
+      {
+        "claim_id": "P3-LISINOPRIL-04",
+        "request_sha256": "e5caff964a7120d340dd994ab1d0d6aad9052011e0cc11f08165b845d1425891",
+        "retrieved_units": 9,
+        "source_counts": {
+          "pubmed": 6,
+          "dailymed": 2,
+          "faers": 1
+        },
+        "error": null,
+        "recording": "recorded",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 0,
+        "excluded_findings": 4,
+        "excluded_finding_details": [
+          {
+            "alias": "E01",
+            "reason": "Unverified scope anchor: time_window",
+            "reasons": [
+              "Unverified scope anchor: time_window"
+            ]
+          },
+          {
+            "alias": "E02",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit"
+            ]
+          },
+          {
+            "alias": "E03",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit"
+            ]
+          },
+          {
+            "alias": "E05",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit",
+              "Unverified scope anchor: drug"
+            ]
+          }
+        ],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": true
+      },
+      {
+        "claim_id": "P3-LISINOPRIL-05",
+        "request_sha256": "accce1023ba01ed811a5b45fe2f3a74d56918c192bd34e7603e36248672accb6",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "requires_human_review",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-AMOXICILLIN-01",
+        "request_sha256": "a372a747bcdaf0c744d2c6cffd3a281a1df88dabf239e66a92431107d9ee42db",
+        "retrieved_units": 12,
+        "source_counts": {
+          "pubmed": 5,
+          "dailymed": 6,
+          "faers": 1
+        },
+        "error": null,
+        "recording": "recorded",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 1,
+        "excluded_findings": 2,
+        "excluded_finding_details": [
+          {
+            "alias": "E06",
+            "reason": "Study type needs an exact design quote",
+            "reasons": [
+              "Study type needs an exact design quote"
+            ]
+          },
+          {
+            "alias": "E03",
+            "reason": "Unverified scope anchor: event",
+            "reasons": [
+              "Unverified scope anchor: event",
+              "Unverified scope anchor: population"
+            ]
+          }
+        ],
+        "null_scope_fields": [],
+        "whitespace_restorations": [
+          {
+            "alias": "E01",
+            "field": "outcome",
+            "submitted": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy has been previously reported.",
+            "source_span": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy  has been previously reported."
+          },
+          {
+            "alias": "E03",
+            "field": "design",
+            "submitted": "Skin and laboratory tests in amoxicillin- and penicillin-induced morbilliform skin eruption.",
+            "source_span": "Skin and laboratory tests in amoxicillin- and penicillin-induced morbilliform  skin eruption."
+          }
+        ],
+        "scope_normalizations": [],
+        "needs_quote_review": true
+      },
+      {
+        "claim_id": "P3-AMOXICILLIN-02",
+        "request_sha256": "bb6d9bd75db4f3bdabac3611846d7241aa0d1ea62731d3e04ee8d9147f89af9e",
+        "retrieved_units": 12,
+        "source_counts": {
+          "pubmed": 5,
+          "dailymed": 6,
+          "faers": 1
+        },
+        "error": null,
+        "recording": "recorded",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 2,
+        "excluded_findings": 1,
+        "excluded_finding_details": [
+          {
+            "alias": "E07",
+            "reason": "Outcome quote is not exact in the supplied unit",
+            "reasons": [
+              "Outcome quote is not exact in the supplied unit"
+            ]
+          }
+        ],
+        "null_scope_fields": [],
+        "whitespace_restorations": [
+          {
+            "alias": "E01",
+            "field": "outcome",
+            "submitted": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy has been previously reported.",
+            "source_span": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy  has been previously reported."
+          }
+        ],
+        "scope_normalizations": [
+          {
+            "alias": "E01",
+            "field": "population",
+            "submitted": "unknown",
+            "normalized": null
+          },
+          {
+            "alias": "E01",
+            "field": "route",
+            "submitted": "unknown",
+            "normalized": null
+          },
+          {
+            "alias": "E06",
+            "field": "population",
+            "submitted": "unknown",
+            "normalized": null
+          },
+          {
+            "alias": "E07",
+            "field": "population",
+            "submitted": "unknown",
+            "normalized": null
+          }
+        ],
+        "needs_quote_review": true
+      },
+      {
+        "claim_id": "P3-AMOXICILLIN-03",
+        "request_sha256": "bb2e524cd7e58cbbe4ac493e0e288859712fd4fea6923a4f141ff78d3d11f8ba",
+        "retrieved_units": 12,
+        "source_counts": {
+          "pubmed": 5,
+          "dailymed": 6,
+          "faers": 1
+        },
+        "error": null,
+        "recording": "recorded",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 1,
+        "excluded_findings": 2,
+        "excluded_finding_details": [
+          {
+            "alias": "E06",
+            "reason": "Study type needs an exact design quote",
+            "reasons": [
+              "Study type needs an exact design quote"
+            ]
+          },
+          {
+            "alias": "E03",
+            "reason": "Unverified scope anchor: event",
+            "reasons": [
+              "Unverified scope anchor: event"
+            ]
+          }
+        ],
+        "null_scope_fields": [],
+        "whitespace_restorations": [
+          {
+            "alias": "E01",
+            "field": "outcome",
+            "submitted": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy has been previously reported.",
+            "source_span": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy  has been previously reported."
+          },
+          {
+            "alias": "E03",
+            "field": "design",
+            "submitted": "Skin and laboratory tests in amoxicillin- and penicillin-induced morbilliform skin eruption.",
+            "source_span": "Skin and laboratory tests in amoxicillin- and penicillin-induced morbilliform  skin eruption."
+          }
+        ],
+        "scope_normalizations": [],
+        "needs_quote_review": true
+      },
+      {
+        "claim_id": "P3-AMOXICILLIN-04",
+        "request_sha256": "6712e05c7f0227dc4edea488b5807383bc6f7dbdbac7047e978a5b066b6c8fff",
+        "retrieved_units": 12,
+        "source_counts": {
+          "pubmed": 5,
+          "dailymed": 6,
+          "faers": 1
+        },
+        "error": null,
+        "recording": "recorded",
+        "assessment_status": "insufficient_evidence",
+        "accepted_findings": 2,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [
+          {
+            "alias": "E01",
+            "field": "outcome",
+            "submitted": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy has been previously reported.",
+            "source_span": "A link between amoxicillin-induced rash in infectious mononucleosis and allergy  has been previously reported."
+          }
+        ],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      },
+      {
+        "claim_id": "P3-AMOXICILLIN-05",
+        "request_sha256": "66eaa8b6872fc0fffa5ac252471f5a89705630c2cf1a95f27ce6d30107cb195e",
+        "retrieved_units": 0,
+        "source_counts": {
+          "pubmed": 0,
+          "dailymed": 0,
+          "faers": 0
+        },
+        "error": null,
+        "recording": "local_checkpoint",
+        "assessment_status": "requires_human_review",
+        "accepted_findings": 0,
+        "excluded_findings": 0,
+        "excluded_finding_details": [],
+        "null_scope_fields": [],
+        "whitespace_restorations": [],
+        "scope_normalizations": [],
+        "needs_quote_review": false
+      }
+    ]
+  }
+}

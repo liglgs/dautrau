@@ -1,0 +1,225 @@
+{
+  "version": "mvp-candidates-2026-10-02.1",
+  "mode": "verified",
+  "description": "Literal term mapping attested in frozen corpus, not clinical gold or ontology mapping.",
+  "corpus_sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+  "drugs": [
+    {
+      "canonical": "ibuprofen",
+      "aliases": [],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/39466269/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:39466269:1",
+      "source_hash": "f10ec2731237f1093bc0a8893c8c0107ebbea0da34fefbace011af9eab2aaafa",
+      "attestation": {
+        "quote": "ibuprofen",
+        "start": 1416,
+        "end": 1425
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    },
+    {
+      "canonical": "metformin",
+      "aliases": [
+        "metformin hydrochloride"
+      ],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/27987248/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:27987248:1",
+      "source_hash": "f42fe3ad369e2d9202637f94519078190f65c19c3a19d420ed175265bd635380",
+      "attestation": {
+        "quote": "metformin",
+        "start": 29,
+        "end": 38
+      },
+      "alias_attestations": [
+        {
+          "alias": "metformin hydrochloride",
+          "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+          "source_ref": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=e087ce3b-8d7f-43a3-8d20-54513da7617d",
+          "source_hash": "f82cda79667aa8d60bcae9b9a41234e76bcabf1003b1a050de13ca407351cbdd",
+          "quote": "METFORMIN HYDROCHLORIDE",
+          "start": 66,
+          "end": 89
+        }
+      ],
+      "ingredient_relationships": [
+        {
+          "ingredient": "METFORMIN HYDROCHLORIDE",
+          "active_moiety": "METFORMIN",
+          "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+          "source_ref": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=e087ce3b-8d7f-43a3-8d20-54513da7617d",
+          "raw_ref": "raw/dailymed/6bfd8f78b4545dfde0472fe78d0195479785b32872269e2c475e67c113931d53.raw",
+          "raw_hash": "6bfd8f78b4545dfde0472fe78d0195479785b32872269e2c475e67c113931d53",
+          "verification": "SPL active ingredientSubstance/activeMoiety relationship"
+        },
+        {
+          "ingredient": "METFORMIN HYDROCHLORIDE",
+          "active_moiety": "METFORMIN",
+          "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+          "source_ref": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0ef9de1a-b786-4b6c-a250-3f5ac532b16a",
+          "raw_ref": "raw/dailymed/a19749660b332fbbe721cf84c455256b1616f726abe4a8e0c5b4873e23d410a6.raw",
+          "raw_hash": "a19749660b332fbbe721cf84c455256b1616f726abe4a8e0c5b4873e23d410a6",
+          "verification": "SPL active ingredientSubstance/activeMoiety relationship"
+        }
+      ]
+    },
+    {
+      "canonical": "lisinopril",
+      "aliases": [],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/37417783/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:37417783:1",
+      "source_hash": "52bd687a630b3bcf9094e6548251cf22e63c9e62159b5e6f405d6d652477d412",
+      "attestation": {
+        "quote": "lisinopril",
+        "start": 1343,
+        "end": 1353
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    },
+    {
+      "canonical": "atorvastatin",
+      "aliases": [
+        "atorvastatin calcium propylene glycol solvate"
+      ],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/27616593/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:27616593:1",
+      "source_hash": "ed3601c5307a59897ef9a1292fb5e2afcac4ecd86fdee2ae5aa28e564bb6e0a1",
+      "attestation": {
+        "quote": "atorvastatin",
+        "start": 1229,
+        "end": 1241
+      },
+      "alias_attestations": [
+        {
+          "alias": "atorvastatin calcium propylene glycol solvate",
+          "doc_id": "dailymed:d57720ab-9f83-4da9-a57f-0d55e00a605c:23",
+          "source_ref": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d57720ab-9f83-4da9-a57f-0d55e00a605c",
+          "source_hash": "8698910c37710f25a82a8d88ce54cf44b13c609a5b641fabd5413d9275259494",
+          "quote": "atorvastatin calcium propylene glycol solvate",
+          "start": 34822,
+          "end": 34867
+        }
+      ],
+      "ingredient_relationships": [
+        {
+          "ingredient": "ATORVASTATIN CALCIUM PROPYLENE GLYCOL SOLVATE",
+          "active_moiety": "ATORVASTATIN",
+          "doc_id": "dailymed:d57720ab-9f83-4da9-a57f-0d55e00a605c:23",
+          "source_ref": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d57720ab-9f83-4da9-a57f-0d55e00a605c",
+          "raw_ref": "raw/dailymed/e97ca9d05cb42aad487fe7bdba6a86241960dac1af06a53de50ca367647d3b0f.raw",
+          "raw_hash": "e97ca9d05cb42aad487fe7bdba6a86241960dac1af06a53de50ca367647d3b0f",
+          "verification": "SPL active ingredientSubstance/activeMoiety relationship"
+        }
+      ]
+    },
+    {
+      "canonical": "amoxicillin",
+      "aliases": [],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/38055983/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:38055983:1",
+      "source_hash": "7e3554c0505250e577715d27400653c4d45e077f79a5685e2179bdbebadfb83d",
+      "attestation": {
+        "quote": "Amoxicillin",
+        "start": 50,
+        "end": 61
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    }
+  ],
+  "events": [
+    {
+      "canonical": "gastrointestinal haemorrhage",
+      "aliases": [],
+      "source_ref": "https://api.fda.gov/drug/event.json?search=safetyreportid%3A%2210006463%22",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "faers:10006463:4",
+      "source_hash": "7957c8c83f6dd3c8fd914c779d0a63da5eb6c59a8004506924cc65cdb7e20a14",
+      "attestation": {
+        "quote": "Gastrointestinal haemorrhage",
+        "start": 36375,
+        "end": 36403
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    },
+    {
+      "canonical": "diarrhoea",
+      "aliases": [
+        "diarrhea"
+      ],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/27987248/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:27987248:1",
+      "source_hash": "f42fe3ad369e2d9202637f94519078190f65c19c3a19d420ed175265bd635380",
+      "attestation": {
+        "quote": "diarrhoea",
+        "start": 479,
+        "end": 488
+      },
+      "alias_attestations": [
+        {
+          "alias": "diarrhea",
+          "doc_id": "pubmed:34907435:1",
+          "source_ref": "https://pubmed.ncbi.nlm.nih.gov/34907435/",
+          "source_hash": "7348f021bb7e8a8ad3c6fa503ce6c6a95753647e01504f1d70a15c29bd8c0b97",
+          "quote": "diarrhea",
+          "start": 2528,
+          "end": 2536
+        }
+      ],
+      "ingredient_relationships": []
+    },
+    {
+      "canonical": "cough",
+      "aliases": [],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/37417783/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:37417783:1",
+      "source_hash": "52bd687a630b3bcf9094e6548251cf22e63c9e62159b5e6f405d6d652477d412",
+      "attestation": {
+        "quote": "cough",
+        "start": 48,
+        "end": 53
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    },
+    {
+      "canonical": "myalgia",
+      "aliases": [],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/40529509/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:40529509:1",
+      "source_hash": "d08f85b17a39e03f9c5e4b0477683530bf7c62bcbe0bf4a820df259e500c18d6",
+      "attestation": {
+        "quote": "Myalgia",
+        "start": 1289,
+        "end": 1296
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    },
+    {
+      "canonical": "rash",
+      "aliases": [],
+      "source_ref": "https://pubmed.ncbi.nlm.nih.gov/38055983/",
+      "license": "Team-authored short term mapping; source text remains in the locally supplied bundle.",
+      "source_doc_id": "pubmed:38055983:1",
+      "source_hash": "7e3554c0505250e577715d27400653c4d45e077f79a5685e2179bdbebadfb83d",
+      "attestation": {
+        "quote": "Rash",
+        "start": 70,
+        "end": 74
+      },
+      "alias_attestations": [],
+      "ingredient_relationships": []
+    }
+  ]
+}

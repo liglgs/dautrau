@@ -1,0 +1,182 @@
+{
+  "annotation_status": "ai_provisional",
+  "claims": 20,
+  "exact_quotes": 9,
+  "source_documents_with_selected_quotes": 9,
+  "retrieval_units": 727,
+  "status_counts": {
+    "insufficient_evidence": 16,
+    "requires_human_review": 4
+  },
+  "split_counts": {
+    "development": 5,
+    "heldout": 15
+  },
+  "provenance": {
+    "annotator_type": "ai",
+    "annotator_role": "ai_provisional",
+    "annotation_date": "2026-10-03",
+    "independent_expert_reviews": 0,
+    "clinical_metrics_ready": false,
+    "heldout_exposed_to_annotator": true,
+    "specification_sha256": "051b1c71f99128bac378f70d92d65c1cd15e4b091564e003bfa81a510f880187",
+    "relevance_inventory": "selected_spans_not_exhaustive",
+    "citation_entailment": "not_measured",
+    "contradiction_gold": "not_exhaustively_reviewed",
+    "heldout_interpretation": "family_separated_exposed_technical_set"
+  },
+  "clinical_metrics_ready": false,
+  "six_status_coverage": false,
+  "live_model_calls": 0,
+  "source_http_requests": 0,
+  "corpus_manifest_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+  "original_expert_files_sha256": {
+    "reviewer_a.jsonl": "c7b666c3015096590dc5decdd5c272ded604873fcc7af5aac9e10011def2c82f",
+    "reviewer_b.jsonl": "3dc6cdaa68ff24c68325c64d41e57fad8a248e9e1353890df3be357bda6fcebd",
+    "mvp_gold.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "keyword_checks": {
+    "development": {
+      "errors": 0,
+      "rows": 5,
+      "summary": {
+        "keyword": {
+          "claims": 5,
+          "successful": 5,
+          "evidence_recall_at_20": {
+            "macro": 0.0,
+            "samples": 4,
+            "denominator": 4
+          },
+          "precision_at_20": {
+            "macro": 0.04,
+            "samples": 5,
+            "denominator": 87
+          },
+          "citation_precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "citation_completeness": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "unsupported_claim_rate": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "abstention_confusion": {
+            "abstain_correct": 0,
+            "answer_correct": 0,
+            "false_abstain": 0,
+            "false_answer": 0
+          },
+          "scope_mismatch": {
+            "precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "recall": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            }
+          },
+          "contradiction": {
+            "precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "recall": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            }
+          },
+          "reference_kind": "ai_provisional",
+          "clinical_validation_claimed": false,
+          "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy"
+        }
+      },
+      "report_manifest_sha256": "7303bc879046e58bcd266bdfff74762b4bd263e1319255e4e06bd99a2253b226"
+    },
+    "heldout": {
+      "errors": 0,
+      "rows": 15,
+      "summary": {
+        "keyword": {
+          "claims": 15,
+          "successful": 15,
+          "evidence_recall_at_20": {
+            "macro": 1.0,
+            "samples": 12,
+            "denominator": 12
+          },
+          "precision_at_20": {
+            "macro": 0.08000000000000002,
+            "samples": 15,
+            "denominator": 294
+          },
+          "citation_precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "citation_completeness": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "unsupported_claim_rate": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "abstention_confusion": {
+            "abstain_correct": 0,
+            "answer_correct": 0,
+            "false_abstain": 0,
+            "false_answer": 0
+          },
+          "scope_mismatch": {
+            "precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "recall": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            }
+          },
+          "contradiction": {
+            "precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "recall": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            }
+          },
+          "reference_kind": "ai_provisional",
+          "clinical_validation_claimed": false,
+          "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy"
+        }
+      },
+      "report_manifest_sha256": "28ba114161405a42b71cb383a6e41d961f84fd04d368f9966f9acf3b67fe5f87"
+    }
+  },
+  "agent_and_rag_model_runs": "not_recorded_or_scored",
+  "source_HTTP_and_live_model_calls": 0,
+  "report_scope": "Historical dataset creation and initial keyword checks; live_model_calls refers to that step only",
+  "current_evaluation_report": "eval/person3/final-ai-evaluation-report.json"
+}

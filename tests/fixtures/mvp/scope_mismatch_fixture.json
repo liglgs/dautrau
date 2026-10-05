@@ -1,0 +1,79 @@
+{
+  "name": "scope_mismatch",
+  "synthetic": true,
+  "description": "Claim hỏi trẻ em nhưng bằng chứng chỉ có người lớn -> scope_mismatch.",
+  "claim": {
+    "claim_text": "Ibuprofen gây xuất huyết tiêu hóa ở trẻ em.",
+    "drug": "ibuprofen",
+    "event": "gastrointestinal bleeding",
+    "population": "children (under 12 years)",
+    "dose": null,
+    "route": "oral",
+    "time_window": null
+  },
+  "source_results": [
+    {
+      "source": "pubmed",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-PUBMED-IBUPROFEN-ADULTS"
+      ]
+    },
+    {
+      "source": "dailymed",
+      "status": "empty",
+      "doc_ids": []
+    },
+    {
+      "source": "faers",
+      "status": "empty",
+      "doc_ids": []
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-PUBMED-IBUPROFEN-ADULTS",
+      "source": "pubmed",
+      "source_id": "PMID:35991234",
+      "version": 1,
+      "title": "Ibuprofen and gastrointestinal bleeding in adults: a randomised trial",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/35991234/",
+      "text": "PubMed — PMID 35991234 — \"Ibuprofen and gastrointestinal bleeding in adults: a randomised trial\"\n(Scandinavian Journal of Gastroenterology, 2023).\n\nMETHODS: 1,204 adults aged 18-65 years with osteoarthritis were randomised to ibuprofen 800 mg\nthree times daily or paracetamol for 12 weeks.\nRESULTS: Major gastrointestinal bleeding occurred in 9 participants (1.5%) in the ibuprofen group\nversus 2 (0.3%) in the paracetamol group (risk ratio 4.4, 95% CI 1.0-20.1).\nCONCLUSIONS: In adults, high-dose ibuprofen increased the risk of major gastrointestinal bleeding.\nChildren were not included in this trial.",
+      "hash": "a9b6b1c8be42ffe341cf85a831529a67c622bd6630e45e4b23397e2eeb342fa8",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVI-PUBMED-IBUPROFEN-ADULTS",
+      "doc_id": "DOC-PUBMED-IBUPROFEN-ADULTS",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "In adults, high-dose ibuprofen increased the risk of major gastrointestinal bleeding.",
+      "locator": {
+        "start": 477,
+        "end": 562,
+        "section": "CONCLUSIONS"
+      },
+      "scope": {
+        "population": "adults (18-65 years)",
+        "dose": "800 mg three times daily",
+        "route": "oral",
+        "time_window": "12 weeks",
+        "study_type": "randomised trial"
+      },
+      "confidence": 0.8,
+      "evidence_type": "rct",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "assessment_status": "scope_mismatch",
+    "stop_reason": "success",
+    "checkpoint": "assessment",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "Không được suy rộng kết quả người lớn sang trẻ em (demo D1)."
+  }
+}

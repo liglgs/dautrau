@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-10-02T11:13:20.664162+00:00",
+  "investigation_id": "INV-d136fcc39e15",
+  "dossier_version": 2,
+  "dossier_status": "approved",
+  "run_status": "completed",
+  "assessment_status": "insufficient_evidence",
+  "export_matches_saved_renderer": true,
+  "content_hash_matches": true,
+  "validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": [
+      "Hồ sơ kết luận chưa đủ bằng chứng — chỉ dùng như bản ghi nhận khoảng trống.",
+      "Hồ sơ còn 12 khoảng trống chưa giải quyết."
+    ]
+  },
+  "active_quotes": 14,
+  "excluded_quotes": 2,
+  "source_documents": 10,
+  "gaps": 12,
+  "export_file_sha256": "e0f61d03cef2fc4849b7b7f7bdd169c7eaa1d204400ea0be8c9764ad26932fe8",
+  "clinical_gold_accuracy_entailment_measured": false,
+  "approval_purpose": "technical workflow test; not specialist clinical acceptance",
+  "ui_evidence": "User screenshots plus downloaded Markdown; browser automation not used.",
+  "review_decisions": [
+    {
+      "action": "approve",
+      "checkpoint": "assessment",
+      "reason": "Thử lại bước trích xuất bị lỗi định dạng và tiếp tục kiểm tra các nguồn còn thiếu."
+    },
+    {
+      "action": "request_more",
+      "checkpoint": "dossier",
+      "reason": "Thử lại bước trích xuất bị lỗi định dạng và tiếp tục kiểm tra các nguồn còn thiếu."
+    },
+    {
+      "action": "approve",
+      "checkpoint": "assessment",
+      "reason": "Kiểm thử luồng: đã đối chiếu trích dẫn PubMed và DailyMed. Giữ nguyên kết luận thiếu bằng chứng; chưa xác nhận chuyên môn."
+    },
+    {
+      "action": "approve",
+      "checkpoint": "dossier",
+      "reason": "Duyệt để kiểm thử xuất Markdown. Hồ sơ giữ kết luận thiếu bằng chứng và các giới hạn; chưa được thẩm định chuyên môn."
+    }
+  ],
+  "new_model_calls_made": false
+}

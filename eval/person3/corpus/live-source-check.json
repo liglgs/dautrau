@@ -1,0 +1,27 @@
+{
+  "report_version": "person3-live-source-check-2026-10-02.1",
+  "source_mode": "real_frozen_candidates",
+  "provider": "transport",
+  "family": "metformin",
+  "run_origin": "user_terminal",
+  "bundle_sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+  "actual_model_responses_received": 20,
+  "documents_checked": 10,
+  "valid_quotes": 13,
+  "excluded_quotes": 3,
+  "processing_failures": [],
+  "documents_with_excluded_quotes": [
+    "pubmed:36187122:1",
+    "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9"
+  ],
+  "documents_without_quotes": [
+    "pubmed:26780750:1"
+  ],
+  "clinical_metrics_measured": false,
+  "model_extraction_errors": {},
+  "strict_exact_quote_validation": true,
+  "clinical_gold_ready": false,
+  "new_model_calls_for_this_summary": false,
+  "legacy_failures_semantics": "Previous failures=2 counted documents with excluded quotes. Both also have accepted quotes; these are review items, not processing failures.",
+  "raw_reports": "eval/person3/corpus/transport/report-metformin.json (local, ignored by Git)"
+}

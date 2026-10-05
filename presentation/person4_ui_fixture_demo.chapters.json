@@ -1,0 +1,48 @@
+{
+  "synthetic": true,
+  "mode": "browser_contract_fixture",
+  "audio": false,
+  "note": "UI recording, not live backend/model/auth verification. Times are approximate navigation markers.",
+  "chapters": [
+    {
+      "seconds": 2,
+      "title": "Tạo nhận định kiểm thử, nguồn và ngân sách theo API"
+    },
+    {
+      "seconds": 9,
+      "title": "Tiến trình được trả từ contract fixture"
+    },
+    {
+      "seconds": 17,
+      "title": "Đối chiếu người lớn và trẻ em ở hai cột"
+    },
+    {
+      "seconds": 21,
+      "title": "Đoạn nguyên văn và locator Unicode"
+    },
+    {
+      "seconds": 30,
+      "title": "Hồ sơ chưa duyệt không xuất được qua UI"
+    },
+    {
+      "seconds": 36,
+      "title": "Đổi vai trò minh họa trong cài đặt, chưa phải đăng nhập thật"
+    },
+    {
+      "seconds": 42,
+      "title": "409 giữ nội dung reviewer đã nhập"
+    },
+    {
+      "seconds": 46,
+      "title": "Reviewer đọc phiên bản mới trước khi gửi lại"
+    },
+    {
+      "seconds": 52,
+      "title": "Phê duyệt fixture và tải hồ sơ Markdown"
+    },
+    {
+      "seconds": 55,
+      "title": "Chưa kiểm chứng nguồn live, model, session hay quyền server"
+    }
+  ]
+}

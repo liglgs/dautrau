@@ -1,0 +1,703 @@
+{
+  "mode": "synthetic",
+  "contract_status": "draft_pending_M01",
+  "scope": "development technical verification; not clinical evaluation",
+  "fixture_hash": "c65246187110c3a81cbc98bbd81916aae95ff3d94178ed5f288d3eac274d3848",
+  "dictionary_version": "person3-synthetic-v0.1",
+  "total": 20,
+  "passed": 20,
+  "results": [
+    {
+      "id": "S01",
+      "task": "scope",
+      "expected": {
+        "eligible": true,
+        "field_statuses": {
+          "population": "matched"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": true,
+        "requires_review": false
+      },
+      "passed": true
+    },
+    {
+      "id": "S02",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "population": "mismatched"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "mismatched",
+            "reason": "Intervals do not overlap",
+            "blocking": true
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "S03",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "route": "mismatched"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "mismatched",
+            "reason": "Different normalized terms",
+            "blocking": true
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "S04",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "dose": "unknown"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "dose",
+            "status": "unknown",
+            "reason": "Source does not establish the requested scope",
+            "blocking": true
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "S05",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "time_window": "unknown"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "unknown",
+            "reason": "Different overlapping intervals; aggregate results do not establish subgroup effects",
+            "blocking": true
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "S06",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "population": "unknown"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "unknown",
+            "reason": "Claim is broader than the documented scope; narrow or review",
+            "blocking": true
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "S07",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "ingredient": "mismatched"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "mismatched",
+            "reason": "Different normalized terms",
+            "blocking": true
+          },
+          {
+            "field": "event",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "population",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "S08",
+      "task": "scope",
+      "expected": {
+        "eligible": false,
+        "field_statuses": {
+          "event": "mismatched"
+        }
+      },
+      "actual": {
+        "fields": [
+          {
+            "field": "ingredient",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "event",
+            "status": "mismatched",
+            "reason": "Different normalized terms",
+            "blocking": true
+          },
+          {
+            "field": "population",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "dose",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "route",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          },
+          {
+            "field": "time_window",
+            "status": "matched",
+            "reason": "Same documented interval and unit",
+            "blocking": false
+          },
+          {
+            "field": "comparator",
+            "status": "matched",
+            "reason": "Same normalized term",
+            "blocking": false
+          }
+        ],
+        "eligible_as_direct_evidence": false,
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "N01",
+      "task": "normalization",
+      "expected": {
+        "ingredients": [
+          "ingredient_alpha"
+        ],
+        "events": [
+          "event_alpha"
+        ],
+        "requires_review": false
+      },
+      "actual": {
+        "original_drug": " Drug  Alpha ",
+        "original_event": "AE Alpha",
+        "ingredient_candidates": [
+          "ingredient_alpha"
+        ],
+        "event_candidates": [
+          "event_alpha"
+        ],
+        "unknown_fields": [],
+        "ambiguities": [],
+        "dictionary_version": "person3-synthetic-v0.1",
+        "requires_review": false,
+        "mode": "synthetic"
+      },
+      "passed": true
+    },
+    {
+      "id": "N02",
+      "task": "normalization",
+      "expected": {
+        "ingredients": [
+          "ingredient_alpha",
+          "ingredient_beta"
+        ],
+        "events": [
+          "event_alpha"
+        ],
+        "requires_review": true
+      },
+      "actual": {
+        "original_drug": "Brand Ambiguous",
+        "original_event": "Event Alpha",
+        "ingredient_candidates": [
+          "ingredient_alpha",
+          "ingredient_beta"
+        ],
+        "event_candidates": [
+          "event_alpha"
+        ],
+        "unknown_fields": [],
+        "ambiguities": [
+          "ingredient"
+        ],
+        "dictionary_version": "person3-synthetic-v0.1",
+        "requires_review": true,
+        "mode": "synthetic"
+      },
+      "passed": true
+    },
+    {
+      "id": "N03",
+      "task": "normalization",
+      "expected": {
+        "ingredients": [],
+        "events": [],
+        "requires_review": true
+      },
+      "actual": {
+        "original_drug": "Unlisted Drug",
+        "original_event": "Unlisted Event",
+        "ingredient_candidates": [],
+        "event_candidates": [],
+        "unknown_fields": [
+          "ingredient",
+          "event"
+        ],
+        "ambiguities": [],
+        "dictionary_version": "person3-synthetic-v0.1",
+        "requires_review": true,
+        "mode": "synthetic"
+      },
+      "passed": true
+    },
+    {
+      "id": "C01",
+      "task": "contradiction",
+      "expected": "direct",
+      "actual": {
+        "left_id": "SYN-E-LEFT",
+        "right_id": "SYN-E-RIGHT",
+        "kind": "direct",
+        "reason": "Opposing findings in the same explicit scope; reviewer must resolve",
+        "differing_fields": [],
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "C02",
+      "task": "contradiction",
+      "expected": "apparent",
+      "actual": {
+        "left_id": "SYN-E-LEFT",
+        "right_id": "SYN-E-RIGHT",
+        "kind": "apparent",
+        "reason": "Opposing findings apply to different scopes",
+        "differing_fields": [
+          "population"
+        ],
+        "requires_review": true
+      },
+      "passed": true
+    },
+    {
+      "id": "C03",
+      "task": "contradiction",
+      "expected": "none",
+      "actual": {
+        "left_id": "SYN-E-LEFT",
+        "right_id": "SYN-E-RIGHT",
+        "kind": "none",
+        "reason": "No pair of sufficiently precise opposing findings",
+        "differing_fields": [],
+        "requires_review": false
+      },
+      "passed": true
+    },
+    {
+      "id": "C04",
+      "task": "contradiction",
+      "expected": "not_comparable",
+      "actual": {
+        "left_id": "SYN-E-LEFT",
+        "right_id": "SYN-E-RIGHT",
+        "kind": "not_comparable",
+        "reason": "Spontaneous reports cannot establish a comparative contradiction",
+        "differing_fields": [],
+        "requires_review": false
+      },
+      "passed": true
+    },
+    {
+      "id": "Q01",
+      "task": "citation_integrity",
+      "expected": [],
+      "actual": {
+        "span_verified": true,
+        "errors": [],
+        "entailment_status": "pending",
+        "eligible_for_official_statement": false
+      },
+      "passed": true
+    },
+    {
+      "id": "Q02",
+      "task": "citation_integrity",
+      "expected": [
+        "quote_mismatch"
+      ],
+      "actual": {
+        "span_verified": false,
+        "errors": [
+          "quote_mismatch"
+        ],
+        "entailment_status": "pending",
+        "eligible_for_official_statement": false
+      },
+      "passed": true
+    },
+    {
+      "id": "Q03",
+      "task": "citation_integrity",
+      "expected": [
+        "citation_hash_mismatch"
+      ],
+      "actual": {
+        "span_verified": false,
+        "errors": [
+          "citation_hash_mismatch"
+        ],
+        "entailment_status": "pending",
+        "eligible_for_official_statement": false
+      },
+      "passed": true
+    },
+    {
+      "id": "Q04",
+      "task": "citation_integrity",
+      "expected": [
+        "invalid_locator"
+      ],
+      "actual": {
+        "span_verified": false,
+        "errors": [
+          "invalid_locator"
+        ],
+        "entailment_status": "pending",
+        "eligible_for_official_statement": false
+      },
+      "passed": true
+    },
+    {
+      "id": "Q05",
+      "task": "citation_integrity",
+      "expected": [
+        "document_id_mismatch"
+      ],
+      "actual": {
+        "span_verified": false,
+        "errors": [
+          "document_id_mismatch"
+        ],
+        "entailment_status": "pending",
+        "eligible_for_official_statement": false
+      },
+      "passed": true
+    }
+  ]
+}

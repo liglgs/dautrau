@@ -1,0 +1,21 @@
+{
+  "checked_at_utc": "2026-10-03T11:30:23.341236+00:00",
+  "split": "heldout",
+  "model": "gpt-4o-mini-2024-07-18",
+  "saved_claims_verified": 3,
+  "total_claims": 15,
+  "live_model_calls": 0,
+  "original_recordings_unchanged": true,
+  "clinical_validation_claimed": false,
+  "offline_tests": "21 passed in 6.01s",
+  "input_sha256": {
+    "recording-report-heldout.json": "170869dcf426f0b81d9a76e525f68d5da3c49ee29f0b35dd3a087999d7b3213f",
+    "recordings-heldout.agent.jsonl": "d731269edaded0a80dd0efda5a9ebc83aebd77f43e0f1fdb460bbd19df1c5178",
+    "recordings-heldout.jsonl": "6c09c169d4db3d8779a0519a12e9cb3eb691b552f3fc62f0c9dd1845df10b96a"
+  },
+  "code_sha256": {
+    "scripts/record_person3_evaluation.py": "4d06581f875427ad7260d617603735e81c99fb2b1fd1dfbce6fba2744dd3d9cc",
+    "eval/person3_agent.py": "0f88be31b94a6cfd2b0bad728092df5295cd58be21a741798fc817fec283541c",
+    "tests/test_evidence/test_person3_evaluation.py": "5615c17bf035031ac18d9a941eb7e8657f0ccda0158988ccacfe469359dd5ce5"
+  }
+}

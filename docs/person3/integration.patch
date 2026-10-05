@@ -1,0 +1,247 @@
+diff --git a/.env.example b/.env.example
+index b82b496..3c9b7a1 100644
+--- a/.env.example
++++ b/.env.example
+@@ -36,0 +37,3 @@ MVP_DB_PATH=data/mvp.sqlite3
++# Opt-in Person 3 synthetic graph/API demo; sources and LLM stay mocked.
++MVP_EVIDENCE_MODE=fixture
++MVP_PERSON3_DEMO_SCENARIO=match
+diff --git a/src/agents/graph.py b/src/agents/graph.py
+index 0eb089c..1e84086 100644
+--- a/src/agents/graph.py
++++ b/src/agents/graph.py
+@@ -327,0 +328,4 @@ def extract_assess_node(gstate: MvpGraphState) -> dict[str, Any]:
++    if ctx.evidence_analyzer is not None:
++        from src.services.evidence.nodes import extract_assess_person3
++
++        return extract_assess_person3(gstate)
+diff --git a/src/api/investigations.py b/src/api/investigations.py
+index 7e9121f..1a61c66 100644
+--- a/src/api/investigations.py
++++ b/src/api/investigations.py
+@@ -163,0 +164,7 @@ async def list_evidence(investigation_id: str, store: StoreDep, role: RoleDep) -
++        scope_result = None
++        if state.normalized_claim and not evidence.excluded:
++            from src.services.evidence.contracts import read_annotation
++            from src.services.evidence.scope import ScopeMatcher
++
++            if read_annotation(evidence.notes) is not None:
++                scope_result = ScopeMatcher().assess_one(evidence, state.normalized_claim)
+@@ -167,0 +175 @@ async def list_evidence(investigation_id: str, store: StoreDep, role: RoleDep) -
++                "scope_match": str(scope_result.outcome) if scope_result else None,
+diff --git a/src/api/mvp_runtime.py b/src/api/mvp_runtime.py
+index 2723087..f283237 100644
+--- a/src/api/mvp_runtime.py
++++ b/src/api/mvp_runtime.py
+@@ -9 +9 @@ from __future__ import annotations
+-from threading import Lock
++from threading import RLock
+@@ -17 +17 @@ _store: MvpStore | None = None
+-_lock = Lock()
++_lock = RLock()
+@@ -30,2 +30,8 @@ def configure_mvp(db_path: str | None = None, *, force: bool = False) -> MvpStor
+-        previous, _store = _store, MvpStore(db_path or get_settings().mvp_db_path)
+-        configure_runner(_store)
++        settings = get_settings()
++        executor, gateway = None, None
++        if settings.mvp_evidence_mode == "person3_demo":
++            from src.services.evidence.demo import make_demo_runtime
++
++            executor, gateway = make_demo_runtime(settings.mvp_person3_demo_scenario)
++        previous, _store = _store, MvpStore(db_path or settings.mvp_db_path)
++        configure_runner(_store, executor=executor, gateway=gateway)
+diff --git a/src/config.py b/src/config.py
+index e4a3e50..44ed193 100644
+--- a/src/config.py
++++ b/src/config.py
+@@ -62,0 +63,5 @@ class Settings(BaseSettings):
++    mvp_evidence_mode: Literal["fixture", "person3_demo"] = "fixture"
++    mvp_person3_demo_scenario: Literal[
++        "match", "route_mismatch", "missing_scope", "imprecise_null",
++        "fake_quote", "contradiction", "ambiguous_brand", "faers_only",
++    ] = "match"
+diff --git a/src/models/schemas.py b/src/models/schemas.py
+index 015314f..6d25a1c 100644
+--- a/src/models/schemas.py
++++ b/src/models/schemas.py
+@@ -498,0 +499,21 @@ class ReviewDecision(BaseModel):
++class EvidenceReference(BaseModel):
++    """Evidence and source versions pinned by a dossier statement (M06)."""
++
++    model_config = ConfigDict(extra="forbid")
++
++    evidence_id: str = Field(min_length=1, max_length=120)
++    evidence_version: int = Field(ge=1)
++    doc_id: str = Field(min_length=1, max_length=120)
++    document_version: int = Field(ge=1)
++    document_hash: str = Field(min_length=8, max_length=128)
++    source_url: str = Field(min_length=1, max_length=1000)
++
++
++class DossierStatement(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++
++    kind: Literal["quote", "fact", "inference", "hypothesis"]
++    text: str = Field(min_length=1, max_length=2000)
++    evidence_refs: list[EvidenceReference] = Field(default_factory=list)
++
++
+@@ -504,0 +526 @@ class DossierSection(BaseModel):
++    statements: list[DossierStatement] = Field(default_factory=list)
+diff --git a/src/prompts/manifest.json b/src/prompts/manifest.json
+index c1ac3b0..fb0b1e5 100644
+--- a/src/prompts/manifest.json
++++ b/src/prompts/manifest.json
+@@ -10 +10,5 @@
+-      "payload_keys": ["claim_text", "drug", "event"],
++      "payload_keys": [
++        "claim_text",
++        "drug",
++        "event"
++      ],
+@@ -20,2 +24,14 @@
+-      "payload_keys": ["claim_summary", "evidence_summary", "gaps", "budget"],
+-      "allowed_values": {"action": ["search_source", "change_query", "change_source", "stop"]},
++      "payload_keys": [
++        "claim_summary",
++        "evidence_summary",
++        "gaps",
++        "budget"
++      ],
++      "allowed_values": {
++        "action": [
++          "search_source",
++          "change_query",
++          "change_source",
++          "stop"
++        ]
++      },
+@@ -31,2 +47,9 @@
+-      "payload_keys": ["claim_summary", "evidence_summary", "scope_notes"],
+-      "evidence_refs": {"field": "evidence_ids", "required": true},
++      "payload_keys": [
++        "claim_summary",
++        "evidence_summary",
++        "scope_notes"
++      ],
++      "evidence_refs": {
++        "field": "evidence_ids",
++        "required": true
++      },
+@@ -42,2 +65,10 @@
+-      "payload_keys": ["claim_summary", "assessment_status", "rationale", "gaps"],
+-      "evidence_refs": {"field": "sections.evidence_ids", "required": false},
++      "payload_keys": [
++        "claim_summary",
++        "assessment_status",
++        "rationale",
++        "gaps"
++      ],
++      "evidence_refs": {
++        "field": "sections.evidence_ids",
++        "required": false
++      },
+@@ -45,0 +77,13 @@
++    },
++    "extract_evidence": {
++      "version": "person3.3",
++      "description": "Structured observations with exact quotes; missing scope stays unknown.",
++      "system_file": "extract_evidence.system.md",
++      "user_file": "extract_evidence.user.md",
++      "output_schema": "src.services.evidence.contracts:ExtractionBatch",
++      "payload_keys": [
++        "claim",
++        "document"
++      ],
++      "untrusted_char_limit": 12000,
++      "max_output_chars": 20000
+diff --git a/src/services/dossier.py b/src/services/dossier.py
+index afe6c17..d39f90a 100644
+--- a/src/services/dossier.py
++++ b/src/services/dossier.py
+@@ -131 +131 @@ def content_hash(dossier: Dossier) -> str:
+-    payload = dossier.model_dump_json(exclude={"content_hash", "created_at", "approved_at", "approved_by"})
++    payload = dossier.model_dump_json(exclude={"content_hash", "created_at", "approved_at", "approved_by", "status"})
+@@ -156,0 +157,10 @@ TEMPLATE_PATH = Path(__file__).resolve().parents[2] / "data" / "templates" / "do
++def _section_body(section: DossierSection) -> str:
++    refs = [ref for statement in section.statements for ref in statement.evidence_refs]
++    citations = "\n".join(
++        f"- [{ref.evidence_id} v{ref.evidence_version}]({ref.source_url}) "
++        f"source={ref.doc_id} v{ref.document_version}; sha256={ref.document_hash}"
++        for ref in refs
++    )
++    return section.body + (f"\n\n{citations}" if citations else "")
++
++
+@@ -165 +175 @@ def render_markdown(dossier: Dossier) -> str:
+-            f"## {section.title}\n{section.body}"
++            f"## {section.title}\n{_section_body(section)}"
+@@ -199 +209 @@ def render_markdown(dossier: Dossier) -> str:
+-        lines.append(section.body)
++        lines.append(_section_body(section))
+@@ -281,0 +292,5 @@ def validate_dossier(dossier: Dossier, state: InvestigationState) -> ValidationR
++    if dossier.dossier_id.startswith("DOS-P3-") or any(section.statements for section in dossier.sections):
++        from src.services.evidence.dossier import validate_person3_statements
++
++        errors.extend(validate_person3_statements(dossier, state))
++
+diff --git a/src/services/llm.py b/src/services/llm.py
+index 72cf6ec..748a4e8 100644
+--- a/src/services/llm.py
++++ b/src/services/llm.py
+@@ -24 +23,0 @@ from pydantic import BaseModel, Field, ValidationError
+-from src.config import get_settings
+@@ -143,0 +143 @@ class TransportProvider:
++        from src.config import get_settings
+@@ -612,0 +613,2 @@ def get_llm():
++    from src.config import get_settings
++
+diff --git a/src/services/review.py b/src/services/review.py
+index 0a69931..7e51afa 100644
+--- a/src/services/review.py
++++ b/src/services/review.py
+@@ -70 +70,10 @@ def apply_review(store: MvpStore, decision: ReviewDecision) -> ReviewResult:
+-    if state.checkpoint is not decision.checkpoint:
++    reopen_completed = (
++        state.run_status is RunStatus.COMPLETED
++        and state.checkpoint is None
++        and decision.checkpoint is CheckpointKind.ASSESSMENT
++        and decision.action in {
++            ReviewAction.EDIT_CLAIM, ReviewAction.EDIT_EVIDENCE,
++            ReviewAction.EXCLUDE_EVIDENCE, ReviewAction.REQUEST_MORE,
++        }
++    )
++    if state.checkpoint is not decision.checkpoint and not reopen_completed:
+@@ -219,0 +229,13 @@ def _edit_evidence(store: MvpStore, state: InvestigationState, decision: ReviewD
++    if any(field in updates for field in ("quote", "scope", "stance")):
++        from src.services.evidence.contracts import read_annotation
++
++        annotation = read_annotation(evidence.notes)
++        if annotation is not None:
++            # Original extraction context cannot establish semantics of an edited quote/scope.
++            annotation.drug_ingredient = None
++            annotation.event_term = None
++            annotation.comparator = None
++            annotation.direction = "unknown"
++            annotation.uncertainty = "unknown"
++            annotation.issues = ["review_edit_requires_reextraction"]
++            updates["notes"] = annotation.to_notes()
+diff --git a/src/services/runner.py b/src/services/runner.py
+index 3e1bf7e..df6e90e 100644
+--- a/src/services/runner.py
++++ b/src/services/runner.py
+@@ -37,0 +38 @@ class RunContext:
++    evidence_analyzer: Any | None = None
+diff --git a/src/services/stopping.py b/src/services/stopping.py
+index 74a14af..46c46f0 100644
+--- a/src/services/stopping.py
++++ b/src/services/stopping.py
+@@ -126,0 +127,8 @@ def _ready_to_conclude(state: InvestigationState) -> bool:
++        # Person 3 supplies verified target/scope context. Only observations used
++        # in its current assessment count toward the independent-document gate;
++        # edited/unknown observations remain visible for audit, not corroboration.
++        from src.services.evidence.contracts import read_annotation
++
++        if state.assessment and any(read_annotation(item.notes) is not None for item in evidence):
++            qualifying_ids = set(state.assessment.evidence_ids)
++            evidence = [item for item in evidence if item.evidence_id in qualifying_ids]

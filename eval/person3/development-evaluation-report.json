@@ -1,0 +1,462 @@
+{
+  "created_at": "2026-10-03T10:10:19.951704+00:00",
+  "split": "development",
+  "mode": "replay",
+  "network": "disabled",
+  "live_calls_during_scoring": 0,
+  "model": "gpt-4o-mini-2024-07-18",
+  "reference_kind": "ai_provisional",
+  "clinical_validation_claimed": false,
+  "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy",
+  "annotation_provenance": {
+    "annotator_type": "ai",
+    "annotator_role": "ai_provisional",
+    "annotation_date": "2026-10-03",
+    "independent_expert_reviews": 0,
+    "clinical_metrics_ready": false,
+    "heldout_exposed_to_annotator": true,
+    "specification_sha256": "051b1c71f99128bac378f70d92d65c1cd15e4b091564e003bfa81a510f880187",
+    "relevance_inventory": "selected_spans_not_exhaustive",
+    "citation_entailment": "not_measured",
+    "contradiction_gold": "not_exhaustively_reviewed",
+    "heldout_interpretation": "family_separated_exposed_technical_set"
+  },
+  "evaluated_rows": 15,
+  "processing_errors": 0,
+  "aggregate": {
+    "agent": {
+      "claims": 5,
+      "successful": 5,
+      "evidence_recall_at_20": {
+        "macro": 1.0,
+        "samples": 4,
+        "denominator": 4
+      },
+      "precision_at_20": {
+        "macro": 0.1,
+        "samples": 4,
+        "denominator": 80
+      },
+      "citation_precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "citation_completeness": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "unsupported_claim_rate": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "abstention_confusion": {
+        "abstain_correct": 5,
+        "answer_correct": 0,
+        "false_abstain": 0,
+        "false_answer": 0
+      },
+      "scope_mismatch": {
+        "precision": {
+          "macro": 0.0,
+          "samples": 1,
+          "denominator": 3
+        },
+        "recall": {
+          "macro": 0.0,
+          "samples": 1,
+          "denominator": 1
+        }
+      },
+      "contradiction": {
+        "precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "recall": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        }
+      },
+      "reference_kind": "ai_provisional",
+      "clinical_validation_claimed": false,
+      "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy"
+    },
+    "keyword": {
+      "claims": 5,
+      "successful": 5,
+      "evidence_recall_at_20": {
+        "macro": 0.0,
+        "samples": 4,
+        "denominator": 4
+      },
+      "precision_at_20": {
+        "macro": 0.04,
+        "samples": 5,
+        "denominator": 87
+      },
+      "citation_precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "citation_completeness": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "unsupported_claim_rate": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "abstention_confusion": {
+        "abstain_correct": 0,
+        "answer_correct": 0,
+        "false_abstain": 0,
+        "false_answer": 0
+      },
+      "scope_mismatch": {
+        "precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "recall": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        }
+      },
+      "contradiction": {
+        "precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "recall": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        }
+      },
+      "reference_kind": "ai_provisional",
+      "clinical_validation_claimed": false,
+      "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy"
+    },
+    "single_shot_rag": {
+      "claims": 5,
+      "successful": 5,
+      "evidence_recall_at_20": {
+        "macro": 0.0,
+        "samples": 4,
+        "denominator": 4
+      },
+      "precision_at_20": {
+        "macro": 0.04,
+        "samples": 5,
+        "denominator": 87
+      },
+      "citation_precision": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "citation_completeness": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "unsupported_claim_rate": {
+        "macro": null,
+        "samples": 0,
+        "denominator": 0
+      },
+      "abstention_confusion": {
+        "abstain_correct": 0,
+        "answer_correct": 0,
+        "false_abstain": 0,
+        "false_answer": 5
+      },
+      "scope_mismatch": {
+        "precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "recall": {
+          "macro": 0.0,
+          "samples": 1,
+          "denominator": 1
+        }
+      },
+      "contradiction": {
+        "precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "recall": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        }
+      },
+      "reference_kind": "ai_provisional",
+      "clinical_validation_claimed": false,
+      "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy"
+    }
+  },
+  "assessment_agreement": {
+    "agent": {
+      "matches": 5,
+      "measured": 5,
+      "rate": 1.0
+    },
+    "keyword": {
+      "matches": 0,
+      "measured": 0,
+      "rate": null
+    },
+    "single_shot_rag": {
+      "matches": 0,
+      "measured": 5,
+      "rate": 0.0
+    }
+  },
+  "per_claim": [
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "system": "keyword",
+      "assessment_status": null,
+      "abstained": null,
+      "assessment_matches_AI_reference": null,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "system": "single_shot_rag",
+      "assessment_status": "supported_for_scope",
+      "abstained": false,
+      "assessment_matches_AI_reference": false,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "system": "agent",
+      "assessment_status": "insufficient_evidence",
+      "abstained": true,
+      "assessment_matches_AI_reference": true,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "system": "keyword",
+      "assessment_status": null,
+      "abstained": null,
+      "assessment_matches_AI_reference": null,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "system": "single_shot_rag",
+      "assessment_status": "supported_for_scope",
+      "abstained": false,
+      "assessment_matches_AI_reference": false,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "system": "agent",
+      "assessment_status": "insufficient_evidence",
+      "abstained": true,
+      "assessment_matches_AI_reference": true,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "system": "keyword",
+      "assessment_status": null,
+      "abstained": null,
+      "assessment_matches_AI_reference": null,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "system": "single_shot_rag",
+      "assessment_status": "supported_for_scope",
+      "abstained": false,
+      "assessment_matches_AI_reference": false,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "system": "agent",
+      "assessment_status": "insufficient_evidence",
+      "abstained": true,
+      "assessment_matches_AI_reference": true,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "system": "keyword",
+      "assessment_status": null,
+      "abstained": null,
+      "assessment_matches_AI_reference": null,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "system": "single_shot_rag",
+      "assessment_status": "out_of_scope",
+      "abstained": false,
+      "assessment_matches_AI_reference": false,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "system": "agent",
+      "assessment_status": "insufficient_evidence",
+      "abstained": true,
+      "assessment_matches_AI_reference": true,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "system": "keyword",
+      "assessment_status": null,
+      "abstained": null,
+      "assessment_matches_AI_reference": null,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "system": "single_shot_rag",
+      "assessment_status": "supported_for_scope",
+      "abstained": false,
+      "assessment_matches_AI_reference": false,
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "system": "agent",
+      "assessment_status": "requires_human_review",
+      "abstained": true,
+      "assessment_matches_AI_reference": true,
+      "error": null
+    }
+  ],
+  "provenance": {
+    "corpus_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+    "claims_sha256": "c4b1dc12f58f74b9fbf3918249b8bd50a8d32e12f9d4e1d4fa87859299b9650c",
+    "annotations_sha256": "22134b0ea2ca2fbbfcfec3d0102298971dac6130be0c4b6bfd87c1c9859d96bf",
+    "recordings_sha256": "92a636e664b83c9dd399c95158d8a6a1c6e98874ab2e4887977045c45e5c3ee7",
+    "agent_recordings_sha256": "22becc7acb91519fd7ab0711e3f0894537e6f2603f32b1581b1859ee954b79a6",
+    "prompt_sha256": "6b2f5740ea11b694da338f276735ba3ef094bd58f6ef75c98cff695b77356247",
+    "code_commit": "6d760d4f142ac260bb6210db0210920d34c946c6",
+    "code_sha256": {
+      "eval/__init__.py": "15e2c3565a118b725eabc01c0415ac8a85e624d325b99673484856f5ce125fe6",
+      "eval/baselines/__init__.py": "ee2369c35240c74ae9b9581de1625d2c45f2d014f5b8b49e95eaa238ba1d3d4a",
+      "eval/baselines/keyword.py": "d0d6e6c6026657cc4bc1a33794f699be6d432eacd55bee70090f28940c27fd50",
+      "eval/baselines/single_shot_rag.py": "7568554982b6b00ef42307571cefbe46787405d815dc8ee970763be796610005",
+      "eval/contracts.py": "edea1d7d5e8d2b568aa76631e5ffe550db8ac4e9b7ccb2c13cbe86df9f679064",
+      "eval/corpus.py": "c836e908996ed6d1f34700a7863244a009fddf9bdef3b947d892b22b441538f9",
+      "eval/metrics.py": "be7171a13d62ed62c8a7ab29e035c689e2bb54490affd0d07e33ddab5b85c437",
+      "eval/person3_agent.py": "8e8d66d1b71a3d10171fcf76c3729cb5ebc87307f9a9de5378a75e64c587562b",
+      "eval/person3_dataset.py": "ece0284cc6e9e9ae547c2e40116c636af8faa8389186a4f46601533df0bf62c4",
+      "eval/person3_handoff.py": "5315b773edef6822b739519415fc522203c4d7ffe4b869c281f0d4f77d7f0f07",
+      "eval/person3_provisional.py": "d4f2923ae3126afd861730ee433e6c38da03244d70e061aa54e09e110a3959e4",
+      "eval/replay.py": "6a245339827d16ea2d8b3eb095dce7607985f5799071157f73d3c01c50355664",
+      "eval/run_evaluation.py": "8e1e952ea54dbb0a744db38134b8ff84b385576b5474eb9f84d05aec41f90c96",
+      "src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/graph.py": "1d17b7688d1de649f32535d364fa092c42923b626a87cbd299f1fe86025b6c8d",
+      "src/agents/mock_runtime.py": "622d393d9e1ed560d7385f31cffefe00c5560361b6c8fb478669494d9949ef3d",
+      "src/agents/nodes/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/nodes/example_node.py": "2de3dd320b53763679261943940938a1902573c815f4fa3cb9dfc78f7661011f",
+      "src/agents/state.py": "e3344c41ed206fbc7ef080780f8bccc07a010c905f85f4359694ecc1f9aa945d",
+      "src/agents/tools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/tools/example_tool.py": "93845939e34348d3b4121da27351a82e19f579fc3dd076f56e906b06302df895",
+      "src/ai/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/ai/model.py": "79f52c654e16839a3465cb0270668fffbad5608d64bd231a1924123180fcf606",
+      "src/ai/transport.py": "ba889b8e338039a8623f0d8eedf3decd11251542730936abc5b87a9e917c1d14",
+      "src/api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/api/auth.py": "48cc21ad20ae27c6ec0aadc7911e13cc4efd36d36285721da00f0fdf86e1e75e",
+      "src/api/investigations.py": "c2237645577b9e6d362cbd413865c0be362944df7352625df783aad3a9355962",
+      "src/api/mvp_runtime.py": "dc03904d7f58c8a97f9120290fcb7c44a314bfe167541549dd59b74effecf570",
+      "src/api/research_routes.py": "36e0fa27c1f0748f737d56c4149e3aec06a48323fb884cb01f02f2e75d8c8f5d",
+      "src/api/reviews.py": "ec8056cb666f71154a6e9f853332e52c1fad9ad2cd333dc29b0cdf1eb7fa7051",
+      "src/api/routes.py": "58aac9c8c0f193b3afe86398e8f236786851efd9791a7f547c232f457b78ebfd",
+      "src/api/security.py": "ce4c977c914bc5c1dc92af0a18ebc6817b3f82e93c29e686fd17df94b95461b7",
+      "src/api/vmec_routes.py": "661db155cd4596efc905dd41ca97e16b70f8c33a8ff55763f3c8c2efd69a3086",
+      "src/config.py": "7be14c1ca5f3eb42e09c769f19942d6dc7bf928edc08ba06ac59e0af45dd1240",
+      "src/db.py": "beae97d58b11f5cb29feec4adcc7e12712220e385b7aca55316962d53868d4d7",
+      "src/main.py": "8effb301f8161a6762d8e8ec5fccc842099e5897266e42ee8b655df93f929bd9",
+      "src/models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/models/schemas.py": "ed1cc767ea3922d41165ea66822a3c26249f1934e2de0ab2fa9603911db5fc7a",
+      "src/services/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/services/assessment.py": "121f6c53c2972a3048d97ccd335f2069be6b421a8524a60bdd00bd9c468bc760",
+      "src/services/budget.py": "438c757fa3954ef9f5c267ecf561f62cdb0b6203bcffa101b381c3f706dbaa7d",
+      "src/services/contracts.py": "c94cbd010db29cf1655b867217237e6c622708fa57aea94a60c10e188e0e374b",
+      "src/services/dossier.py": "d5fbea26c4fd78183dd9fa69d78c519ff7fa27e4cc1de955d80bc22dd99e1556",
+      "src/services/errors.py": "ee63069c4303a48d9ca972c3f6e0679afedd7904698fe83a0e64270499954e46",
+      "src/services/evidence/__init__.py": "e8690a1c7dc7044499e7cf1a24b729ca1c51c3f0a0e34f37a5c711fd7a3e1512",
+      "src/services/evidence/analysis.py": "4320ee72c93cf452bf673dfb9e44c091fbf956ee1360b9794c20fef21ae900c1",
+      "src/services/evidence/annotation_review.py": "150b3b2dde94534f32eb11e5d35137e934b219ef86c8245f3ea2de04d0b2f6ec",
+      "src/services/evidence/candidate_provider.py": "00028797a0d40a6e977362c3f5de14d73defaf4f6c75686dd86188afa8fa43a0",
+      "src/services/evidence/check_report.py": "038ea3ac63b9510908c03e41ef2e46cacc863516c56fc8f9e39d7489625f1f76",
+      "src/services/evidence/chunks.py": "b9d07fb75c49ac898367f9244a697ec9fc7cf74fef4fb45a3601f8e7881dd895",
+      "src/services/evidence/citations.py": "8accbe7738955c86701db4edc4d7f4e8a0bb95038ebccac33e432d735ef63723",
+      "src/services/evidence/contracts.py": "05b89b96ca0589eb42cae7864e7e1049d5ce513154d92db8436c338155f7f67b",
+      "src/services/evidence/contradiction.py": "691a0dcdba6a7fbf78c6d0c00a1571e01fce9c39580f52ca80033b6ff9a707b2",
+      "src/services/evidence/corpus.py": "13fe4e06c37a3657e6cd1b781cab7059b353a65bb3be449770ca671cb6d6eec5",
+      "src/services/evidence/corpus_runtime.py": "973409932a13b2dcd34d0ccb77737fc51f9ce147d689f95ebc9c9f17501f2152",
+      "src/services/evidence/demo.py": "d96448d8ab5cbce57a7936b11d8d200ad1ec788edc8982e311bdf6ab11286ca2",
+      "src/services/evidence/dossier.py": "7cf6042547e27cf2fb63e2980acadae072f0f8f6d03ceb04b4ac4e4f968b88d5",
+      "src/services/evidence/drafts.py": "d30edb8ebc1dc5ae112441e4b9482b38803b8a49fdc199430b08cd43a3babc23",
+      "src/services/evidence/extract.py": "e063fb9edec12c91933f77040a78e299dc77cfdd5993cae5016bc726ddd752e6",
+      "src/services/evidence/integration.py": "bfbd3b991db3e630944a761308fb0ccc57ba57e09f78a64729a93d830a42a0ae",
+      "src/services/evidence/nodes.py": "dcc1681421d48047f6e09e2d60b727d6673b301e1235022501638ec61003dacd",
+      "src/services/evidence/normalize.py": "f6e29b1440e78e59c0d6d1d986d9c0069d01f0356dbb917b2e904a73daf54c51",
+      "src/services/evidence/scope.py": "c7dc88e15aae3120bb825c03bd28eb61490f205ec77ba78f6589ee879804b8e4",
+      "src/services/llm.py": "81c2634b4d8fbdab95ec2577f1e6566a2721f2d8f4152b1c8f2a29b5b92228e3",
+      "src/services/planner.py": "6ad4feebdc8339ef34803eb01f01f9fbb1763859dd83e5f94c23d10137ff3bd7",
+      "src/services/policy.py": "99bf622e173b4935e1a316f90425244225ab35579c0257af28bf2a948c494833",
+      "src/services/prompts.py": "fec1aac2e2115eecf06367e2e3a9a5cfb709a6711ccad121e04a4dd465471808",
+      "src/services/review.py": "6e0fedbe303928d8b3174f77e33269f27a0848fc917c5828a72ee970cbaac8bd",
+      "src/services/runner.py": "7c64f19de4f606fbb45b14affe778e128f4f3447f9f6d0fcc7089a2724955356",
+      "src/services/snapshots.py": "58290a300d55a5df8a5d3344b815dc252eb516bf2b6050794037d7a78f10629b",
+      "src/services/sources/__init__.py": "1a38573681428727d2be175b7195eedb10cfadedd3e681de41ac8b4ffa9bdf53",
+      "src/services/sources/base.py": "2b699d587b1490df9dc376ca8f0f14a1fd1f77426a3603ecd8fba4b9c865c837",
+      "src/services/sources/dailymed.py": "384e41f4d74b9f7f557eed90f5d317a1dbc13c9be8786dbc1243355225e287e1",
+      "src/services/sources/faers.py": "cb9740ed0a17319558c2ae6c8e7ba632f8862120195eb04c1235c727d2d52c18",
+      "src/services/sources/parser.py": "2beb1b30e1a232befedf9429e67353cf2efca0bd55e437e018928f5c1ad69161",
+      "src/services/sources/pubmed.py": "5cab3253c28c3c7b9a985be0cfaedbf6ebb92bfcc3a13fb7de6b03b3131b5d14",
+      "src/services/sources/pubmed_local.py": "f94fdb7cf4afcc6d7fec10c873307a7db9a7dec339c5e5dc849ead7bd278489e",
+      "src/services/sources/transport.py": "cbf061279cc67ae45212e1e19b2cc62950935f30f6781e1892b9466317d0ef21",
+      "src/services/stopping.py": "f8d0ffb96faa479f4ae673ee9236632847a101d40751657900413ed015e4f46b",
+      "src/services/store.py": "dc2c47a75b0372e424a478540ee7b35e324df526ba11be6353a94d82281e69a1",
+      "src/vmec.py": "99b42d2fcfdd94356ddb5c547feab1488d3898855aa24515052642eeb9789eef",
+      "src/worker.py": "d1530ac354f7bc2b6aa02f2c1fc078be9133c2d05a3ea092135bd130fa70fc21"
+    }
+  },
+  "scoring_artifact_sha256": {
+    "manifest.json": "92d295ed4945d4077ad5ef3a05f1a396d14d54436588f517a774fed01828ac56",
+    "aggregate.json": "e0f4f4b2da001ded0b12d8764cae92888671836864a7bc47541882f8a6c32487",
+    "per-claim.jsonl": "0796f886a0b5099317402a9d5fd4afc87763cae514947255d5b68a3fe431c499",
+    "report.md": "1d46e6e0dd03fa00ac1bc15ff2e71c96904f91fc9f78b5e0387b0d9819511707"
+  },
+  "limitations": [
+    "AI provisional labels; zero independent expert reviews.",
+    "All five development reference decisions abstain; class coverage is limited.",
+    "Relevant and required spans are selected examples, not an exhaustive corpus inventory.",
+    "Citation entailment, clinical accuracy and contradiction detection are not measured.",
+    "Agent uses iterative retrieval and full snapshots; keyword and RAG use a single BM25 retrieval of at most 20 units.",
+    "Exact unit-level scope mismatch detection does not agree with the selected AI annotation.",
+    "The heldout split was exposed to the AI annotator; it is a family-separated technical set, not a blind clinical validation set."
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "purpose": "candidate_handoff_readiness_only",
+  "clinical_metrics_ready": false,
+  "candidate_corpus_valid": false,
+  "input_sha256": {
+    "mvp_manifest.json": "ad3cb3bf338a935948ec7e10aa3691133a49e25641aeaaa1036b6c73ed9ca304",
+    "mvp_claims.jsonl": "ec64fcacb19b10d01e14ddc7712954f55d4f52a69f428e75de7fcc1357706c2e",
+    "mvp_gold.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reviewer_a.jsonl": "c7b666c3015096590dc5decdd5c272ded604873fcc7af5aac9e10011def2c82f",
+    "reviewer_b.jsonl": "3dc6cdaa68ff24c68325c64d41e57fad8a248e9e1353890df3be357bda6fcebd"
+  },
+  "blockers": [
+    "reviewer_a: independent expert review incomplete",
+    "reviewer_b: independent expert review incomplete",
+    "Clinical gold is empty; no reference labels for scoring",
+    "Proposed split/corpus/gold have not been frozen and accepted",
+    "Source bundle is missing; provide mvp-candidates-50-2026-10-02.zip",
+    "P26 needs a shared retrieval-unit index and adjudicated gold mapped to those units; candidate schema is not the evaluation schema",
+    "Model recordings and agent replay hook are required for RAG/agent scoring"
+  ],
+  "metrics": null,
+  "manifest_status": "draft_not_frozen_not_gold",
+  "claims": 20,
+  "split_counts": {
+    "development": 5,
+    "heldout": 15
+  },
+  "gold_rows": 0,
+  "completed_reviews": {
+    "reviewer_a": 0,
+    "reviewer_b": 0
+  }
+}

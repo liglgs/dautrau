@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: medreview
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medreview}
+      POSTGRES_DB: medreview
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medreview"]
+      interval: 3s
+      retries: 15
+  migrate:
+    build: .
+    command: ["sh", "-c", "alembic upgrade head && python -m scripts.seed_vmec"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://medreview:${POSTGRES_PASSWORD:-medreview}@db:5432/medreview
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-demo12345}
+      APP_ENV: ${APP_ENV:-development}
+    depends_on:
+      db:
+        condition: service_healthy
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://medreview:${POSTGRES_PASSWORD:-medreview}@db:5432/medreview
+      APP_ENV: ${APP_ENV:-development}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_BASE_URL: ${GEMINI_DOCKER_BASE_URL:-http://host.docker.internal:8317}
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-auto}
+      MODEL_NAME: ${MODEL_NAME:-}
+      RESEARCH_TOKEN: ${RESEARCH_TOKEN:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  worker:
+    build: .
+    command: ["python", "-m", "src.worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://medreview:${POSTGRES_PASSWORD:-medreview}@db:5432/medreview
+      APP_ENV: ${APP_ENV:-development}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_BASE_URL: ${GEMINI_DOCKER_BASE_URL:-http://host.docker.internal:8317}
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-auto}
+      MODEL_NAME: ${MODEL_NAME:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+volumes:
+  postgres_data:

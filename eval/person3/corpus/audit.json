@@ -1,0 +1,77 @@
+{
+  "bundle_sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+  "status": "candidate_not_gold",
+  "documents": 50,
+  "checksummed_files": 44,
+  "counts": {
+    "pubmed": 25,
+    "dailymed": 10,
+    "faers": 15
+  },
+  "families": {
+    "ibuprofen": [
+      "pubmed:39466269:1",
+      "pubmed:34376069:1",
+      "pubmed:40915652:1",
+      "pubmed:23137151:1",
+      "pubmed:35585779:1",
+      "dailymed:1662a495-4f6a-4515-a405-557681e1a496:5",
+      "dailymed:3b9773c6-42a0-4834-bef4-4fd60556af48:1",
+      "faers:10006463:4",
+      "faers:10016136:4",
+      "faers:10025167:5"
+    ],
+    "metformin": [
+      "pubmed:27987248:1",
+      "pubmed:26780750:1",
+      "pubmed:37414069:1",
+      "pubmed:34907435:1",
+      "pubmed:36187122:1",
+      "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+      "faers:10004629:1",
+      "faers:10005223:3",
+      "faers:10005995:2"
+    ],
+    "lisinopril": [
+      "pubmed:37417783:1",
+      "pubmed:9089428:1",
+      "pubmed:9055135:1",
+      "pubmed:7619667:1",
+      "pubmed:10344043:1",
+      "dailymed:f2e09150-22f2-4028-b214-917d686200ad:2",
+      "dailymed:764d51bf-731f-4a37-8e30-e79328cf5a12:9",
+      "faers:10005720:1",
+      "faers:10007368:3",
+      "faers:10008690:3"
+    ],
+    "atorvastatin": [
+      "pubmed:27616593:1",
+      "pubmed:36049498:1",
+      "pubmed:40529509:1",
+      "pubmed:35175631:1",
+      "pubmed:27039291:1",
+      "dailymed:7c58bf4a-4a92-4db8-89bc-4de1b5831efc:18",
+      "dailymed:d57720ab-9f83-4da9-a57f-0d55e00a605c:23",
+      "faers:10004497:1",
+      "faers:10004825:2",
+      "faers:10006639:1"
+    ],
+    "amoxicillin": [
+      "pubmed:38055983:1",
+      "pubmed:36756024:1",
+      "pubmed:35872212:1",
+      "pubmed:38690250:1",
+      "pubmed:10718859:1",
+      "dailymed:26c3694b-d7ef-4068-95d3-4f7a9210e117:1",
+      "dailymed:b07b5ac4-253e-4c83-91c3-3fdc46e91a0f:3",
+      "faers:26940768:1",
+      "faers:26943176:1",
+      "faers:26943602:1"
+    ]
+  },
+  "pending_reviews": 50,
+  "gold_labels": 0,
+  "validation": "schema, bundle files, parsed/raw hashes, unique IDs, review IDs and section bounds passed",
+  "external_source_authenticity_checked": false
+}

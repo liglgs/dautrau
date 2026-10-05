@@ -1,0 +1,53 @@
+{
+  "schema_version": "person3-preparation-v0.1",
+  "mode": "synthetic",
+  "purpose": "20 development technical cases; not the M09 held-out or professionally annotated benchmark.",
+  "dictionary-design": "Drug Alpha/Drug Beta/Event Alpha/Event Beta and ambiguous aliases are fictional, authored for these tests.",
+  "base_scope": {
+    "ingredient": "ingredient_alpha",
+    "event": "event_alpha",
+    "population": {"lower": 18, "upper": 65, "unit": "years"},
+    "dose": {"lower": 10, "upper": 10, "unit": "mg/day"},
+    "route": "oral",
+    "time_window": {"lower": 0, "upper": 30, "unit": "days"},
+    "comparator": "synthetic_unexposed_group"
+  },
+  "scope_cases": [
+    {"id": "S01", "label": "Explicit matching scopes", "claim_changes": {}, "evidence_changes": {}, "expected": {"eligible": true, "field_statuses": {"population": "matched"}}},
+    {"id": "S02", "label": "Pediatric claim, adult source", "claim_changes": {"population": {"lower": 0, "upper": 17, "unit": "years"}}, "evidence_changes": {}, "expected": {"eligible": false, "field_statuses": {"population": "mismatched"}}},
+    {"id": "S03", "label": "Different routes", "claim_changes": {}, "evidence_changes": {"route": "intravenous"}, "expected": {"eligible": false, "field_statuses": {"route": "mismatched"}}},
+    {"id": "S04", "label": "Dose missing from source", "claim_changes": {}, "evidence_changes": {"dose": null}, "expected": {"eligible": false, "field_statuses": {"dose": "unknown"}}},
+    {"id": "S05", "label": "Partial follow-up", "claim_changes": {}, "evidence_changes": {"time_window": {"lower": 0, "upper": 7, "unit": "days"}}, "expected": {"eligible": false, "field_statuses": {"time_window": "unknown"}}},
+    {"id": "S06", "label": "Broad claim, source restricted to adults", "claim_changes": {"population": null}, "evidence_changes": {}, "expected": {"eligible": false, "field_statuses": {"population": "unknown"}}},
+    {"id": "S07", "label": "Different ingredients", "claim_changes": {}, "evidence_changes": {"ingredient": "ingredient_beta"}, "expected": {"eligible": false, "field_statuses": {"ingredient": "mismatched"}}},
+    {"id": "S08", "label": "Different events", "claim_changes": {}, "evidence_changes": {"event": "event_beta"}, "expected": {"eligible": false, "field_statuses": {"event": "mismatched"}}}
+  ],
+  "normalization_cases": [
+    {"id": "N01", "drug": " Drug  Alpha ", "event": "AE Alpha", "expected": {"ingredients": ["ingredient_alpha"], "events": ["event_alpha"], "requires_review": false}},
+    {"id": "N02", "drug": "Brand Ambiguous", "event": "Event Alpha", "expected": {"ingredients": ["ingredient_alpha", "ingredient_beta"], "events": ["event_alpha"], "requires_review": true}},
+    {"id": "N03", "drug": "Unlisted Drug", "event": "Unlisted Event", "expected": {"ingredients": [], "events": [], "requires_review": true}}
+  ],
+  "contradiction_cases": [
+    {"id": "C01", "label": "Opposing precise findings, same scope", "right_scope_changes": {}, "right_source": "pubmed", "right_uncertainty": "low", "right_direction": "decrease", "expected_kind": "direct"},
+    {"id": "C02", "label": "Opposing findings, different populations", "right_scope_changes": {"population": {"lower": 0, "upper": 17, "unit": "years"}}, "right_source": "pubmed", "right_uncertainty": "low", "right_direction": "decrease", "expected_kind": "apparent"},
+    {"id": "C03", "label": "Imprecise null finding", "right_scope_changes": {}, "right_source": "pubmed", "right_uncertainty": "high", "right_direction": "no_clear_effect", "expected_kind": "none"},
+    {"id": "C04", "label": "Spontaneous reports versus comparative study", "right_scope_changes": {}, "right_source": "faers", "right_uncertainty": "low", "right_direction": "decrease", "expected_kind": "not_comparable"}
+  ],
+  "document": {
+    "document_id": "SYN-DOC-001",
+    "source_id": "SYN-SOURCE-001",
+    "source_version": "1",
+    "source_url": "https://example.invalid/synthetic/person3/SYN-SOURCE-001",
+    "text": "SYNTHETIC TECHNICAL FIXTURE. Study of Ingredient Alpha and Event Alpha. Participants were aged 18 to 65 years. The synthetic findings indicate an association; they do not establish causality.",
+    "content_level": "synthetic_excerpt",
+    "license": "team-authored-synthetic",
+    "quote": "Participants were aged 18 to 65 years."
+  },
+  "citation_cases": [
+    {"id": "Q01", "label": "Exact quote, locator, source and hash", "changes": {}, "expected_errors": []},
+    {"id": "Q02", "label": "Invented quote", "changes": {"quoted_span": "Participants were children."}, "expected_errors": ["quote_mismatch"]},
+    {"id": "Q03", "label": "Wrong analyzed-text hash", "changes": {"content_hash": "wrong-hash"}, "expected_errors": ["citation_hash_mismatch"]},
+    {"id": "Q04", "label": "Locator outside document", "changes": {"start": -1}, "expected_errors": ["invalid_locator"]},
+    {"id": "Q05", "label": "Citation belongs to another document", "changes": {"document_id": "SYN-DOC-OTHER"}, "expected_errors": ["document_id_mismatch"]}
+  ]
+}

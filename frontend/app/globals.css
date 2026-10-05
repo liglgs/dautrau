@@ -1,0 +1,275 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------------------
+   VigiLens — token thiết kế "Hồ sơ dẫn chứng" (Evidence file)
+   Màu chỉ mang nghĩa nghiệp vụ: xanh = được bằng chứng ủng hộ, đỏ = bị phản bác,
+   KHÔNG có nghĩa "thuốc an toàn / nguy hiểm".
+   --------------------------------------------------------------------------------------- */
+
+:root {
+  --background: 210 25% 98%;
+  --foreground: 222 32% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 32% 10%;
+  --popover: 0 0% 100%;
+  --muted: 214 22% 95%;
+  --muted-foreground: 215 14% 38%;
+  --border: 214 20% 89%;
+  --input: 214 20% 86%;
+  --primary: 222 32% 10%;
+  --primary-foreground: 210 25% 98%;
+  --ring: 239 84% 60%;
+  --radius: 0.625rem;
+
+  --ai: 239 84% 60%;
+  --ai-soft: 238 100% 97%;
+  --ai-border: 238 80% 88%;
+  --ai-fg: 243 55% 38%;
+
+  --support: 160 84% 32%;
+  --support-soft: 152 70% 95%;
+  --support-border: 152 50% 78%;
+  --support-fg: 162 88% 19%;
+
+  --contradict: 350 75% 48%;
+  --contradict-soft: 350 100% 97%;
+  --contradict-border: 350 78% 88%;
+  --contradict-fg: 350 70% 31%;
+
+  --caution: 38 92% 46%;
+  --caution-soft: 45 100% 94%;
+  --caution-border: 42 90% 76%;
+  --caution-fg: 28 85% 25%;
+
+  --scope: 24 90% 48%;
+  --scope-soft: 28 100% 95%;
+  --scope-border: 26 90% 82%;
+  --scope-fg: 20 80% 28%;
+
+  --neutral: 215 16% 47%;
+  --neutral-soft: 214 22% 95%;
+  --neutral-border: 214 18% 84%;
+  --neutral-fg: 217 24% 26%;
+
+  --marker: 50 100% 72%;
+  --marker-ink: 30 80% 18%;
+}
+
+.dark {
+  --background: 224 25% 7%;
+  --foreground: 210 20% 94%;
+  --card: 224 22% 10%;
+  --card-foreground: 210 20% 94%;
+  --popover: 224 22% 11%;
+  --muted: 222 18% 14%;
+  --muted-foreground: 215 14% 66%;
+  --border: 222 15% 20%;
+  --input: 222 15% 24%;
+  --primary: 210 20% 96%;
+  --primary-foreground: 224 25% 8%;
+  --ring: 239 90% 74%;
+
+  --ai: 239 90% 74%;
+  --ai-soft: 239 40% 16%;
+  --ai-border: 239 35% 30%;
+  --ai-fg: 238 100% 88%;
+
+  --support: 158 64% 52%;
+  --support-soft: 160 40% 12%;
+  --support-border: 160 35% 26%;
+  --support-fg: 152 70% 82%;
+
+  --contradict: 350 90% 66%;
+  --contradict-soft: 350 40% 14%;
+  --contradict-border: 350 35% 28%;
+  --contradict-fg: 350 100% 88%;
+
+  --caution: 40 95% 58%;
+  --caution-soft: 38 50% 13%;
+  --caution-border: 38 45% 28%;
+  --caution-fg: 45 100% 82%;
+
+  --scope: 24 95% 62%;
+  --scope-soft: 24 45% 14%;
+  --scope-border: 24 40% 30%;
+  --scope-fg: 28 100% 84%;
+
+  --neutral: 215 14% 62%;
+  --neutral-soft: 222 18% 14%;
+  --neutral-border: 222 15% 26%;
+  --neutral-fg: 214 20% 84%;
+
+  --marker: 48 90% 40%;
+  --marker-ink: 48 100% 92%;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-ring: hsl(var(--ring));
+
+  --color-ai: hsl(var(--ai));
+  --color-ai-soft: hsl(var(--ai-soft));
+  --color-ai-border: hsl(var(--ai-border));
+  --color-ai-fg: hsl(var(--ai-fg));
+
+  --color-support: hsl(var(--support));
+  --color-support-soft: hsl(var(--support-soft));
+  --color-support-border: hsl(var(--support-border));
+  --color-support-fg: hsl(var(--support-fg));
+
+  --color-contradict: hsl(var(--contradict));
+  --color-contradict-soft: hsl(var(--contradict-soft));
+  --color-contradict-border: hsl(var(--contradict-border));
+  --color-contradict-fg: hsl(var(--contradict-fg));
+
+  --color-caution: hsl(var(--caution));
+  --color-caution-soft: hsl(var(--caution-soft));
+  --color-caution-border: hsl(var(--caution-border));
+  --color-caution-fg: hsl(var(--caution-fg));
+
+  --color-scope: hsl(var(--scope));
+  --color-scope-soft: hsl(var(--scope-soft));
+  --color-scope-border: hsl(var(--scope-border));
+  --color-scope-fg: hsl(var(--scope-fg));
+
+  --color-neutral: hsl(var(--neutral));
+  --color-neutral-soft: hsl(var(--neutral-soft));
+  --color-neutral-border: hsl(var(--neutral-border));
+  --color-neutral-fg: hsl(var(--neutral-fg));
+
+  --color-marker: hsl(var(--marker));
+  --color-marker-ink: hsl(var(--marker-ink));
+
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --radius-chip: 999px;
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-overlay: 14px;
+
+  --ease-vigilens: cubic-bezier(0.2, 0, 0, 1);
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+}
+
+/* Vệt highlight kiểu bút dạ — chữ ký thị giác của sản phẩm */
+mark.evidence-mark {
+  background: linear-gradient(transparent 55%, hsl(var(--marker)) 55%);
+  color: hsl(var(--marker-ink));
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.evidence-thread {
+  stroke: hsl(var(--ai));
+  stroke-width: 1.5;
+  fill: none;
+  stroke-dasharray: 4 3;
+}
+
+.hero-grid {
+  background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -1px -1px;
+}
+
+.hairline-shadow {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px -12px rgb(15 23 42 / 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 1.8s var(--ease-vigilens) infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 1.4s linear infinite;
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+::selection {
+  background: hsl(var(--marker));
+  color: hsl(var(--marker-ink));
+}

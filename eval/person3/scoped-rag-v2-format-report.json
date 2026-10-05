@@ -1,0 +1,60 @@
+{
+  "original_inference_version": "scoped-rag-v2",
+  "original_model": "gpt-4o-mini-2024-07-18",
+  "claim_id": "P3-METFORMIN-01",
+  "original_request_sha256": "249fb820b73a48d107c4ef912a39ac1cfa07df3b8530e199fbc785977f5574a8",
+  "original_recordings_sha256": "7f4964e98fdfec5cfab6515817bca795b02ddf82970128480999278f8a1b22c3",
+  "postprocessor_version": "scoped-rag-v3",
+  "postprocessor_sha256": "7a478a39afe50e620843084bd00aff5ec31dfa15132c8bee1ed2376ab6926aa9",
+  "live_calls_for_reprocessing": 0,
+  "prompt_resent": false,
+  "new_model_run": false,
+  "prediction_accuracy_measured": false,
+  "clinical_validation_claimed": false,
+  "original": {
+    "assessment_status": "insufficient_evidence",
+    "accepted_findings": 0,
+    "excluded_findings": 3
+  },
+  "reprocessed": {
+    "assessment_status": "insufficient_evidence",
+    "accepted_findings": 1,
+    "excluded_findings": 2,
+    "excluded_finding_details": [
+      {
+        "alias": "E02",
+        "reason": "Design quote is not exact in the supplied unit",
+        "reasons": [
+          "Design quote is not exact in the supplied unit"
+        ]
+      },
+      {
+        "alias": "E03",
+        "reason": "Outcome quote is not exact in the supplied unit",
+        "reasons": [
+          "Outcome quote is not exact in the supplied unit",
+          "Design quote is not exact in the supplied unit"
+        ]
+      }
+    ]
+  },
+  "scope_checks": [
+    {
+      "unit_id": "P3U-262b04eb9074292b64ead682",
+      "direction": "supports",
+      "uncertainty": "low",
+      "scope": {
+        "drug": "matched",
+        "event": "matched",
+        "population": "unknown",
+        "dose": "unspecified_in_both",
+        "route": "unspecified_in_both",
+        "time_window": "unspecified_in_both"
+      },
+      "eligible": false,
+      "source": "pubmed"
+    }
+  ],
+  "whitespace_restoration_count": 2,
+  "source_note": "Only unique whitespace-equivalent spans restored to exact original text; changed words/punctuation remain excluded."
+}

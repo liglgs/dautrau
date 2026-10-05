@@ -1,0 +1,159 @@
+{
+  "scenario": "contradiction",
+  "title": "Hai nghiên cứu cùng scope trái chiều",
+  "mode": "synthetic",
+  "expected_technical_status": "requires_human_review",
+  "actual_status": "requires_human_review",
+  "passed": true,
+  "input_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug": "Drug Alpha",
+    "event": "Event Alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days"
+  },
+  "normalized_claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug_ingredient": "ingredient_alpha",
+    "drug_synonyms": [
+      "Alpha",
+      "Brand Ambiguous",
+      "Drug Alpha"
+    ],
+    "event_term": "event_alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days",
+    "unknowns": [],
+    "ambiguities": [],
+    "requires_review": false,
+    "version": 1
+  },
+  "source_documents": [
+    {
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "source_id": "synthetic-not-a-pmid",
+      "version": 1,
+      "title": "",
+      "source_url": "https://example.org/synthetic/person3-demo",
+      "text": "Synthetic context: population: adults; dose: 10 mg/day; route: oral; time_window: 30 days; comparator: placebo.\nDrug Alpha increased Event Alpha in a fictional controlled comparison.",
+      "hash": "13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7",
+      "retrieved_at": "2026-10-02T09:42:25.942776Z",
+      "metadata": {
+        "mode": "synthetic"
+      }
+    },
+    {
+      "doc_id": "SYNTHETIC-DEMO-B",
+      "source": "pubmed",
+      "source_id": "synthetic-other-study",
+      "version": 1,
+      "title": "",
+      "source_url": "https://example.org/synthetic/person3-demo-b",
+      "text": "Synthetic context: population: adults; dose: 10 mg/day; route: oral; time_window: 30 days; comparator: placebo.\nDrug Alpha decreased Event Alpha in a fictional controlled comparison.",
+      "hash": "a8434352f9c5a3fec1a2231bb9a0df5bcaa15e0260eca08e1a5a39fb2b3b588d",
+      "retrieved_at": "2026-10-02T09:42:25.942776Z",
+      "metadata": {
+        "mode": "synthetic"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-P3-a717be88db847e2bfb7bfecd",
+      "doc_id": "SYNTHETIC-DEMO-A",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "Drug Alpha increased Event Alpha in a fictional controlled comparison.",
+      "locator": {
+        "start": 112,
+        "end": 182,
+        "section": null
+      },
+      "scope": {
+        "population": "adults",
+        "dose": "10 mg/day",
+        "route": "oral",
+        "time_window": "30 days",
+        "study_type": null
+      },
+      "confidence": 0.0,
+      "evidence_type": "rct",
+      "version": 1,
+      "excluded": false,
+      "notes": "{\"schema_version\":\"person3.1\",\"drug_ingredient\":\"ingredient_alpha\",\"event_term\":\"event_alpha\",\"comparator\":\"placebo\",\"direction\":\"increase\",\"uncertainty\":\"low\",\"document_version\":1,\"document_hash\":\"13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7\",\"issues\":[]}"
+    },
+    {
+      "evidence_id": "EV-P3-2b6e7471e39f40db4bc342f7",
+      "doc_id": "SYNTHETIC-DEMO-B",
+      "source": "pubmed",
+      "stance": "contradicts",
+      "quote": "Drug Alpha decreased Event Alpha in a fictional controlled comparison.",
+      "locator": {
+        "start": 112,
+        "end": 182,
+        "section": null
+      },
+      "scope": {
+        "population": "adults",
+        "dose": "10 mg/day",
+        "route": "oral",
+        "time_window": "30 days",
+        "study_type": null
+      },
+      "confidence": 0.0,
+      "evidence_type": "rct",
+      "version": 1,
+      "excluded": false,
+      "notes": "{\"schema_version\":\"person3.1\",\"drug_ingredient\":\"ingredient_alpha\",\"event_term\":\"event_alpha\",\"comparator\":\"placebo\",\"direction\":\"decrease\",\"uncertainty\":\"low\",\"document_version\":1,\"document_hash\":\"a8434352f9c5a3fec1a2231bb9a0df5bcaa15e0260eca08e1a5a39fb2b3b588d\",\"issues\":[]}"
+    }
+  ],
+  "assessment": {
+    "assessment_status": "requires_human_review",
+    "rationale": "Opposing findings require adjudication.",
+    "evidence_ids": [
+      "EV-P3-a717be88db847e2bfb7bfecd",
+      "EV-P3-2b6e7471e39f40db4bc342f7"
+    ],
+    "scope_notes": [],
+    "confidence": 0.0
+  },
+  "gaps": [
+    {
+      "gap_id": "GAP-P3-PAIR-b0425068bf0f4b6a52e9",
+      "kind": "contradiction",
+      "field": null,
+      "description": "Direct contradiction candidate [EV-P3-2b6e7471e39f40db4bc342f7, EV-P3-a717be88db847e2bfb7bfecd]: opposing findings in the same explicit scope; review required.",
+      "priority": 5,
+      "created_step": 0
+    }
+  ],
+  "budget": {
+    "max_steps": 8,
+    "max_documents": 50,
+    "max_source_requests": 80,
+    "max_llm_calls": 80,
+    "max_input_tokens": 150000,
+    "max_output_tokens": 25000,
+    "steps_used": 0,
+    "documents_used": 2,
+    "source_requests": 0,
+    "llm_calls": 2,
+    "input_tokens": 358,
+    "output_tokens": 209,
+    "reservations": {}
+  },
+  "validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": [
+      "Hồ sơ còn 1 khoảng trống chưa giải quyết."
+    ]
+  },
+  "dossier_markdown": "# Hồ sơ điều tra INV-a124c521c568 (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Cần người có chuyên môn phân xử.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: fa7a26b28d9e03fd614a874efef0e2c13e196d399a2dafdd2f31af34d5312565\n\nCần người có chuyên môn phân xử.\nAudit: INV-a124c521c568 / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Drug Alpha\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 2/80\n\n\n## Bằng chứng đã truy xuất\nDrug Alpha increased Event Alpha in a fictional controlled comparison.\n\n- [EV-P3-a717be88db847e2bfb7bfecd v1](https://example.org/synthetic/person3-demo) source=SYNTHETIC-DEMO-A v1; sha256=13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7\n\nBằng chứng: EV-P3-a717be88db847e2bfb7bfecd\n\n## Bằng chứng đã truy xuất\nDrug Alpha decreased Event Alpha in a fictional controlled comparison.\n\n- [EV-P3-2b6e7471e39f40db4bc342f7 v1](https://example.org/synthetic/person3-demo-b) source=SYNTHETIC-DEMO-B v1; sha256=a8434352f9c5a3fec1a2231bb9a0df5bcaa15e0260eca08e1a5a39fb2b3b588d\n\nBằng chứng: EV-P3-2b6e7471e39f40db4bc342f7\n\n## Phạm vi và mâu thuẫn\nDirect contradiction candidate [EV-P3-2b6e7471e39f40db4bc342f7, EV-P3-a717be88db847e2bfb7bfecd]: opposing findings in the same explicit scope; review required.\n\n## Khoảng trống bằng chứng\nDirect contradiction candidate [EV-P3-2b6e7471e39f40db4bc342f7, EV-P3-a717be88db847e2bfb7bfecd]: opposing findings in the same explicit scope; review required.\n\n## Kết luận trong phạm vi claim\nCần người có chuyên môn phân xử.\n\nBằng chứng: EV-P3-a717be88db847e2bfb7bfecd, EV-P3-2b6e7471e39f40db4bc342f7\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
+  "approved_dossier": false
+}

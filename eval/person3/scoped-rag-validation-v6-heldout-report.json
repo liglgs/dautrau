@@ -1,0 +1,339 @@
+{
+  "version": "scoped-rag-v3",
+  "postprocessor_version": "scope-validation-v6",
+  "split": "heldout",
+  "mode": "offline reprocessing of original raw responses",
+  "live_calls": 0,
+  "prompt_resent": false,
+  "new_model_run": false,
+  "prediction_accuracy_measured": false,
+  "clinical_validation_claimed": false,
+  "recordings_path": "data\\person3\\evaluation-ai\\scoped-rag-v3-heldout.responses.jsonl",
+  "recordings_sha256": "8fc086a1c582185993c59bc76e90db6a64f0b0063fbff6ffbfaa7958b89d9d66",
+  "corpus_manifest_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+  "claims_sha256": "c4b1dc12f58f74b9fbf3918249b8bd50a8d32e12f9d4e1d4fa87859299b9650c",
+  "reference_kind": "ai_provisional",
+  "selected_claim_id": null,
+  "postprocessor_sha256": "a5ca08639ee2d61c6ef71d3232dc43f5eee5727a290420b0101277b683f05eee",
+  "all_claims_reusable_without_new_model_calls": true,
+  "processing_errors": 0,
+  "claims": [
+    {
+      "claim_id": "P3-IBUPROFEN-01",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [
+        {
+          "request_sha256": "0d7fc98c66ef4acd803fee685c9022d9ff107b5d5e6ef9990a9c3044b2f4bd70",
+          "changed_fields": [
+            "evidence",
+            "alias_to_unit_id",
+            "rendered_untrusted"
+          ]
+        }
+      ],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 1,
+      "excluded_findings": 1,
+      "null_scope_fields": [],
+      "study_type_normalizations": [
+        {
+          "alias": "E01",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        },
+        {
+          "alias": "E04",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        }
+      ],
+      "needs_quote_review": true,
+      "original_request_sha256": "0234d8661a542dbaec02b2c54326f6d5954d779237f6579cbdce0d40af5016d4",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-02",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [
+        {
+          "request_sha256": "34391d4cbcc3c9ad6d1d101626ae4d88cb35ee5c872374beeaf08844b82aec8a",
+          "changed_fields": [
+            "evidence",
+            "alias_to_unit_id",
+            "rendered_untrusted"
+          ]
+        }
+      ],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 3,
+      "null_scope_fields": [],
+      "study_type_normalizations": [
+        {
+          "alias": "E01",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        },
+        {
+          "alias": "E04",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        }
+      ],
+      "needs_quote_review": true,
+      "original_request_sha256": "164ef304811a5cd4d046b3aa99b98c01eb1fae6754e57d5e95179ad5ca404a84",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-03",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [
+        {
+          "request_sha256": "88f0320ecffcd7cfc7d15cd83eceaaffb055a02df1f435f88e5481a328905ac3",
+          "changed_fields": [
+            "evidence",
+            "alias_to_unit_id",
+            "rendered_untrusted"
+          ]
+        }
+      ],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 1,
+      "excluded_findings": 1,
+      "null_scope_fields": [],
+      "study_type_normalizations": [
+        {
+          "alias": "E01",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        },
+        {
+          "alias": "E04",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        }
+      ],
+      "needs_quote_review": true,
+      "original_request_sha256": "5597ce8ee3622d5f5ee8e170691db0db3d1dd9c2b3c3ac2c4f4f137f03adcb56",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-04",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [
+        {
+          "request_sha256": "d04697949761724b1fe7864cb115e25a3afe51b8ec011dd5665de0651469aabf",
+          "changed_fields": [
+            "evidence",
+            "alias_to_unit_id",
+            "rendered_untrusted"
+          ]
+        }
+      ],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 3,
+      "null_scope_fields": [],
+      "study_type_normalizations": [
+        {
+          "alias": "E01",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        },
+        {
+          "alias": "E04",
+          "submitted": "meta-analysis",
+          "normalized": "review"
+        }
+      ],
+      "needs_quote_review": true,
+      "original_request_sha256": "9c8fff7785ace24ef118a45a3becfa676bbbe6ad9bd9e30052e4a98de4d3bef4",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-05",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "requires_human_review",
+      "accepted_findings": 0,
+      "excluded_findings": 0,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": false,
+      "original_request_sha256": "82daddd6aef9875ccbaa3b603852781f842eb4398ea774e221c30910e0285b76",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-01",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "null_scope_fields": [],
+      "study_type_normalizations": [
+        {
+          "alias": "E05",
+          "submitted": "cohort",
+          "normalized": "observational"
+        }
+      ],
+      "needs_quote_review": true,
+      "original_request_sha256": "b36d80851229732a5f205104679ea9a4a35e0f024eeb1816aaea5e943ff5f6b6",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-02",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "null_scope_fields": [],
+      "study_type_normalizations": [
+        {
+          "alias": "E05",
+          "submitted": "cohort",
+          "normalized": "observational"
+        }
+      ],
+      "needs_quote_review": true,
+      "original_request_sha256": "f438792dd11db15c328bd99b782d3fc5e45bda592669bdcc9f1f196dbed9d58d",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-03",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": true,
+      "original_request_sha256": "f592dcfdcff5f8f6c2a2175e65448ca5956a03a58adc20ad293c33acda2096b9",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-04",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 0,
+      "excluded_findings": 4,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": true,
+      "original_request_sha256": "e5caff964a7120d340dd994ab1d0d6aad9052011e0cc11f08165b845d1425891",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-05",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "requires_human_review",
+      "accepted_findings": 0,
+      "excluded_findings": 0,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": false,
+      "original_request_sha256": "accce1023ba01ed811a5b45fe2f3a74d56918c192bd34e7603e36248672accb6",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-01",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 1,
+      "excluded_findings": 2,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": true,
+      "original_request_sha256": "a372a747bcdaf0c744d2c6cffd3a281a1df88dabf239e66a92431107d9ee42db",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-02",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 2,
+      "excluded_findings": 1,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": true,
+      "original_request_sha256": "bb6d9bd75db4f3bdabac3611846d7241aa0d1ea62731d3e04ee8d9147f89af9e",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-03",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 1,
+      "excluded_findings": 2,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": true,
+      "original_request_sha256": "bb2e524cd7e58cbbe4ac493e0e288859712fd4fea6923a4f141ff78d3d11f8ba",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-04",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "insufficient_evidence",
+      "accepted_findings": 2,
+      "excluded_findings": 0,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": false,
+      "original_request_sha256": "6712e05c7f0227dc4edea488b5807383bc6f7dbdbac7047e978a5b066b6c8fff",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-05",
+      "error": null,
+      "recording": "offline_reparsed",
+      "skipped_incompatible_contexts": [],
+      "assessment_status": "requires_human_review",
+      "accepted_findings": 0,
+      "excluded_findings": 0,
+      "null_scope_fields": [],
+      "study_type_normalizations": [],
+      "needs_quote_review": false,
+      "original_request_sha256": "66eaa8b6872fc0fffa5ac252471f5a89705630c2cf1a95f27ce6d30107cb195e",
+      "original_inference_version": "scoped-rag-v3",
+      "model": "gpt-4o-mini-2024-07-18"
+    }
+  ]
+}

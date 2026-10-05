@@ -1,0 +1,44 @@
+[
+  {
+    "file": "dailymed-label-ciprofloxacin.xml",
+    "setid": "c47250c2-bece-46b5-8b3b-b7c97d9005d8",
+    "version": "3",
+    "effective_time": "20260925",
+    "title": "These highlights do not include all the information needed to use ciprofloxacin tablets safely and effectively. See full prescribing information for ciprofloxacin tablets. ",
+    "sections": [
+      {
+        "title": "5.9 Risk of Aortic Aneurysm and Dissection",
+        "text": "\n                         Epidermiologic studies report an increased rate of aortic aneurysm and dissection within two months following use of fluoroquinolones, particularly in eldery patients. The cause for the increased risk has not been identified. In patients with a known aortic aneurysm or patients who are at greater risk for aortic aneurysms, reverse ciprofloxacin for use only when there are no alternative antibacterial treatments available. \n                     ",
+        "section_id": "S5.9"
+      }
+    ]
+  },
+  {
+    "file": "dailymed-label-pantoprazole-oral.xml",
+    "setid": "6faf465b-c3a3-4ae7-9e16-1ba758f6962a",
+    "version": "22",
+    "effective_time": "20240919",
+    "title": "These highlights do not include all the information needed to use ",
+    "sections": [
+      {
+        "title": "5.8\tHypomagnesemia and Mineral Metabolism",
+        "text": "\n                         Hypomagnesemia, symptomatic and asymptomatic, has been reported rarely in patients treated with PPIs for at least three months, and in most cases after a year of therapy. Serious adverse events include tetany, arrhythmias, and seizures. Hypomagnesemia may lead to hypocalcemia and/or hypokalemia and may exacerbate underlying hypocalcemia in at-risk patients. In most patients, treatment of hypomagnesemia required magnesium replacement and discontinuation of the PPI.  \n                         For patients expected to be on prolonged treatment or who take PPIs with medications such as digoxin or drugs that may cause hypomagnesemia (e.g., diuretics), health care professionals may consider monitoring magnesium levels prior to initiation of PPI treatment and periodically  [see  Adverse Reactions (6.2) ] . \n                         Consider monitoring magnesium and calcium levels prior to initiation of pantoprazole sodium delayed-release tablets and periodically while on treatment in patients with a preexisting risk of hypocalcemia (e.g., hypoparathyroidism). Supplement with magnesium and/or calcium as necessary. If hypocalcemia is refractory to treatment, consider discontinuing the PPI. \n                     ",
+        "section_id": "LINK_affd1844-fc62-4b37-91db-82daf174750a"
+      }
+    ]
+  },
+  {
+    "file": "dailymed-label-pantoprazole.xml",
+    "setid": "70378eba-3904-4491-9f6d-00f5d1501c4a",
+    "version": "2",
+    "effective_time": "20260930",
+    "title": "These highlights do not include all the information needed to use PANTOPRAZOLE SODIUM FOR INJECTION safely and effectively. See full prescribing information for PANTOPRAZOLE SODIUM FOR INJECTION.",
+    "sections": [
+      {
+        "title": "5.10 Hypomagnesemia and Mineral Metabolism\n",
+        "text": "\n                         Hypomagnesemia, symptomatic and asymptomatic, has been reported rarely in patients treated with PPIs for at least three months, and in most cases after a year of therapy. Serious adverse events include tetany, arrhythmias, and seizures. Hypomagnesemia may lead to hypocalcemia and/or hypokalemia and may exacerbate underlying hypocalcemia in at-risk patients. In most patients, treatment of hypomagnesemia required magnesium replacement and discontinuation of the PPI.\n \n                         For patients expected to be on prolonged treatment or who take PPIs with medications such as digoxin or drugs that may cause hypomagnesemia (e.g., diuretics), health care professionals may consider monitoring magnesium levels prior to initiation of PPI treatment and periodically  [see Adverse Reactions ( 6.2 )]. \n                         \n                         Consider monitoring magnesium and calcium levels prior to initiation of Pantoprazole Sodium for Injection and periodically while on treatment in patients with a preexisting risk of hypocalcemia (e.g., hypoparathyroidism). Supplement with magnesium and/or calcium as necessary. If hypocalcemia is refractory to treatment, consider discontinuing the PPI.\n \n                     ",
+        "section_id": "s26"
+      }
+    ]
+  }
+]

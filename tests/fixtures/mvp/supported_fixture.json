@@ -1,0 +1,116 @@
+{
+  "name": "supported",
+  "synthetic": true,
+  "description": "Có nhãn DailyMed + nghiên cứu PubMed cùng phạm vi -> supported_for_scope.",
+  "claim": {
+    "claim_text": "Metformin gây nhiễm toan lactic ở người lớn suy thận.",
+    "drug": "metformin",
+    "event": "lactic acidosis",
+    "population": "adults with renal impairment",
+    "dose": null,
+    "route": "oral",
+    "time_window": null
+  },
+  "source_results": [
+    {
+      "source": "dailymed",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-DAILYMED-METFORMIN"
+      ]
+    },
+    {
+      "source": "pubmed",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-PUBMED-METFORMIN-COHORT"
+      ]
+    },
+    {
+      "source": "faers",
+      "status": "empty",
+      "doc_ids": []
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-DAILYMED-METFORMIN",
+      "source": "dailymed",
+      "source_id": "setid:6d3f2c1a-1111-4c2e-9a11-metformin-label",
+      "version": 1,
+      "title": "METFORMIN HYDROCHLORIDE TABLET, FILM COATED — Lactic Acidosis",
+      "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=6d3f2c1a-1111-4c2e-9a11",
+      "text": "DailyMed — METFORMIN HYDROCHLORIDE TABLET, FILM COATED (NDA 020357)\n\nWARNINGS AND PRECAUTIONS\n5.1 Lactic Acidosis\nThere have been postmarketing reports of metformin-associated lactic acidosis in patients\nwith severe renal impairment (eGFR below 30 mL/min/1.73 m2), including fatal cases.\nMetformin accumulation during renal impairment increases the risk of lactic acidosis.\nAssessment of renal function is recommended before initiation and at least annually thereafter.\n\n5.2 Contraindications\nMetformin hydrochloride tablets are contraindicated in patients with an eGFR below 30 mL/min/1.73 m2.",
+      "hash": "49e4afc4637fa9ef67399742127a06aafaa4fa02ca1e6ab238a68102e1cd82f6",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    },
+    {
+      "doc_id": "DOC-PUBMED-METFORMIN-COHORT",
+      "source": "pubmed",
+      "source_id": "PMC7784512",
+      "version": 1,
+      "title": "Risk of lactic acidosis with metformin in reduced kidney function",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/38123456/",
+      "text": "PubMed — PMCID: PMC7784512 — \"Risk of lactic acidosis with metformin in reduced kidney function:\na retrospective cohort study\" (Journal of Clinical Pharmacology, 2024).\n\nAbstract\nBACKGROUND: Metformin is widely prescribed, but its use in patients with reduced kidney function remains debated.\nMETHODS: We followed 41,208 adults with renal impairment (eGFR 30-59 mL/min/1.73 m2) who received metformin\nor a sulfonylurea for a median of 3.2 years.\nRESULTS: Metformin use was associated with an increased incidence of lactic acidosis compared with sulfonylurea\n(adjusted hazard ratio 1.42, 95% CI 1.18-1.71). The absolute risk remained low (2.1 vs 1.5 events per 1000 person-years).\nCONCLUSIONS: In adults with renal impairment, metformin exposure was associated with a higher rate of lactic acidosis.",
+      "hash": "4565ac6cefb2540f6ec08de80591cea1caee45d755f319b05f1f7a533b9d1971",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVI-LABEL-LACTIC",
+      "doc_id": "DOC-DAILYMED-METFORMIN",
+      "source": "dailymed",
+      "stance": "supports",
+      "quote": "There have been postmarketing reports of metformin-associated lactic acidosis in patients\nwith severe renal impairment (eGFR below 30 mL/min/1.73 m2), including fatal cases.",
+      "locator": {
+        "start": 114,
+        "end": 287,
+        "section": "WARNINGS AND PRECAUTIONS 5.1"
+      },
+      "scope": {
+        "population": "adults with renal impairment",
+        "dose": null,
+        "route": "oral",
+        "time_window": null,
+        "study_type": "drug_label"
+      },
+      "confidence": 0.9,
+      "evidence_type": "label",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    },
+    {
+      "evidence_id": "EVI-PUBMED-LACTIC",
+      "doc_id": "DOC-PUBMED-METFORMIN-COHORT",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "In adults with renal impairment, metformin exposure was associated with a higher rate of lactic acidosis.",
+      "locator": {
+        "start": 693,
+        "end": 798,
+        "section": "Abstract / CONCLUSIONS"
+      },
+      "scope": {
+        "population": "adults with renal impairment",
+        "dose": null,
+        "route": "oral",
+        "time_window": null,
+        "study_type": "retrospective cohort"
+      },
+      "confidence": 0.75,
+      "evidence_type": "observational",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "assessment_status": "supported_for_scope",
+    "stop_reason": "success",
+    "checkpoint": "assessment",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "Hai nguồn độc lập cùng phạm vi; vẫn phải qua reviewer trước khi export."
+  }
+}

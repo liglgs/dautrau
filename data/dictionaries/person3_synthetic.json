@@ -1,0 +1,13 @@
+{
+  "version": "person3-synthetic-v0.1",
+  "mode": "synthetic",
+  "description": "Fictional terms for technical tests only. Not RxNorm or MedDRA coding, not a live drug dictionary.",
+  "drugs": [
+    {"canonical": "ingredient_alpha", "aliases": ["Drug Alpha", "Alpha", "Brand Ambiguous"], "source_ref": "tests/fixtures/mvp/person3/cases.json#dictionary-design", "license": "team-authored-synthetic"},
+    {"canonical": "ingredient_beta", "aliases": ["Drug Beta", "Beta", "Brand Ambiguous"], "source_ref": "tests/fixtures/mvp/person3/cases.json#dictionary-design", "license": "team-authored-synthetic"}
+  ],
+  "events": [
+    {"canonical": "event_alpha", "aliases": ["Event Alpha", "AE Alpha"], "source_ref": "tests/fixtures/mvp/person3/cases.json#dictionary-design", "license": "team-authored-synthetic"},
+    {"canonical": "event_beta", "aliases": ["Event Beta", "AE Beta"], "source_ref": "tests/fixtures/mvp/person3/cases.json#dictionary-design", "license": "team-authored-synthetic"}
+  ]
+}

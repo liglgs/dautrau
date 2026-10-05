@@ -1,0 +1,10 @@
+{
+  "duration_seconds": 58.32,
+  "width": 1440,
+  "height": 900,
+  "sha256": "354e94f4a1d6c01af276213446b25915da104a9503109eab2d8473f19c230694",
+  "browser_decode": "passed",
+  "has_audio": false,
+  "synthetic": true,
+  "scope": "Saved video decodes in Chromium, seeks to three positions and plays to end. Not live-system verification."
+}

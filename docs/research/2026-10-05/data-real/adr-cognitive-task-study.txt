@@ -1,0 +1,939 @@
+1
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access 
+Strategies prescribers and pharmacists 
+use to identify and mitigate adverse 
+drug reactions in inpatient and 
+outpatient care: a cognitive task analysis 
+at a US Veterans Affairs Medical Center
+Khoa Anh Nguyen    ,1,2 Laura G Militello,3 Amanda Ifeachor,4 Karen J Arthur,5 
+Peter A Glassman,6 Alan J Zillich,7 Michael Weiner,1,8 Alissa L Russ- Jara1,7
+To cite: Nguyen KA, Militello LG, 
+Ifeachor A, et al.  Strategies 
+prescribers and pharmacists use 
+to identify and mitigate adverse 
+drug reactions in inpatient and 
+outpatient care: a cognitive task 
+analysis at a US Veterans Affairs 
+Medical Center. BMJ Open 
+2022;12:e052401. doi:10.1136/
+bmjopen-2021-052401
+ ► Prepublication history and 
+additional supplemental material 
+for this paper are available 
+online. To view these files, 
+please visit the journal online 
+(http://dx.doi.org/10.1136/ 
+bmjopen-2021-052401).
+Received 16 April 2021
+Accepted 26 January 2022
+For numbered affiliations see 
+end of article.
+Correspondence to
+Dr Khoa Anh Nguyen;  
+ khoanguyen@ cop. ufl. edu
+Original research
+© Author(s) (or their 
+employer(s)) 2022. Re- use 
+permitted under CC BY- NC. No 
+commercial re- use. See rights 
+and permissions. Published by 
+BMJ.
+ABSTRACT
+Objective To develop a descriptive model of the cognitive 
+processes used to identify and resolve adverse drug 
+reactions (ADRs) from the perspective of healthcare 
+providers in order to inform future informatics efforts
+Setting Inpatient and outpatient care at a tertiary care US 
+Veterans Affairs Medical Center.
+Participants Physicians, nurse practitioners and 
+pharmacists who report ADRs.
+Outcomes Descriptive model and emerging themes from 
+interviews.
+Results We conducted critical decision method interviews 
+with 10 physicians and 10 pharmacists. No nurse 
+practitioners submitted ADR incidents. We generated a 
+descriptive model of an ADR decision- making process and 
+analysed emerging themes, categorised into four stages: 
+detection of potential ADR, investigation of the problem’s 
+cause, risk/benefit consideration, and plan, action and 
+follow- up. Healthcare professionals (HCPs) relied on 
+several confirmatory or disconfirmatory cues to detect and 
+investigate potential ADRs. Evaluating risks and benefits 
+of related medications played an essential role in HCPs' 
+pursuits of solutions
+Conclusions This study provides an illustrative model of 
+how HCPs detect problems and make decisions regarding 
+ADRs. The design of supporting technology for potential 
+ADR problems should align with HCPs' real- world cognitive 
+strategies, to assist fully in detecting and preventing ADRs 
+for patients.
+INTRODUCTION
+Adverse drug events (ADEs) harm over 
+1.5 million patients and cost over $500 million 
+each year in USA.1 These concerning statistics 
+prompted the US Office of Disease Preven-
+tion and Health Promotion to develop a 
+National Action Plan for Adverse Drug Event 
+Prevention in 2014. 2 This plan called for 
+actions, including developing health infor -
+mation technology to promote best prac-
+tices in prescribing, and in detecting cases of 
+high risk for ADEs. 2 Many factors contribute 
+to the high incidence of ADEs in the USA, 
+including an increasing number of adverse 
+drug reactions (ADRs), an ageing popula-
+tion and a rising trend in polypharmacy. 3 
+ADR, defined as an unintended response to 
+a drug that occurs at normally used doses, 
+is the most common type of ADE. 4 Health-
+care professionals (HCPs) such as physicians 
+and pharmacists are essential in preventing 
+and managing ADRs because they directly 
+prescribe drugs and provide clinical care. 
+However, the processes that individual HCPs 
+adopt to identify, treat and monitor ADRs are 
+not well understood.
+Healthcare systems leverage many different 
+approaches to support HCPs in assessing 
+and preventing ADRs, including systematic 
+efforts to collect and review data to assess 
+the risk of ADRs. 5–7 With advances in the 
+development and implementation of elec-
+tronic health records (EHRs), alert systems 
+that help HCPs identify and prevent ADEs 
+have become more feasible and promising. 
+Indeed, automated computerised order 
+checks, frequently resulting in drug alerts, 
+Strengths and limitations of this study
+ ► This is the first study to examine the cognitive pro-
+cess that healthcare professionals (HCPs) use to de-
+tect and investigate adverse drug reactions (ADRs).
+ ► We used a critical decision method to construct a 
+descriptive model.
+ ► We only interviewed physicians and pharma-
+cists regarding ADRs but not other HCPs such as 
+nurse practitioners, registered nurses or physician 
+assistants.
+ ► We only examined incidents from a single large 
+Veteran Affairs Medical Center and electronic health 
+records system.
+2
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access 
+are often based on triggers such as the documentation of 
+a patient’s allergies.8
+While medication alert systems for allergies have 
+been implemented regularly, alert systems with decision 
+support to identify and resolve newly occurring ADRs are 
+rarely found. In addition, many EHR alert systems have a 
+technology- centric design that fails to take into account 
+the HCPs' cognitive processes and workflow. 9–11 HCP 
+decision- centred design, in contrast, focuses on HCPs' 
+cognitive processes and key decisions, such as prescribing 
+a drug, or choosing a drug regimen, as a core function 
+of design.12 13 With a foundational understanding of the 
+cognitive strategies that HCPs use to prevent and respond 
+to ADRs in clinical practice, healthcare systems and EHR 
+vendors can develop systemic interventions and technol-
+ogies to help HCPs prevent and resolve ADRs. Recent 
+studies emphasise that cognitive studies are needed to 
+help understand HCPs' decision making 9 14  in order to 
+develop more meaningful and effective clinical deci-
+sion support. Therefore, the objective of this study was 
+to develop a descriptive model of the cognitive processes 
+used to identify and resolve ADRs from the perspective of 
+HCPs in order to inform future informatics efforts.
+METHODS
+Study site and participant characteristics
+This research is part of a larger study 15 16 conducted at 
+a tertiary care Veterans Affairs Medical Center. Eligible 
+HCPs were physicians, nurse practitioners, and pharma-
+cists who prescribed medications, managed medications, 
+or verified prescriptions in an inpatient or outpatient 
+setting. We excluded medical and pharmacy residents, 
+trainees, pharmacy technicians and those with a purely 
+administrative role. We invited all remaining eligible 
+HCPs at the study site to participate. Eligible HCPs were 
+invited to participate via emails, flyers and follow- up via 
+phone calls. All participants consented in written prior 
+to the critical decision method (CDM) interviews. An 
+extended version of the recruitment can be found from 
+the method paper.15
+Study design
+The study procedure and data analysis are illustrated in 
+four steps in figure 1.
+Potential ADR incident capture
+Participants, when encountering a potential ADR, were 
+ask to complete an incident card, 15 which captured 
+detailed information about the potential ADR incident, 
+such as the type of ADR, suspected medication(s) and 
+when the participant first became aware of the problem. 
+Given that recall is often difficult for tasks and decisions 
+that are made many times each day, 17 the incident card 
+was designed to help capture an ADR event close to the 
+time of the incident, before it was forgotten or ‘merged’ in 
+memory with similar events. A similar approach of admin-
+istering a small set of questions soon after an incident 
+has been shown to increase accuracy of recall days later.18 
+Subsequently, the incident card that HCPs submitted was 
+used to assist with the CDM interviews if the incident was 
+selected, as described below.
+Incident selection
+A research team, consisting of a physician, pharmacist 
+and human factors expert, reviewed each incident card 
+to determine eligibility for an interview. Incident cards 
+were reviewed based on five criteria: incident was appro-
+priately addressed, incident required great expertise or 
+consideration, incident had potential to cause serious 
+injury, incident was unique or challenging, or incident 
+would be difficult for trainees to resolve alone.
+Critical decision method
+Selected incidents led to scheduling of follow- up CDM 
+interviews with HCPs, to collect further details. 15 The 
+CDM interview technique, often used as part of a cogni-
+tive task analysis, is designed to capture detailed incident 
+accounts from participants, including strategies, critical 
+cues and contextual elements as experienced by the inter-
+viewee.17 A human factors expert conducted pilot testing 
+of the interview guide with three HCPs (two physicians, 
+one pharmacist) to further refine interview questions 
+prior to data collection. 15 Interviews were scheduled 
+within 2–4 weeks of the incident date. One human factors 
+scientist, trained in the CDM technique, conducted a 
+60 min, semistructured CDM interview with each HCP. 
+These interviews were structured in the following three 
+phases:
+1. Capture a brief summary of the incident: The inter -
+viewer asked the participant to summarise the incident 
+as it pertained to the ADR concern. If multiple eligible 
+incidents were received from a participant, the inter -
+viewer asked questions at the beginning of the inter -
+view, to select the more challenging incident.
+2. Construct an incident timeline: The interviewer asked 
+participants probing questions, to reconstruct a high- 
+Figure 1 Overview of the study procedure. Four main steps are shown in the illustration. ADR, adverse drug reaction.
+3
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access
+level time line of the incident. This time line was re-
+corded and displayed on a whiteboard, visible to both 
+the interviewer and HCP during the interview session. 
+The time line helped the interviewer organise the inci-
+dent in chronological order and provided a common 
+point of reference for the rest of the interview.
+3. Ask in- depth questions. The interviewer asked addition-
+al questions to investigate the HCPs' decision- making 
+process, and to identify cognitive cues used during the 
+course of the incident. The interviewer then asked hy-
+pothetical questions to gain further insights about the 
+cognitive cues or strategies that the participant used to 
+detect and respond to the ADR incident.
+The incident time line was photographed. Interviews 
+were audio- recorded and transcribed for analysis. The 
+complete interview guide and a more detailed descrip-
+tion of study methods is available elsewhere. 15 Examples 
+of interview questions are below.
+1. What caused you to be concerned about the medica-
+tion for this patient?
+2. In what ways did computerised alerts help you notice 
+the right things and take action?
+3. What tools/software/technology were used to help 
+manage the medication conflict?
+4. What, if any, documentation in the EHR helped you 
+know what to do?
+5. Under what circumstances, if any, would you have dis-
+continued the medication for this patient, rather than 
+reducing the dose?
+Qualitative data analysis
+Interview transcripts were independently analysed by 
+a human factors engineer and a clinical pharmacist, to 
+generate decision requirement tables for each incident. 
+The decision requirements table is a representation 
+commonly used to examine key information within and 
+across incidents.13 Any discrepancies in table content were 
+discussed by the analysts until they reached consensus. 19 
+These decision requirements tables summarised each inci-
+dent and examined key elements. Specifically, researchers 
+identified key decision points inductively, and for each 
+decision point, recorded several components, including 
+cues, strategies, potential errors and any factors that made 
+the decision difficult. (See online supplemental appendix 
+A for a sample decision requirements table.)
+Three analysts (human factors engineer, pharmacist 
+researcher and cognitive psychologist) then used these 
+tables to identify initial themes across four selected inci-
+dents. Each analyst independently coded the problem 
+detection aspect of each incident from those decision 
+requirements tables, then met weekly to discuss whether 
+the data supported the initial conception of the model, 
+and whether the proposed codes adequately captured 
+the incident. Refinements were made to the codebook, 
+including merging codes and adding new ones, refining 
+the definition of codes, and adding examples to the code-
+book. When they completed this process for the first four 
+incidents, they worked through the same process with the 
+investigate the cause codes, followed by the codes for plans/
+address/follow- up from the decision requirements tables.
+After analysing the first four incidents, two of the 
+analysts (pharmacist researcher and cognitive psychol-
+ogist) independently analysed the remaining data in 
+blocks of four incidents (two pharmacist cases and two 
+physician cases), using the complete codebook. Each inci-
+dent was discussed until consensus was reached. When a 
+block of four random incidents had been analysed and 
+discussed, the two analysts summarised any new insights 
+and potential refinements to the codebook (ie, clarifying 
+definitions, nesting or un- nesting codes to reflect the 
+data more completely), in consultation with the human 
+factors engineer. See online supplemental appendix B for 
+the final codebook. Final consensus codes were entered 
+into NVivo software (QSR international, V.10), to assist 
+with data management and analysis.
+Initial model development of ADR decision-making
+Data from all sources were collected and analysed to 
+develop the initial model of ADR decision- making. To 
+develop the initial model of ADR decision- making, we 
+conducted a card sort of clinicians’ key decision points 
+identified in each ADR incident. Decision points from 
+each of the decision requirement tables, such as ‘inves-
+tigate the cause of the problem’, were written on indi-
+vidual paper index cards. A multidisciplinary team of five 
+researchers, including two human factors professionals, 
+two pharmacists and one physician, individually sorted 
+cards into meaningful groups based on their background 
+and perspectives to collapse similar decision points across 
+incidents into one decision point, then reviewed and 
+discussed the terminology for each decision point until 
+reaching consensus.
+From these card sort results, two human factors profes-
+sionals developed the initial model, and then reviewed 
+and refined the model monthly with inputs from all 
+research team members, including practising physicians 
+and pharmacists. The model was intended to characterise 
+the cognitive processes that HCPs in our study described 
+as they were confronted with potential ADRs.
+Patient and public involvement
+No patient was involved. This study focused on HCPs. 
+However, the results of this study on ADRs were important 
+to improve patient safety in medication use.
+RESULTS
+Participants and ADRs reported
+HCPs submitted a total of 35 ADR incident cards. We 
+completed interviews with 10 physicians and 10 phar -
+macists (table 1) regarding 20 incidents. No nurse prac-
+titioners submitted ADR incident cards. Reasons for 
+exclusion of the remaining 15 ADR incident cards include: 
+no action needed for clinical care (1), low ratings from 
+incident cards from reviewers (2), illegible handwriting 
+4
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access 
+(1), participant submitted multiple cases (11). Table 2 
+provides a brief description of the incidents.
+ADR decision-making model
+The resulting ADR model (figure 2) outlines participants' 
+cognitive processes when they detected and responded to 
+potential ADRs. This model consists of four medication- 
+related stages: problem detection, investigation of the 
+problem’s cause, risk/benefit considerations, and plan, 
+action and follow- up. Below, we organise results by the 
+stages in this model. Emergent themes within each stage 
+are underlined, and sample quotes from participants are 
+presented in box 1. Additionally, we describe each of the 
+four stages in the results sections below.
+Stage 1. Detection of potential ADR
+In this first stage, HCPs relied on cues that signalled an initial 
+concern. Patient’s symptoms (reported) and signs (observed) 
+were common cues to help HCPs recognise a potential 
+ADR. Additionally, abnormal lab values reported within the 
+EHR can also help HCPs detect the problem. Furthermore, 
+HCPs reviewed medication characteristics to sense poten-
+tial ADRs. Common characteristics of ADR detection were 
+either a new medication that was recently prescribed or started 
+by the patient, or a medication that is commonly known to cause 
+the ADR symptoms that the patient is experiencing. Usual causes of 
+ADR symptoms were often recognised by HCPs from clinical 
+experience. Finally, HCPs sometimes detected a potential 
+ADR based on information (eg, tip- off) from another healthcare 
+professional or the patient themselves.
+Stage 2. Investigate the cause of incident
+After detecting the problem, HCPs started to investigate 
+the potential cause. This stage involved information that 
+prompted HCPs to investigate, and their strategies for investi-
+gating. For each specific reason to investigate, HCPs used 
+a distinct, corresponding strategy, such as interviewing a 
+patient who reported a certain symptom, or searching in 
+drug references if the HCP suspected that a drug caused 
+the sign or symptom. HCPs also examined confirmatory and 
+disconfirmatory cues, to validate the connection between 
+ADR concerns and their suspected medications.
+When investigating the connection between an ADR and a 
+possible problematic medication, HCPs searched for certain 
+confirmatory cues. These were cues that helped providers to 
+conclude that the medication was the likely cause of the 
+ADR. Likewise, HCPs also looked for ‘disconfirmatory cues’ 
+that suggested that the suspected medication was not causing 
+an ADR (see box 1 for examples of confirmatory and discon-
+firmatory cues). HCPs often reviewed the disconfirmatory 
+cues through clinical references such as those provided by 
+UpToDate, Micromedex and Lexicomp.
+HCPs not only searched for documented and avail-
+able clinical information but also looked for factors that 
+were absent, to confirm or reject the connection between 
+the ADR concern and the suspected medication. This is 
+known as negative cue. An example includes medications 
+that commonly cause the problem but were not part of 
+the patients' medication regimen.
+Stage 3. Risk and benefit considerations
+When the cues indicated the occurrence of an ADR, 
+HCPs often considered the risks and benefits associated 
+with continuing or stopping the suspected medication. As 
+part of this solution- seeking activity, HCPs often consid-
+ered whether available alternative treatments could alle-
+viate the ADR. They also weighed the risks and benefits 
+associated with such alternatives. While weighing risks 
+and benefits is an essential element of medical decision- 
+making, our study found several components that HCPs 
+also take into consideration. These components include:
+Severity of side effects
+HCPs often evaluated the severity of the current side 
+effects, and the patient’s willingness to tolerate them. The 
+HCP chose to continue the medication, but educated 
+the patient about potential problems, and suggested 
+increased monitoring (eg, follow- up by nursing staff or 
+more frequent patient appointments). In contrast, if the 
+side effects were more severe, the HCP sought alternative 
+medications or treatment.
+Anticipated benefits
+If the treatment benefits of the medication were expected 
+to outweigh the risk for the patient, the HCPs tended to 
+continue the medication.
+Fostering patient adherence
+When investigating options for addressing and solving an 
+ADR, the HCPs also incorporated the patient’s feedback 
+Table 1 Characteristics of participants (n=20) who were Interviewed regarding an ADR incident
+Characteristic Physicians (n=10) Pharmacists (n=10) All participants (n=20)
+Gender: female, n (%) 7 (70) 6 (60) 13 (65)
+Age, median, (range) 42 (34–60) 36 (29–45) 38.5 (29–60)
+Veterans Affairs experience, median, (range) 10 (3.5–26) 7.5 (2–13.5) 9 (2–26)
+Setting of incident
+  Inpatient 0 4* 4
+  Outpatient 10 6 16
+*One pharmacist had both inpatient/outpatient role.
+ADR, adverse drug reaction.
+5
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access
+and the likelihood that the patient will abandon treatment 
+with the medication in question. Rather than sequentially 
+trying a series of closely related medications (medications 
+in the same class) in hopes that one will have the desired 
+benefits without the adverse reaction, the HCP sometimes 
+switched to a different class of medication therapy to help 
+alleviate the patient’s concern.
+Which risk is greater?
+In some cases, HCPs framed the problem in terms of which 
+risk was greater: stopping the medication, or experiencing 
+the ADR. Conversely, at times they assessed which benefit 
+was greater. This happened most often for patients with 
+particularly challenging health conditions, such as HIV or 
+multiple chronic comorbidities. In these cases, the patient 
+may be taking a medication that has benefits for managing 
+a chronic condition (eg, treating HIV), but stopping the 
+medication may have benefits for mitigating ADR.
+Stage 4. Plan, action and follow-up
+The last stage of this decision- making model includes 
+planning, selecting actions and follow- up with patients. 
+Table 2 ADR incidents (n=20) selected for interviews
+Case ID Potential ADR incident Medication(s) of concern
+Action(s) taken by the 
+participant
+A.Incidents reported by physicians
+#1 Patient complained of chest muscle spasms Duloxetine (Cymbalta) Switched to escitalopram
+#2 Patient reported skin irritation on dorsum 
+of feet
+Capsaicin, gabapentin (two separate 
+medications)
+Stopped capsaicin, increased 
+dose of gabapentin
+#3 Patient reported trouble breathing Venlafaxine (Effexor) Stopped Effexor for 3 days
+Started Vistaril (take as needed)
+#4 Patient reported difficulty swallowing Suboxone Switched from suboxone 
+sublingual to film strip
+#5 Patient reported itching Dorzolamide Switched to latanoprost
+#6 Patient reported muscle aches and had 
+‘swollen eyes’
+Emtricitabine/rilprivirine/tenofovir 
+(Complera)
+Switched from Complera to 
+patient’s previous HIV regimen
+#7 Elevated AST and ALT HIV medications Held HIV meds while treating 
+hepatitis C
+#8 HCP reported that patient had a history of 
+kidney stones
+Topiramate Advised the medical resident 
+to taper and then discontinue 
+topiramate
+#9 Patient reported swelling, angio- oedema Hydrochlorothiazide/ lisinopril Discontinued lisinopril
+#10 Elevated haemoglobin Testosterone Recommended PCP decrease or 
+stop testosterone
+B.Incidents reported by pharmacists
+#1 Patient reported chest tenderness Spironolactone Switched from spironolactone to 
+eplerenone
+#2 Patient reported nightmares Varenicline Stopped varenicline, prescribed 
+nicotine patch
+#3 Thrombocytopenia Heparin Stopped heparin, transitioned 
+from bivalirudin to rivaroxaban
+#4 Patient reported chest pain Montelukast Stopped montelukast
+#5 Patient had low blood pressure Doxazosin Contacted PCP and suggested 
+stopping doxazosin
+#6 Patient reported rash Piperacillin +tazobactam Switched to clindamycin
+#7 Patient reported chest pain Abiraterone Reaffirmed to the patient that it is 
+not a heart attack
+Continued abiraterone for cancer 
+treatment
+#8 Patient reported diarrhoea Atorvastatin Switched to simvastatin
+#9 Orthostatic hypotension Tamsulosin Recommended the rounding team 
+stop tamsulosin
+#10 Electronic health record alerted the 
+participant about a sulfa allergy
+Furosemide (new order) Advised the nurse practitioner that 
+furosemide can be started
+ADR, adverse drug reaction; ALT, alamine aminotransferase; AST, aspartate aminotransferase; HCP , healthcare professional; PCP , 
+primary care provider.
+6
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access 
+Based primarily on information collected stages 2 and 3, 
+HCPs would determine appropriate plans and actions to 
+address the problem. The three main actions in response 
+to incidents in our study included changes to medication 
+management, patient counselling, and follow- up appoint-
+ments and monitoring. Changes to medications included 
+stopping the offending medication, temporarily placing 
+the medication on hold until the ADR was alleviated, 
+changing the drug to one that is unlikely to cause the 
+ADR or continuing the medication if its perceived bene-
+fits outweigh risks.
+Figure 2 Adverse drug reaction (ADR) decision- making 
+model. the model has four stages.
+Box 1 Main themes and quotes from participants
+1.Detection of potential adverse drug reaction (ADR)
+HCP detected potential ADR based on symptoms and signs
+Patient called ((the)) pharmacy ((and)) said ((that)) after only 3 capsules 
+of Cymbalta, the patient had muscle spasms and chest muscle spasms. 
+Physician #1
+A new medication or a medication that is already known to com-
+monly cause the ADR symptoms
+I asked the patient if he was taking the atorvastatin. Patient ((said)) ‘Yes, 
+and (I) have had a lot of diarrheadiarrhoea since starting the medica-
+tion’. Pharmacist #8
+Information from another healthcare professional (HCP)
+I got a view alert ((notification in my EHR inbox)), so I think ((the patient)) 
+called the pharmacy and then they sent me a triage note with a box 
+checked ((for)) adverse reaction. Physician #1
+2.Investigate the cause of the problem
+Reasons and strategies for investigating
+((Participant)) interviewed a patient and asked follow- up questions 
+((including)): having trouble breathing, sweating? when did the burning 
+sensation start? Pharmacist #7
+Confirmatory cues
+Via phone call, ((the)) patient reported chest pain and muscle spasms. 
+These ((symptoms)) occurred within the first 15 minutes min of taking 
+((the medication)) ((Cymbalta)). Symptoms consistently happened within 
+15 min for each of the three doses. ((Confirming that these symptoms 
+were from taking Cymbalta.)) Physician #1
+Disconfirmatory cue
+Before starting Cymbalta ((the suspected medication)), the patient had 
+reported muscle spasms/muscle cramps all over as part of a general 
+pain syndrome. Physician #1
+Negative cue (ie, information that is absent)
+I rechecked (AST/ALT) on the end of October… and they were ((about)) 
+the same ((as before)). The AST was 204 and ALT was 434…. Since ((it)) 
+was about the same, liver function issues ((were)) NOT due to patient 
+drinking. ‘I was hoping maybe ((the cause was)) was drinking ((which is 
+easier to address than an ADR)).’ Physician #7
+3.Risk and benefit considerations
+Severity of side effects
+Patient ((is)) tolerating the pain, not doing anything to compensate. Pain 
+((is)) not effecting ((sic)) patient’s behaviour (in the context of chemo-
+therapy, the potential benefits are very high). Pharmacist #7
+Anticipated benefits
+Furosemide ((if taken)) will take fluid off patient’s lungs ((patient had 
+sulfa allergy)). Pharmacist #10
+Encouraging patient adherence
+So if you try several ones ((statins)), eventually sometimes patients are 
+like: ‘I’m not doing this anymore.’ So I didn’t want to put him on some-
+thing that had a decent risk and run the risk that he would have a 
+problem and refuse statins down the line. Pharmacist #8
+Which risk is greater?
+((I need to)) make sure that the risk of anticoagulating her ((with hep-
+arin)) was not greater than the risk of having this aortic dissection 
+((bleeding risk)). Pharmacist #3
+4.Plan, action and follow- up
+Stop/put on hold/ adjust the medication
+(I) told the patient to stay off Effexor… I wanted to be on the safe side… 
+(I) wanted to make sure it was not an activation syndrome, which I have 
+seen before. Physician #3.
+Continued
+7
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access
+Patient communication was an important activity that 
+HCPs used, in some cases, to initiate shared decision- 
+making with the patient about the new medication action 
+and plan. After the new action was taken to mitigate the 
+ADR, the HCP would follow- up and monitor the new action 
+and plan with patients. HCPs used various strategies to 
+monitor and follow- up with patients, such as ordering a 
+new lab test, or examining the patient at the next visit, 
+to ensure that the ADR concern was resolved. Finally, if 
+the ADR was confirmed during the investigation stage, 
+several HCPs reported documenting the ADR in the EHR 
+to help prevent recurrence. HCPs also followed up with 
+other HCPs, to confirm that the ADR was correctly docu-
+mented in the EHR if they did not input it directly.
+It is important to recognise that the decision- making 
+steps in stage 4, plan, action and follow- up, are iterative 
+steps. If a certain plan and action did not resolve the 
+suspected ADR, HCPs described developing a new plan 
+and action until the problem is resolved.
+DISCUSSION
+To our knowledge, this is the first study to examine the 
+cognitive processes of HCPs when they detect and solve 
+potential ADR incidents. Our study explored the iterative 
+steps of HCPs' decision- making, from detection of poten-
+tial ADR incidents to plans and actions they took to resolve 
+incidents. The study illustrates the cognitive complexity 
+of the work conducted by HCPs when resolving ADR 
+problems. Our findings point to four important implica-
+tions, discussed below, to develop novel clinical decision 
+support systems that more closely align with HCPs' cogni-
+tive workflow.
+Develop technologies to facilitate communication between 
+HCPs and patients regarding ADRs
+Detecting potential ADRs requires identifying patients' 
+signs or symptoms that may be related to a drug. 20 For 
+ADR alerts to work more efficiently, EHR systems could 
+collect reliable information about patients' signs and 
+symptoms, and then display and communicate that infor-
+mation. Therefore, patient- generated data, which is not 
+a typical element of many current alerting systems, may 
+play an important role in future decision support for 
+ADRs.21 Additionally, communication between HCPs and 
+patients also plays an important role in resolving ADRs 
+that are already occurring. In some cases, HCPs may help 
+the patient set realistic expectations about the type and 
+severity of symptoms. Throughout the course of ADR 
+investigation and treatment, HCPs need to communi-
+cate closely with the patient, to share potential risks and 
+benefits and engage patients in a shared decision- making 
+process.22 The study by Topaz et al demonstrated that 
+HCPs were more likely to override an alert for medications 
+that patients are currently tolerating or have previously 
+tolerated.23 Indeed, communicating with patients about 
+symptoms, medical history, and so on, is an important 
+element in HCPs' decision- making. Such communica-
+tion may occur not only through direct patient interac-
+tions but also indirectly through patient portals, secure 
+messaging and other telehealth technologies. 24 These 
+modalities may also increase patients' access to care, facil-
+itating patient- HCP communication to resolve ADRs.
+Incorporate confirmatory and disconfirmatory ADR cues into 
+alerting systems
+Rapid, accurate and complete information is important 
+to help detect and resolve ADR problems. Our study 
+found that additional information on ADR detection, 
+such as the confirmatory cues and disconfirmatory 
+cues, were important to assist HCPs with the ADR inves-
+tigation process. HCPs used these cues to organise and 
+assemble a constellation of information in a form that is 
+meaningful for sensemaking. This concept is known as 
+knowledge- base cognitive mode. 25 Subsequently, EHR 
+alerts systems for ADRs should align with a knowledge- 
+base cognitive mode by including important cues while 
+filtering distracting information to optimally help HCPs 
+with clinical decision- making. Since ADR alerts detect 
+potential ADRs from symptoms and abnormal lab results, 
+confirmatory and disconfirmatory cues provided by the 
+alerts could allow HCPs to confirm the alerts' trustwor -
+thiness and avoid overlooking alerts. In fact, a study on 
+drug allergy alert- overrides showed that providers were 
+more likely to override alerts derived from non- important 
+cues.23 Our findings, in combination with those results, 
+highlight the importance of providing cognitive cues to 
+assist HCPs with decision- making.
+Box 1 Continued
+I alerted the patient’s primary care provider ((PCP)) and the PCP discon-
+tinued the varenicline. Pharmacist #2
+Delayed start of bivalirudin until 3 days days later because patient had 
+had an ablation procedure, ((so I)) felt patient’s risk of bleeding was 
+higher. Pharmacist #3
+Patient communication
+(I) encouraged ((the)) patient to titrate up on gabapentin, as previously 
+planned… I also try and address issues with diabetic socks/shoes so 
+the patient does not perseverate. I discussed with patient and under -
+scored the need for regular use of capsaicin, ((including)) how it works 
+and why we use it. Physician #2
+Follow- up and monitoring patients
+At the patient’s next routine nursing visit, ((the)) nurse asked me to meet 
+with the patient again. I briefly examined the patient and he had no 
+signs of an allergic reaction. Physician #4
+Documenting the ADR in the EHR
+(I) entered nightmares for varenicline into the ((EHR)) allergy section. 
+I was adding it to his allergies so no one would reorder it ((again)). 
+Pharmacist #2
+ADR, adverse drug reaction; ALT, alamine aminotransferase; EHR, elec-
+tronic health record.
+Themes (bolded) and quotes (italicised) are organised based on the four 
+stages of the ADR decision making model (figure 2). The numbers for 
+each participant map to the incident descriptions in table 2.
+8
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access 
+Design alert systems that account for negative cues
+The absence of certain cues, known as negative cues, is 
+another important factor for decision- making. HCPs are 
+aware of this absence of information based on familiar 
+perceptual patterns. For example, one experienced 
+provider in our study described how s/he confirmed that 
+a patient did not have a myocardial infarction (table 2, 
+case B7). Although the patient reported a burning chest 
+sensation, the patient did not have other symptoms such 
+as numb fingers, arm pain or diaphoresis. The absence 
+of the companion symptoms was reassuring, allowing the 
+provider to focus on other potential causes of the symp-
+toms, such as a potential ADR with abiraterone. This type 
+of negative cue is often overlooked in technology- centric 
+design but is a critical component of decision- making, 
+especially during the evaluation of potential ADRs. 
+Complex algorithm development that includes negative 
+cues could advance decision support and help HCPs 
+better detect and investigate potential ADRs.
+Advance alert information to better support HCPs' risk-benefit 
+evaluation
+Our ADR decision- making model (figure 2) underscores 
+that even when an ADR is confirmed, HCPs still need 
+to evaluate the medication’s risks and benefits. Existing 
+medication alert systems identify potential problems but 
+the information they provide is often insufficient to help 
+HCPs weigh risks and benefits of the problematic medi-
+cation. As a result, HCPs seek information from drug 
+references, colleagues and other sources. Indeed, ADR 
+alert design without consideration of risks versus bene-
+fits is likely to ‘fail’ (be overridden) in many instances. 
+For complex risk- benefit evaluation, ADR alerts should 
+provide quick access to a comprehensive list of risks and 
+benefits, or corresponding sections of drug information 
+resources, to help HCPs make a sound clinical decision.13
+This study has several limitations. First, we interviewed 
+only physicians and pharmacists regarding ADRs, since inci-
+dent submissions from nurse practitioners were low. Nurse 
+practitioners, registered nurses and physician assistants, 
+also interact with patients and play important roles in ADR 
+decision- making, warranting further research. Second, 
+we were not able to directly compare the decision- making 
+processes of physicians and pharmacists, because the varia-
+tion in incidents precluded direct comparisons (eg, involved 
+different medications or patients with varying medical condi-
+tions). Third, we examined incidents from a single large 
+Veteran Affairs Medical Center and EHR system. Our findings 
+might not always apply to other settings. Fourth, all incidents 
+collected and analysed were voluntarily provided by HCPs. 
+This could influence our findings, because HCPs might be 
+more inclined to submit incidents for which they felt most 
+confident in their handling of the ADR; thus, incidents that 
+created even greater challenges or uncertainty for HCPs as 
+they resolved ADRs may have not have been captured. Fifth, 
+most incidents we studied, especially those from physicians, 
+were obtained from outpatient care. Thus, our results might 
+not always apply to inpatient settings. Finally, we were not able 
+to fully incorporate two incidents (box 1, Physician #8 and 
+Pharmacist #10) into our decision- making model. Unlike 
+other incidents, these two incidents focused on prevention 
+of an ADR instead of resolving suspected ADRs. Further 
+research is needed on HCPs' decision- making with respect to 
+ADR prevention.
+Our study findings have several practical applications. 
+The ADR decision- making model we developed through 
+this research has important implications for the design of 
+clinical decision support. This model could be used as the 
+foundation for a novel ADR alert system to support HCPs in 
+recognising and resolving ADRs. Evolving alert systems by 
+applying this model is anticipated to increase the cognitive 
+support of alerts for HCPs, which subsequently can improve 
+medication safety outcomes for patients. In addition, the 
+ADR decision- making model is expected to be valuable for 
+teaching medical and pharmacy trainees about the decision- 
+making process for ADR mitigation.
+CONCLUSION
+This is likely the first study to identify the decision- making 
+processes of HCPs when they detect and resolve potential 
+ADR incidents. The ADR decision- making model developed 
+from this study consists of four important stages: problem 
+detection, investigating the cause of the problem, consider-
+ation of risks and benefits, and plan, action and follow- up. This 
+model is expected to be valuable for alert system designers 
+as well as educators who are training future physicians and 
+pharmacists about ADR decision- making. Our findings have 
+four key implications for clinical decision support systems: 
+develop technologies to facilitate communication between 
+HCPs and patients to better detect and address ADRs; incor-
+porate confirmatory and disconfirmatory cues into ADR 
+alerting systems to more closely align with cognitive strate-
+gies from HCPs; design alert systems that account for nega-
+tive cues to further facilitate decision making; and enhance 
+alert system displays to better support HCPs' risk- benefit 
+evaluation process for ADRs. The design of supporting tech-
+nologies for potential ADR problems should align with the 
+real- world cognitive strategies of HCPs in order to achieve the 
+best health outcomes for patients.
+Author affiliations
+1Center for Health Information and Communication, Richard L Roudebush VA 
+Medical Center, Indianapolis, Indiana, USA
+2Department of Pharmacotherapy and Translational Research, University of Florida 
+College of Pharmacy, Gainesville, Florida, USA
+3Applied Decision Science, LLC, Dayton, Ohio, USA
+4Richard L Roudebush VA Medical Center, Indianapolis, Indiana, USA
+5VA Health Services Research and Development Center on Implementing Evidence- 
+Based Practice, Roudebush VA Medical Center, Indianapolis, Indiana, USA
+6Pharmacy Benefits Management Services, VA Greater Los Angeles Healthcare 
+System, Los Angeles, California, USA
+7Department of Pharmacy Practice, Purdue University, College of Pharmacy, West 
+Lafayette, Indiana, USA
+8Regenstrief Institute Inc, Indianapolis, Indiana, USA
+Acknowledgements The authors thank the study participants for making this 
+work possible. The authors also thank Rachel Dismore, Zamal Franks, Amy Brandt, 
+9
+Nguyen KA, et al. BMJ Open 2022;12:e052401. doi:10.1136/bmjopen-2021-052401
+Open access
+Linda Collins and Steven Sanchez for assistance with procedures, and Rachel 
+Dismore for her assistance with participant recruitment and incident card collection.
+Contributors KAN is responsible for the overall content as guarantor. ALR- J wrote 
+the funded grant proposal (VA HSR&D CDA 11- 214), with input from PAG, LGM and 
+MW. All authors (ALR- J, LGM, KJA, PAG, AJZ, MW), except AI and KAN, participated 
+in study planning meetings and contributed to the design of the larger study. LGM 
+trained ALR- J on cognitive task analysis and the critical incident technique. ALR- J 
+conducted all cognitive task analysis interviews. ALR- J and AI analysed interview 
+transcripts to develop a decision requirements table for each incident. KAN and 
+LGM analysed decision requirements tables to identify emergent themes across 
+incidents, under the mentorship of ALR- J, KAN drafted the journal manuscript. 
+All authors reviewed and made important scientific edits to the manuscript and 
+approved it for submission.
+Funding This work was supported by VA HSR&D Career Development 
+Award 11–214 (PI: ALR- J) along with the Centre for Health Information and 
+Communication, Department of Veterans Affairs, Veterans Health Administration, 
+Health Services Research and Development Service, CIN 13–416 (PI: MW). MW is 
+Chief of Health Services Research and Development at the Richard L Roudebush 
+Veterans Affairs Medical Centre in Indianapolis, Indiana, USA. Manuscript writing 
+was supported in part by VA IIR 16–297. KAN was funded in part by the VA 
+Postdoctoral Associated Health Fellowship Programme in Medical Informatics, VA 
+Office of Education, HFP 04–148.
+Disclaimer Views expressed in this article are those of the authors and do not 
+necessarily represent the views of the Department of Veterans Affairs or the U.S. 
+government.
+Competing interests LGM is co- owner of Applied Decision Science, LLC, a 
+company that studies decision making in complex environments and utilises the 
+critical decision method. She aided in the design of the cognitive task analysis 
+approach used in this study and trained the interviewer. MW has stock in Allscripts 
+and Express Scripts Holding Company. All other authors report they have no 
+conflicts of interest.
+Patient consent for publication Not applicable.
+Ethics approval This study involves human participants and was approved by the 
+Indiana University IRB (protocol 1301010433).
+Provenance and peer review Not commissioned; externally peer reviewed.
+Data availability statement Data are available upon reasonable request. Data 
+from this study will be available upon reasonable request.
+Supplemental material This content has been supplied by the author(s). It has 
+not been vetted by BMJ Publishing Group Limited (BMJ) and may not have been 
+peer- reviewed. Any opinions or recommendations discussed are solely those 
+of the author(s) and are not endorsed by BMJ. BMJ disclaims all liability and 
+responsibility arising from any reliance placed on the content. Where the content 
+includes any translated material, BMJ does not warrant the accuracy and reliability 
+of the translations (including but not limited to local regulations, clinical guidelines, 
+terminology, drug names and drug dosages), and is not responsible for any error 
+and/or omissions arising from translation and adaptation or otherwise.
+Open access This is an open access article distributed in accordance with the 
+Creative Commons Attribution Non Commercial (CC BY- NC 4.0) license, which 
+permits others to distribute, remix, adapt, build upon this work non- commercially, 
+and license their derivative works on different terms, provided the original work is 
+properly cited, appropriate credit is given, any changes made indicated, and the use 
+is non- commercial. See: http://creativecommons.org/licenses/by-nc/4.0/.
+ORCID iD
+Khoa Anh Nguyen http://orcid.org/0000-0002-0096-0293
+REFERENCES
+ 1 Weiss AJ, Elixhauser A. Characteristics of Adverse Drug Events 
+Originating During the Hospital Stay, 2011: Statistical Brief #164, 
+in Healthcare Cost and Utilization Project (HCUP) Statistical Briefs. 
+Rockville (M.D.): Agency for Healthcare Research and Quality (U.S.), 
+2006.
+ 2 Harris Y , Hu DJ, Lee C, et al. Advancing medication safety: 
+establishing a national action plan for adverse drug event prevention. 
+Jt Comm J Qual Patient Saf 2015;41:351–60.
+ 3 Schatz SN, Weber RJ, Reactions AD. Adverse drug reactions, 2015. 
+Available: https://www.accp.com/docs/bookstore/psap/2015B2. 
+SampleChapter.pdf [Accessed 1 Jun 2019].
+ 4 Edwards IR, Aronson JK. Adverse drug reactions: definitions, 
+diagnosis, and management. Lancet 2000;356:1255–9.
+ 5 Meyboom RH, Egberts AC, Gribnau FW, et al. Pharmacovigilance in 
+perspective. Drug Saf 1999;21:429–47.
+ 6 Chapman AB, Peterson KS, Alba PR, et al. Detecting adverse 
+drug events with rapidly trained classification models. Drug Saf 
+2019;42:147–56.
+ 7 Minhaj FS, Rappaport SH, Foster J, et al. Predictors of serious 
+Opioid- Related adverse drug events in hospitalized patients. J 
+Patient Saf 2021;17:e1585–8.
+ 8 Ramsey A, Sheikh A. Innovations in health care delivery: drug allergy. 
+J Allergy Clin Immunol Pract 2019;7:2143–50.
+ 9 Lintern G, Motavalli A. Healthcare information systems: the cognitive 
+challenge. BMC Med Inform Decis Mak 2018;18:3.
+ 10 Russ AL, Zillich AJ, Melton BL, et al. Applying human factors 
+principles to alert design increases efficiency and reduces 
+prescribing errors in a scenario- based simulation. J Am Med Inform 
+Assoc 2014;21:e287–96.
+ 11 Russ AL, Weiner M, Saleem JJ, et al. When 'technically preventable' 
+alerts occur, the design--not the prescriber--has failed. J Am Med 
+Inform Assoc 2012;19:1119.1–1119.
+ 12 Dopp AR, Parisi KE, Munson SA, et al. A glossary of user- centered 
+design strategies for implementation experts. Transl Behav Med 
+2019;9:1057–64.
+ 13 Militelo LG, Klein G. Decision- centered design. The Oxford Handbook 
+of cognitive engineering. Oxford handbooks, 2013: 267–71.
+ 14 Patel VL, Yoskowitz NA, Arocha JF , et al. Cognitive and learning 
+sciences in biomedical and health instructional design: a review 
+with lessons for biomedical informatics education. J Biomed Inform 
+2009;42:176–97.
+ 15 Russ AL, Militello LG, Glassman PA, et al. Adapting cognitive task 
+analysis to investigate clinical decision making and medication safety 
+incidents. J Patient Saf 2019;15:191–7.
+ 16 Elkhadragy N, Ifeachor AP , Diiulio JB, et al. Medication decision- 
+making for patients with renal insufficiency in inpatient and outpatient 
+care at a US Veterans Affairs medical centre: a qualitative, cognitive 
+task analysis. BMJ Open 2019;9:e027439.
+ 17 Crandall B, Klein G, Hoffman R. Working Minds: A Practitioner’s 
+Guide to Cognitive Task Analysis, 2006.
+ 18 Geiselman RE, Fisher RP , MacKinnon DP , et al. Eyewitness memory 
+enhancement in the police interview: cognitive retrieval mnemonics 
+versus hypnosis. J Appl Psychol 1985;70:401–12.
+ 19 Ward P , Schraagen JM, Gore J. Incident- Based methods for studying 
+expertise. Oxford University Press, 2019.
+ 20 Liu F , Jagannatha A, Yu H. Towards drug safety surveillance and 
+pharmacovigilance: current progress in detecting medication and 
+adverse drug events from electronic health records. Drug Saf 
+2019;42:95–7.
+ 21 Islind AS, Lindroth T, Lundin J, et al. Shift in translations: data 
+work with patient- generated health data in clinical practice. Health 
+Informatics J 2019;25:577–86.
+ 22 Barry MJ, Edgman- Levitan S. Shared decision making--pinnacle of 
+patient- centered care. N Engl J Med 2012;366:780–1.
+ 23 Topaz M, Seger DL, Slight SP , et al. Rising drug allergy alert 
+overrides in electronic health records: an observational retrospective 
+study of a decade of experience. J Am Med Inform Assoc 
+2016;23:601–8.
+ 24 Jungwirth D, Haluza D. Information and communication technology 
+and the future of healthcare: results of a multi- scenario Delphi survey. 
+Health Informatics J 2019;25:161–73.
+ 25 Rasmussen J. Information Processing and Human- Machine 
+Interaction. In: An approach to cognitive engineering. Elsevier 
+Science Inc, 1986.

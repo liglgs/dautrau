@@ -1,0 +1,115 @@
+{
+  "name": "contradiction",
+  "synthetic": true,
+  "description": "Hai nghiên cứu trái chiều nhưng KHÁC quần thể -> không phải mâu thuẫn trực tiếp, cần reviewer.",
+  "claim": {
+    "claim_text": "Sertraline gây hạ natri máu ở người cao tuổi.",
+    "drug": "sertraline",
+    "event": "hyponatraemia",
+    "population": "older adults (65 years and older)",
+    "dose": null,
+    "route": "oral",
+    "time_window": null
+  },
+  "source_results": [
+    {
+      "source": "pubmed",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-PUBMED-SERTRALINE-OLD",
+        "DOC-PUBMED-SERTRALINE-YOUNG"
+      ]
+    },
+    {
+      "source": "dailymed",
+      "status": "empty",
+      "doc_ids": []
+    },
+    {
+      "source": "faers",
+      "status": "empty",
+      "doc_ids": []
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-PUBMED-SERTRALINE-OLD",
+      "source": "pubmed",
+      "source_id": "PMID:34112200",
+      "version": 1,
+      "title": "Sertraline and hyponatraemia in older adults: nested case-control study",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/34112200/",
+      "text": "PubMed — PMID 34112200 — \"Sertraline and hyponatraemia in older adults: nested case-control study\"\n(Age and Ageing, 2022).\n\nAmong 8,912 adults aged 65 years and older starting an SSRI, current sertraline use was associated\nwith hyponatraemia (adjusted odds ratio 1.63, 95% CI 1.21-2.19) within the first 8 weeks of therapy.\nSodium monitoring is advised in this age group.",
+      "hash": "bc7f61b92f2348ab6d6cf8ed4c2d7d0f264f06cfa3188e2ce5a5a10d8f65d195",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    },
+    {
+      "doc_id": "DOC-PUBMED-SERTRALINE-YOUNG",
+      "source": "pubmed",
+      "source_id": "PMID:33557788",
+      "version": 1,
+      "title": "SSRI use and serum sodium in young adults: a prospective cohort",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/33557788/",
+      "text": "PubMed — PMID 33557788 — \"SSRI use and serum sodium in young adults: a prospective cohort\"\n(Journal of Psychopharmacology, 2021).\n\nIn 2,145 adults aged 18-40 years, sertraline exposure was not associated with a clinically\nsignificant change in serum sodium over 12 weeks (mean difference -0.4 mmol/L, 95% CI -1.1 to 0.3).\nNo cases of hyponatraemia were observed.",
+      "hash": "775793b4897b7fd3150df3eeaf60c3c4ce98fbb2f36463f3574f6d770c9402f3",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVI-SERTRALINE-OLD",
+      "doc_id": "DOC-PUBMED-SERTRALINE-OLD",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "current sertraline use was associated\nwith hyponatraemia (adjusted odds ratio 1.63, 95% CI 1.21-2.19) within the first 8 weeks of therapy.",
+      "locator": {
+        "start": 185,
+        "end": 323,
+        "section": "Results"
+      },
+      "scope": {
+        "population": "older adults (65 years and older)",
+        "dose": null,
+        "route": "oral",
+        "time_window": "first 8 weeks",
+        "study_type": "nested case-control"
+      },
+      "confidence": 0.7,
+      "evidence_type": "observational",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    },
+    {
+      "evidence_id": "EVI-SERTRALINE-YOUNG",
+      "doc_id": "DOC-PUBMED-SERTRALINE-YOUNG",
+      "source": "pubmed",
+      "stance": "contradicts",
+      "quote": "In 2,145 adults aged 18-40 years, sertraline exposure was not associated with a clinically\nsignificant change in serum sodium over 12 weeks",
+      "locator": {
+        "start": 131,
+        "end": 270,
+        "section": "Abstract"
+      },
+      "scope": {
+        "population": "young adults (18-40 years)",
+        "dose": null,
+        "route": "oral",
+        "time_window": "12 weeks",
+        "study_type": "prospective cohort"
+      },
+      "confidence": 0.6,
+      "evidence_type": "observational",
+      "version": 1,
+      "excluded": false,
+      "notes": "Khác quần thể: không phải mâu thuẫn trực tiếp, phải để reviewer phân xử."
+    }
+  ],
+  "expected": {
+    "assessment_status": "requires_human_review",
+    "stop_reason": "needs_review",
+    "checkpoint": "assessment",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "Mâu thuẫn biểu kiến do khác quần thể (demo D2)."
+  }
+}

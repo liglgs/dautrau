@@ -1,0 +1,137 @@
+{
+  "name": "replanning",
+  "synthetic": true,
+  "description": "Demo D4: query đầu bằng tên thương mại trả rỗng -> agent đổi sang hoạt chất/nguồn khác và có kết quả.",
+  "claim": {
+    "claim_text": "Micardis gây phù mạch ở người lớn.",
+    "drug": "Micardis",
+    "event": "angioedema",
+    "population": "adults",
+    "dose": null,
+    "route": "oral",
+    "time_window": null
+  },
+  "normalization": {
+    "drug_ingredient": "telmisartan",
+    "drug_synonyms": [
+      "Micardis"
+    ],
+    "event_term": "angioedema",
+    "unknowns": [
+      "dose",
+      "time_window"
+    ],
+    "ambiguities": [],
+    "requires_review": false
+  },
+  "source_results": [
+    {
+      "source": "pubmed",
+      "status": "empty",
+      "doc_ids": [],
+      "query_contains": "Micardis"
+    },
+    {
+      "source": "pubmed",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-PUBMED-TELMISARTAN"
+      ],
+      "query_contains": "telmisartan"
+    },
+    {
+      "source": "dailymed",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-DAILYMED-TELMISARTAN"
+      ],
+      "query_contains": "telmisartan"
+    },
+    {
+      "source": "faers",
+      "status": "empty",
+      "doc_ids": []
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-DAILYMED-TELMISARTAN",
+      "source": "dailymed",
+      "source_id": "setid:8f21-telmisartan-label",
+      "version": 1,
+      "title": "TELMISARTAN TABLET — Angioedema",
+      "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8f21",
+      "text": "DailyMed — TELMISARTAN TABLET (NDA 021162)\n\nWARNINGS AND PRECAUTIONS\n6.1 Angioedema\nTelmisartan can cause angioedema. In controlled trials, angioedema occurred in 0.2% of patients\ntreated with telmisartan and 0.1% of patients treated with placebo. Angioedema has also been\nreported in postmarketing experience. Patients with a history of angioedema while receiving another\nangiotensin II receptor blocker should not be treated with telmisartan.",
+      "hash": "944ae46c176e7c04925f8f4a757d84d3b2a35acee3e42ee8ea688f341fde996f",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    },
+    {
+      "doc_id": "DOC-PUBMED-TELMISARTAN",
+      "source": "pubmed",
+      "source_id": "PMID:35221409",
+      "version": 1,
+      "title": "Angioedema with telmisartan: a population-based cohort study",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/35221409/",
+      "text": "PubMed — PMID 35221409 — \"Angioedema with telmisartan: a population-based cohort study\"\n(British Journal of Clinical Pharmacology, 2022).\n\nMETHODS: We followed 128,442 adults who started telmisartan or another antihypertensive.\nRESULTS: Current telmisartan use was associated with angioedema (adjusted hazard ratio 1.38,\n95% CI 1.12-1.70) within the first 90 days of therapy. Risk was higher in adults with a prior\nhistory of angioedema.\nCONCLUSIONS: In adults, telmisartan use was associated with an increased rate of angioedema.",
+      "hash": "c79951a6094e3bb2eb0e246ac296c1347e1c3d69d592b72758cd73a68c8399c2",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVI-LABEL-TELMISARTAN",
+      "doc_id": "DOC-DAILYMED-TELMISARTAN",
+      "source": "dailymed",
+      "stance": "supports",
+      "quote": "Telmisartan can cause angioedema.",
+      "locator": {
+        "start": 84,
+        "end": 117,
+        "section": "WARNINGS AND PRECAUTIONS 6.1"
+      },
+      "scope": {
+        "population": "adults",
+        "dose": null,
+        "route": "oral",
+        "time_window": null,
+        "study_type": "drug_label"
+      },
+      "confidence": 0.9,
+      "evidence_type": "label",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    },
+    {
+      "evidence_id": "EVI-PUBMED-TELMISARTAN",
+      "doc_id": "DOC-PUBMED-TELMISARTAN",
+      "source": "pubmed",
+      "stance": "supports",
+      "quote": "In adults, telmisartan use was associated with an increased rate of angioedema.",
+      "locator": {
+        "start": 451,
+        "end": 530,
+        "section": "CONCLUSIONS"
+      },
+      "scope": {
+        "population": "adults",
+        "dose": null,
+        "route": "oral",
+        "time_window": "first 90 days",
+        "study_type": "population-based cohort"
+      },
+      "confidence": 0.75,
+      "evidence_type": "observational",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "assessment_status": "supported_for_scope",
+    "stop_reason": "success",
+    "checkpoint": "assessment",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "Bước 1 dùng tên thương mại Micardis (rỗng) → bước 2 đổi sang telmisartan và có bằng chứng."
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "mode": "offline_diagnostic_of_previous_real_model_quotes",
+  "model_called": false,
+  "source_and_model_output_origin": "user previous transport run",
+  "notes": "No original per-window raw model responses were saved. This checks quote occurrence within reported examined ranges, not a replayed model evaluation.",
+  "previous_quotes_checked": 19,
+  "recoverable_exact_unique_quotes": 14,
+  "results": [
+    {
+      "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+      "quote_sha256": "0875adb27ed589081e2efe759e10e01daffb797beab44a7d206b99e76fde0099",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+      "quote_sha256": "5878d4fba7a2323843002c50f2f7beda7f0013a3a37e078627f7fc855595db19",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+      "quote_sha256": "a6f79bc6f0b4799809bf655e6be4ad1ebe56d5c1a4cd5ff75d5b39ea9642adc1",
+      "exact_unique_in_examined_window": false,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+      "quote_sha256": "aaadacc834d6e85248d4d559954e20322825a78417f7c49a4a2b3532a78c3920",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "0875adb27ed589081e2efe759e10e01daffb797beab44a7d206b99e76fde0099",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "ed6c8af0c6bf618815a024f4103b1afb1532a5bfea7f086345a33b6856471127",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "a6f79bc6f0b4799809bf655e6be4ad1ebe56d5c1a4cd5ff75d5b39ea9642adc1",
+      "exact_unique_in_examined_window": false,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "193fd568d9957e274fa1ccf0131a9aab3276e2dc744e1fb1851ac9f2f9b7f7cf",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "f53862f8c72c5d510fc473e7d04b83a54bebf45f7e95afbc60994936361c1312",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "318f6124bd1fee59ebb5844ded965c67d96a73662ff0628bca08460a060f1293",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "37bee9509fa70281eeab42e5af185358057c4d78d4a064b67f52d8bb0b31007c",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+      "quote_sha256": "d4eb8fe0367b02b20393ee95b294e3ac2d9f3ea5562005d910bbacad46dff949",
+      "exact_unique_in_examined_window": false,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "faers:10004629:1",
+      "quote_sha256": "1bf96079f4904fd8ee30e2515e485c38033b46820e834e51df5020db863cf12a",
+      "exact_unique_in_examined_window": false,
+      "ambiguous_in_examined_window": true
+    },
+    {
+      "doc_id": "faers:10004629:1",
+      "quote_sha256": "fa52c50cda43fe9d6cbd2f08ec695bf1064a3f959d54fad3dacf0da97b8d0329",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "faers:10005223:3",
+      "quote_sha256": "fa52c50cda43fe9d6cbd2f08ec695bf1064a3f959d54fad3dacf0da97b8d0329",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "faers:10005995:2",
+      "quote_sha256": "d8af9e7b25bad380feec10b4252d63782c6b9950c3fd04a4d6cb017df642a655",
+      "exact_unique_in_examined_window": false,
+      "ambiguous_in_examined_window": true
+    },
+    {
+      "doc_id": "faers:10005995:2",
+      "quote_sha256": "fa52c50cda43fe9d6cbd2f08ec695bf1064a3f959d54fad3dacf0da97b8d0329",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "pubmed:27987248:1",
+      "quote_sha256": "233b510073eda2f5a956c46d4c58c49dd35eb0548e5dd8e69180f9e198cb5cd2",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    },
+    {
+      "doc_id": "pubmed:34907435:1",
+      "quote_sha256": "eb9dd40e70890511756da20ab0d231bfd52060647428fb362c6d1abd543564e4",
+      "exact_unique_in_examined_window": true,
+      "ambiguous_in_examined_window": false
+    }
+  ]
+}

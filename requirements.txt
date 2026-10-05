@@ -1,0 +1,32 @@
+# Core Web & API
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pydantic>=2.10.0
+pydantic-settings>=2.7.0
+python-dotenv>=1.0.0
+python-multipart>=0.0.20
+
+# AI, LangChain & Agent Orchestration
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-openai>=0.3.0
+langgraph>=0.2.0
+langsmith>=0.1.0
+
+# Database, ORM & Auth
+sqlalchemy>=2.0,<3
+alembic>=1.14,<2
+psycopg[binary]>=3.2,<4
+pwdlib[argon2]>=0.2,<1
+
+# Vector Store (tuỳ chọn)
+# chromadb>=0.5.0
+
+# HTTP Transport & Tools
+httpx>=0.28.0
+defusedxml>=0.7.1,<1
+
+# Testing & Code Quality
+ruff>=0.8.0
+pytest>=8.0.0
+pytest-asyncio>=0.24.0

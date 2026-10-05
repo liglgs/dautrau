@@ -1,0 +1,46 @@
+{
+  "mode": "synthetic",
+  "claim": {
+    "claim_text": "Fictional demo: Drug Alpha and Event Alpha in the stated scope.",
+    "drug": "Drug Alpha",
+    "event": "Event Alpha",
+    "population": "adults",
+    "dose": "10 mg/day",
+    "route": "oral",
+    "time_window": "30 days"
+  },
+  "document": {
+    "doc_id": "SYNTHETIC-DEMO-A",
+    "source": "pubmed",
+    "source_id": "synthetic-not-a-pmid",
+    "source_url": "https://example.org/synthetic/person3-demo",
+    "text": "Drug Alpha increased Event Alpha in a fictional controlled comparison.",
+    "metadata": {
+      "mode": "synthetic"
+    }
+  },
+  "response": {
+    "findings": [
+      {
+        "quote": "Drug Alpha increased Event Alpha in a fictional controlled comparison.",
+        "locator": {
+          "start": 0,
+          "end": 70
+        },
+        "scope": {
+          "population": "adults",
+          "dose": "10 mg/day",
+          "route": "oral",
+          "time_window": "30 days"
+        },
+        "drug_ingredient": "Drug Alpha",
+        "event_term": "Event Alpha",
+        "comparator": "placebo",
+        "stance": "supports",
+        "direction": "increase",
+        "uncertainty": "low",
+        "evidence_type": "rct"
+      }
+    ]
+  }
+}

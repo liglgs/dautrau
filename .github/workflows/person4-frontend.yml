@@ -1,0 +1,89 @@
+name: Person 4 frontend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'src/**'
+      - 'docs/openapi.json'
+      - 'requirements.lock.txt'
+      - 'scripts/run_person4_integration.py'
+      - '.github/workflows/person4-frontend.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'src/**'
+      - 'docs/openapi.json'
+      - 'requirements.lock.txt'
+      - 'scripts/run_person4_integration.py'
+      - '.github/workflows/person4-frontend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-lint:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run check:api
+
+  browser:
+    runs-on: self-hosted
+    timeout-minutes: 20
+    concurrency:
+      group: p066-browser-${{ matrix.suite }}-${{ github.repository }}
+      cancel-in-progress: false
+      queue: max
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [e2e, integration]
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      PERSON4_TEST_PYTHON: python
+      MVP_SOURCE_MODE: fixture
+      PYTHONUTF8: '1'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        if: matrix.suite == 'integration'
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r ../requirements.lock.txt
+        if: matrix.suite == 'integration'
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run test:${{ matrix.suite }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: person4-browser-${{ matrix.suite }}
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7

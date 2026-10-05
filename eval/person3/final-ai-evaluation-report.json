@@ -1,0 +1,5781 @@
+{
+  "created_at_utc": "2026-10-03T14:06:00.368998+00:00",
+  "reference_kind": "ai_provisional",
+  "clinical_validation_claimed": false,
+  "independent_expert_reviews": 0,
+  "mode": "replay",
+  "network": "disabled",
+  "live_model_calls_during_scoring": 0,
+  "sources": "frozen real-source snapshots",
+  "model": "gpt-4o-mini-2024-07-18",
+  "claims": 20,
+  "systems": 3,
+  "rows": 60,
+  "processing_errors": 0,
+  "annotation_provenance": {
+    "annotator_type": "ai",
+    "annotator_role": "ai_provisional",
+    "annotation_date": "2026-10-03",
+    "independent_expert_reviews": 0,
+    "clinical_metrics_ready": false,
+    "heldout_exposed_to_annotator": true,
+    "specification_sha256": "051b1c71f99128bac378f70d92d65c1cd15e4b091564e003bfa81a510f880187",
+    "relevance_inventory": "selected_spans_not_exhaustive",
+    "citation_entailment": "not_measured",
+    "contradiction_gold": "not_exhaustively_reviewed",
+    "heldout_interpretation": "family_separated_exposed_technical_set"
+  },
+  "metric_interpretation": "agreement_with_AI_reference_not_clinical_accuracy",
+  "splits": {
+    "development": {
+      "rows": 15,
+      "processing_errors": 0,
+      "systems": {
+        "keyword": {
+          "aggregate": {
+            "claims": 5,
+            "successful": 5,
+            "evidence_recall_at_20": {
+              "macro": 0.0,
+              "samples": 4,
+              "denominator": 4
+            },
+            "precision_at_20": {
+              "macro": 0.04,
+              "samples": 5,
+              "denominator": 87
+            },
+            "citation_precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "citation_completeness": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "unsupported_claim_rate": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "abstention_confusion": {
+              "abstain_correct": 0,
+              "answer_correct": 0,
+              "false_abstain": 0,
+              "false_answer": 0
+            },
+            "scope_mismatch": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            },
+            "contradiction": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            }
+          },
+          "assessment_agreement_with_AI": {
+            "matches": 0,
+            "measured": 0,
+            "rate": null
+          },
+          "assessment_status_counts": {}
+        },
+        "single_shot_rag": {
+          "aggregate": {
+            "claims": 5,
+            "successful": 5,
+            "evidence_recall_at_20": {
+              "macro": 0.0,
+              "samples": 4,
+              "denominator": 4
+            },
+            "precision_at_20": {
+              "macro": 0.04,
+              "samples": 5,
+              "denominator": 87
+            },
+            "citation_precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "citation_completeness": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "unsupported_claim_rate": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "abstention_confusion": {
+              "abstain_correct": 0,
+              "answer_correct": 0,
+              "false_abstain": 0,
+              "false_answer": 5
+            },
+            "scope_mismatch": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": 0.0,
+                "samples": 1,
+                "denominator": 1
+              }
+            },
+            "contradiction": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            }
+          },
+          "assessment_agreement_with_AI": {
+            "matches": 0,
+            "measured": 5,
+            "rate": 0.0
+          },
+          "assessment_status_counts": {
+            "supported_for_scope": 4,
+            "out_of_scope": 1
+          }
+        },
+        "agent": {
+          "aggregate": {
+            "claims": 5,
+            "successful": 5,
+            "evidence_recall_at_20": {
+              "macro": 1.0,
+              "samples": 4,
+              "denominator": 4
+            },
+            "precision_at_20": {
+              "macro": 0.1,
+              "samples": 4,
+              "denominator": 80
+            },
+            "citation_precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "citation_completeness": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "unsupported_claim_rate": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "abstention_confusion": {
+              "abstain_correct": 5,
+              "answer_correct": 0,
+              "false_abstain": 0,
+              "false_answer": 0
+            },
+            "scope_mismatch": {
+              "precision": {
+                "macro": 0.0,
+                "samples": 1,
+                "denominator": 3
+              },
+              "recall": {
+                "macro": 0.0,
+                "samples": 1,
+                "denominator": 1
+              }
+            },
+            "contradiction": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            }
+          },
+          "assessment_agreement_with_AI": {
+            "matches": 5,
+            "measured": 5,
+            "rate": 1.0
+          },
+          "assessment_status_counts": {
+            "insufficient_evidence": 4,
+            "requires_human_review": 1
+          }
+        }
+      },
+      "output": ".local-preview/person3-ai-evaluation/all-development-final",
+      "artifact_sha256": {
+        "manifest.json": "845e3904786b6eb0541d95e3647f08434fa3545bf081e48c0bd2f7426be53225",
+        "aggregate.json": "e0f4f4b2da001ded0b12d8764cae92888671836864a7bc47541882f8a6c32487",
+        "per-claim.jsonl": "bf97a580039c4ed0cedb20d4e1b439eeeccda917cbe960dd7fc35403450ade7c",
+        "report.md": "1d46e6e0dd03fa00ac1bc15ff2e71c96904f91fc9f78b5e0387b0d9819511707"
+      },
+      "recordings_sha256": "92a636e664b83c9dd399c95158d8a6a1c6e98874ab2e4887977045c45e5c3ee7",
+      "agent_recordings_sha256": "22becc7acb91519fd7ab0711e3f0894537e6f2603f32b1581b1859ee954b79a6"
+    },
+    "heldout": {
+      "rows": 45,
+      "processing_errors": 0,
+      "systems": {
+        "keyword": {
+          "aggregate": {
+            "claims": 15,
+            "successful": 15,
+            "evidence_recall_at_20": {
+              "macro": 1.0,
+              "samples": 12,
+              "denominator": 12
+            },
+            "precision_at_20": {
+              "macro": 0.08000000000000002,
+              "samples": 15,
+              "denominator": 294
+            },
+            "citation_precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "citation_completeness": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "unsupported_claim_rate": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "abstention_confusion": {
+              "abstain_correct": 0,
+              "answer_correct": 0,
+              "false_abstain": 0,
+              "false_answer": 0
+            },
+            "scope_mismatch": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            },
+            "contradiction": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            }
+          },
+          "assessment_agreement_with_AI": {
+            "matches": 0,
+            "measured": 0,
+            "rate": null
+          },
+          "assessment_status_counts": {}
+        },
+        "single_shot_rag": {
+          "aggregate": {
+            "claims": 15,
+            "successful": 15,
+            "evidence_recall_at_20": {
+              "macro": 1.0,
+              "samples": 12,
+              "denominator": 12
+            },
+            "precision_at_20": {
+              "macro": 0.08000000000000002,
+              "samples": 15,
+              "denominator": 294
+            },
+            "citation_precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "citation_completeness": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "unsupported_claim_rate": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "abstention_confusion": {
+              "abstain_correct": 0,
+              "answer_correct": 0,
+              "false_abstain": 0,
+              "false_answer": 15
+            },
+            "scope_mismatch": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": 0.0,
+                "samples": 3,
+                "denominator": 3
+              }
+            },
+            "contradiction": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            }
+          },
+          "assessment_agreement_with_AI": {
+            "matches": 1,
+            "measured": 15,
+            "rate": 0.06666666666666667
+          },
+          "assessment_status_counts": {
+            "supported_for_scope": 13,
+            "out_of_scope": 1,
+            "insufficient_evidence": 1
+          }
+        },
+        "agent": {
+          "aggregate": {
+            "claims": 15,
+            "successful": 15,
+            "evidence_recall_at_20": {
+              "macro": 1.0,
+              "samples": 12,
+              "denominator": 12
+            },
+            "precision_at_20": {
+              "macro": 0.10000000000000002,
+              "samples": 12,
+              "denominator": 240
+            },
+            "citation_precision": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "citation_completeness": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "unsupported_claim_rate": {
+              "macro": null,
+              "samples": 0,
+              "denominator": 0
+            },
+            "abstention_confusion": {
+              "abstain_correct": 15,
+              "answer_correct": 0,
+              "false_abstain": 0,
+              "false_answer": 0
+            },
+            "scope_mismatch": {
+              "precision": {
+                "macro": 0.0,
+                "samples": 4,
+                "denominator": 7
+              },
+              "recall": {
+                "macro": 0.0,
+                "samples": 3,
+                "denominator": 3
+              }
+            },
+            "contradiction": {
+              "precision": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              },
+              "recall": {
+                "macro": null,
+                "samples": 0,
+                "denominator": 0
+              }
+            }
+          },
+          "assessment_agreement_with_AI": {
+            "matches": 15,
+            "measured": 15,
+            "rate": 1.0
+          },
+          "assessment_status_counts": {
+            "insufficient_evidence": 12,
+            "requires_human_review": 3
+          }
+        }
+      },
+      "output": ".local-preview/person3-ai-evaluation/all-heldout",
+      "artifact_sha256": {
+        "manifest.json": "493072d8da1b9713a2c542d5825cc20de33d1668cb59185158e31d14ab1fa949",
+        "aggregate.json": "3fdf397a5c9b1d09e39c42e061c11970c107fef5b3da6ff8769de740d24edca4",
+        "per-claim.jsonl": "7ccbc8f29f140be827998876b714fa0d516e59442082eae620a63ac73462e5e3",
+        "report.md": "396b2f9f31643084daaab2dd0e21e8451d6024cf0b31227c7bc6be7b8ced4e4c"
+      },
+      "recordings_sha256": "6654f463c4fa4e7f5e563b19d2793337edfd0af7844e5d302437d177c3056cfe",
+      "agent_recordings_sha256": "d676763f4d2d7dcd51079d7b95d006e4036fcf576430c2eb21d41adcbd3b97f4"
+    }
+  },
+  "combined": {
+    "keyword": {
+      "aggregate": {
+        "claims": 20,
+        "successful": 20,
+        "evidence_recall_at_20": {
+          "macro": 0.75,
+          "samples": 16,
+          "denominator": 16
+        },
+        "precision_at_20": {
+          "macro": 0.07,
+          "samples": 20,
+          "denominator": 381
+        },
+        "citation_precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "abstention_confusion": {
+          "abstain_correct": 0,
+          "answer_correct": 0,
+          "false_abstain": 0,
+          "false_answer": 0
+        },
+        "scope_mismatch": {
+          "precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          }
+        },
+        "contradiction": {
+          "precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          }
+        }
+      },
+      "assessment_agreement_with_AI": {
+        "matches": 0,
+        "measured": 0,
+        "rate": null
+      }
+    },
+    "single_shot_rag": {
+      "aggregate": {
+        "claims": 20,
+        "successful": 20,
+        "evidence_recall_at_20": {
+          "macro": 0.75,
+          "samples": 16,
+          "denominator": 16
+        },
+        "precision_at_20": {
+          "macro": 0.07,
+          "samples": 20,
+          "denominator": 381
+        },
+        "citation_precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "abstention_confusion": {
+          "abstain_correct": 0,
+          "answer_correct": 0,
+          "false_abstain": 0,
+          "false_answer": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "macro": 0.0,
+            "samples": 4,
+            "denominator": 4
+          }
+        },
+        "contradiction": {
+          "precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          }
+        }
+      },
+      "assessment_agreement_with_AI": {
+        "matches": 1,
+        "measured": 20,
+        "rate": 0.05
+      }
+    },
+    "agent": {
+      "aggregate": {
+        "claims": 20,
+        "successful": 20,
+        "evidence_recall_at_20": {
+          "macro": 1.0,
+          "samples": 16,
+          "denominator": 16
+        },
+        "precision_at_20": {
+          "macro": 0.1,
+          "samples": 16,
+          "denominator": 320
+        },
+        "citation_precision": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "macro": null,
+          "samples": 0,
+          "denominator": 0
+        },
+        "abstention_confusion": {
+          "abstain_correct": 20,
+          "answer_correct": 0,
+          "false_abstain": 0,
+          "false_answer": 0
+        },
+        "scope_mismatch": {
+          "precision": {
+            "macro": 0.0,
+            "samples": 5,
+            "denominator": 10
+          },
+          "recall": {
+            "macro": 0.0,
+            "samples": 4,
+            "denominator": 4
+          }
+        },
+        "contradiction": {
+          "precision": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "macro": null,
+            "samples": 0,
+            "denominator": 0
+          }
+        }
+      },
+      "assessment_agreement_with_AI": {
+        "matches": 20,
+        "measured": 20,
+        "rate": 1.0
+      }
+    }
+  },
+  "per_claim": [
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "split": "development",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "split": "development",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "input_tokens": 16384,
+        "output_tokens": 322,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "46ffe1171caa6a2ee116bab1a0d4e5580be7b54672ed4ece3bdc9b9989b60ecb",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "split": "development",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 18,
+        "llm_calls": 36,
+        "input_tokens": 150145,
+        "output_tokens": 3386,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "split": "development",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "split": "development",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "input_tokens": 16401,
+        "output_tokens": 336,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "2e1e4c0d86e827d81d63ae77f02ed895d89cf097a2d5b04636538efeafbd7aa2",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "split": "development",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 18,
+        "llm_calls": 39,
+        "input_tokens": 150795,
+        "output_tokens": 3734,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "split": "development",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "split": "development",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2
+        }
+      },
+      "usage": {
+        "input_tokens": 16408,
+        "output_tokens": 382,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "280980b16d4c8cd07662c6b6c353925791c189cb1bcb4aac7d90f26e4fb25ec4",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "split": "development",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 18
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 18,
+        "llm_calls": 33,
+        "input_tokens": 148347,
+        "output_tokens": 3208,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "split": "development",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "split": "development",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "out_of_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.05,
+          "numerator": 1,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2
+        }
+      },
+      "usage": {
+        "input_tokens": 16396,
+        "output_tokens": 317,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "d912cce9b34bb62062c429407a9e5f3b7b29fbaccd9bccdff3025d3adeb013d8",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "split": "development",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 3
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 14
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 18,
+        "llm_calls": 32,
+        "input_tokens": 146557,
+        "output_tokens": 2929,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "split": "development",
+      "system": "keyword",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 7
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "split": "development",
+      "system": "single_shot_rag",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 7
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2
+        }
+      },
+      "usage": {
+        "input_tokens": 7316,
+        "output_tokens": 207,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "e772dc7cfbbafb53f5ccd411f7af2d7f2f50407c8d9a1302d4e190215a5636b0",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "split": "development",
+      "system": "agent",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "requires_human_review",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "steps": 0,
+        "documents": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "normalization",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-01",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-01",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2
+        }
+      },
+      "usage": {
+        "input_tokens": 15126,
+        "output_tokens": 331,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "cecbca3fcdae96c88a23c68cbe809ab2218316712335f9c9f456eecfc9c2ba39",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-01",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 23,
+        "llm_calls": 41,
+        "input_tokens": 143706,
+        "output_tokens": 1765,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-02",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-02",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "input_tokens": 15143,
+        "output_tokens": 338,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "8ae344370aa22a9e8bac221013da2353ea5ba5cba439664078b1c60503c5667f",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-02",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 10
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 35,
+        "llm_calls": 43,
+        "input_tokens": 151678,
+        "output_tokens": 1845,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-03",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-03",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "input_tokens": 15150,
+        "output_tokens": 336,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "c68b49632fc9797da3621a680fefc5347bced2a489673ed241bd615acbdfe9aa",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-03",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 32,
+        "llm_calls": 42,
+        "input_tokens": 150367,
+        "output_tokens": 1860,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-04",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-04",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "input_tokens": 15138,
+        "output_tokens": 322,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "2cd61b5d9c9d1c3749dbe79b25da9d91026259c4b5a6e97f3396a92aa8e810ff",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-04",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 8
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 31,
+        "llm_calls": 42,
+        "input_tokens": 149306,
+        "output_tokens": 1854,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-05",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-05",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2
+        }
+      },
+      "usage": {
+        "input_tokens": 13396,
+        "output_tokens": 265,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "8272a771d1116049594a9133f6dc4be07fb7dd9705a3fb6d4822a06b7697dd04",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-IBUPROFEN-05",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "requires_human_review",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "steps": 0,
+        "documents": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "normalization",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-01",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-01",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 8
+        }
+      },
+      "usage": {
+        "input_tokens": 13791,
+        "output_tokens": 619,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "4dc05b6aec577c79a6007531ea1c003d8c6eda3734300363135e56c58d1b827f",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-01",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 15
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 15,
+        "llm_calls": 36,
+        "input_tokens": 137775,
+        "output_tokens": 4427,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-02",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-02",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 5
+        }
+      },
+      "usage": {
+        "input_tokens": 13808,
+        "output_tokens": 455,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "b9e27d7c42d171e832888b4d4451c6d2ffa0f4deefebde727277e663ca9618b0",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-02",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 3
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 15,
+        "llm_calls": 43,
+        "input_tokens": 150578,
+        "output_tokens": 4188,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-03",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-03",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2
+        }
+      },
+      "usage": {
+        "input_tokens": 13815,
+        "output_tokens": 349,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "159438c59a8dd6e3502ad37d21acf67ca99275b09bde5682adf35f3283cf0d8f",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-03",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 12
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 23,
+        "llm_calls": 35,
+        "input_tokens": 148953,
+        "output_tokens": 3531,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-04",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-04",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "out_of_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        }
+      },
+      "usage": {
+        "input_tokens": 13803,
+        "output_tokens": 227,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "e501e8c81403024780ece3c8a87dcb81d7a394dd48565359c10c8bc4d2b8bad2",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-04",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 14
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 21,
+        "llm_calls": 35,
+        "input_tokens": 148673,
+        "output_tokens": 2962,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-05",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 14
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-05",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 14
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 7
+        }
+      },
+      "usage": {
+        "input_tokens": 9365,
+        "output_tokens": 580,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "24d84216ef4f69464017b71727158176f1ec5417962234e4da95c7fcabaf13c4",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-LISINOPRIL-05",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "requires_human_review",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "steps": 0,
+        "documents": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "normalization",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-01",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-01",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 4
+        }
+      },
+      "usage": {
+        "input_tokens": 15089,
+        "output_tokens": 372,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "d83acbecd7a6193ada0be9e879738bd5a0241091c11cfa9fde5c7806805ef3c9",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-01",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 18,
+        "llm_calls": 42,
+        "input_tokens": 150041,
+        "output_tokens": 3970,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-02",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-02",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 4
+        }
+      },
+      "usage": {
+        "input_tokens": 15106,
+        "output_tokens": 367,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "3ac95cea88b39def7e4e8bea2db4498e16dc225fb0fc2c4a3af140a6cbdf39cb",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-02",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1
+        }
+      },
+      "usage": {
+        "steps": 3,
+        "documents": 18,
+        "llm_calls": 46,
+        "input_tokens": 149580,
+        "output_tokens": 3781,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-03",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-03",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 5
+        }
+      },
+      "usage": {
+        "input_tokens": 15113,
+        "output_tokens": 418,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "05980d9d98c64246705ef42b98340a3e536a1677e7fb33f40002c4928b783d2b",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-03",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 15
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 27,
+        "llm_calls": 39,
+        "input_tokens": 150136,
+        "output_tokens": 3747,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-04",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-04",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 4
+        }
+      },
+      "usage": {
+        "input_tokens": 15101,
+        "output_tokens": 367,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "ab2d198f5e666d03d0b448e68d1bfff2f1ed5b6ccd20569b59f688b970a641dc",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-04",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "insufficient_evidence",
+      "predicted_assessment": "insufficient_evidence",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1
+        },
+        "precision_at_20": {
+          "value": 0.1,
+          "numerator": 2,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 4
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 15
+        }
+      },
+      "usage": {
+        "steps": 4,
+        "documents": 26,
+        "llm_calls": 39,
+        "input_tokens": 149786,
+        "output_tokens": 3608,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "assessment",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-05",
+      "split": "heldout",
+      "system": "keyword",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": null,
+      "assessment_matches_AI_reference": null,
+      "abstained": null,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": false
+        },
+        "abstention": null,
+        "assessment_correct": null,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "queries": 1,
+        "live_calls": 0,
+        "llm_calls": 0
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-05",
+      "split": "heldout",
+      "system": "single_shot_rag",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "supported_for_scope",
+      "assessment_matches_AI_reference": false,
+      "abstained": false,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 20
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": false,
+          "correct": false
+        },
+        "assessment_correct": false,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 5
+        }
+      },
+      "usage": {
+        "input_tokens": 14733,
+        "output_tokens": 428,
+        "usage_known": true,
+        "model": "gpt-4o-mini-2024-07-18",
+        "replay_calls": 1,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "request_sha256": "72b75f1697523e0f25f2a75c2a1807d431959dc44128f0c4b8a4330b5e550cdb",
+        "queries": 1
+      },
+      "error": null
+    },
+    {
+      "claim_id": "P3-AMOXICILLIN-05",
+      "split": "heldout",
+      "system": "agent",
+      "reference_assessment": "requires_human_review",
+      "predicted_assessment": "requires_human_review",
+      "assessment_matches_AI_reference": true,
+      "abstained": true,
+      "metrics": {
+        "evidence_recall_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "precision_at_20": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "scope_mismatch": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "contradiction": {
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0
+          },
+          "measured": true
+        },
+        "abstention": {
+          "gold": true,
+          "predicted": true,
+          "correct": true
+        },
+        "assessment_correct": true,
+        "citation_precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "citation_completeness": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "unsupported_claim_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        },
+        "statement_review_coverage": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0
+        }
+      },
+      "usage": {
+        "steps": 0,
+        "documents": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "unknown_usage_calls": 0,
+        "live_calls": 0,
+        "cost_usd": null,
+        "cost_status": "unknown",
+        "checkpoint": "normalization",
+        "protocol": "pre-human-review; BM25 document replay; full snapshot units counted",
+        "human_approvals": 0
+      },
+      "error": null
+    }
+  ],
+  "provenance": {
+    "corpus_sha256": "12eebd234a3eecd8fe2ded8a2b32a755fa53e157fb9211701fdd4f55725a12db",
+    "claims_sha256": "c4b1dc12f58f74b9fbf3918249b8bd50a8d32e12f9d4e1d4fa87859299b9650c",
+    "annotations_sha256": "22134b0ea2ca2fbbfcfec3d0102298971dac6130be0c4b6bfd87c1c9859d96bf",
+    "prompt_sha256": "6b2f5740ea11b694da338f276735ba3ef094bd58f6ef75c98cff695b77356247",
+    "code_commit": "6d760d4f142ac260bb6210db0210920d34c946c6",
+    "code_sha256": {
+      "eval/__init__.py": "15e2c3565a118b725eabc01c0415ac8a85e624d325b99673484856f5ce125fe6",
+      "eval/baselines/__init__.py": "ee2369c35240c74ae9b9581de1625d2c45f2d014f5b8b49e95eaa238ba1d3d4a",
+      "eval/baselines/keyword.py": "d0d6e6c6026657cc4bc1a33794f699be6d432eacd55bee70090f28940c27fd50",
+      "eval/baselines/single_shot_rag.py": "7568554982b6b00ef42307571cefbe46787405d815dc8ee970763be796610005",
+      "eval/contracts.py": "edea1d7d5e8d2b568aa76631e5ffe550db8ac4e9b7ccb2c13cbe86df9f679064",
+      "eval/corpus.py": "c836e908996ed6d1f34700a7863244a009fddf9bdef3b947d892b22b441538f9",
+      "eval/metrics.py": "be7171a13d62ed62c8a7ab29e035c689e2bb54490affd0d07e33ddab5b85c437",
+      "eval/person3_agent.py": "0f88be31b94a6cfd2b0bad728092df5295cd58be21a741798fc817fec283541c",
+      "eval/person3_dataset.py": "ece0284cc6e9e9ae547c2e40116c636af8faa8389186a4f46601533df0bf62c4",
+      "eval/person3_handoff.py": "5315b773edef6822b739519415fc522203c4d7ffe4b869c281f0d4f77d7f0f07",
+      "eval/person3_provisional.py": "d4f2923ae3126afd861730ee433e6c38da03244d70e061aa54e09e110a3959e4",
+      "eval/replay.py": "6a245339827d16ea2d8b3eb095dce7607985f5799071157f73d3c01c50355664",
+      "eval/run_evaluation.py": "8e1e952ea54dbb0a744db38134b8ff84b385576b5474eb9f84d05aec41f90c96",
+      "src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/graph.py": "1d17b7688d1de649f32535d364fa092c42923b626a87cbd299f1fe86025b6c8d",
+      "src/agents/mock_runtime.py": "622d393d9e1ed560d7385f31cffefe00c5560361b6c8fb478669494d9949ef3d",
+      "src/agents/nodes/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/nodes/example_node.py": "2de3dd320b53763679261943940938a1902573c815f4fa3cb9dfc78f7661011f",
+      "src/agents/state.py": "e3344c41ed206fbc7ef080780f8bccc07a010c905f85f4359694ecc1f9aa945d",
+      "src/agents/tools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/agents/tools/example_tool.py": "93845939e34348d3b4121da27351a82e19f579fc3dd076f56e906b06302df895",
+      "src/ai/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/ai/model.py": "79f52c654e16839a3465cb0270668fffbad5608d64bd231a1924123180fcf606",
+      "src/ai/transport.py": "ba889b8e338039a8623f0d8eedf3decd11251542730936abc5b87a9e917c1d14",
+      "src/api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/api/auth.py": "48cc21ad20ae27c6ec0aadc7911e13cc4efd36d36285721da00f0fdf86e1e75e",
+      "src/api/investigations.py": "c2237645577b9e6d362cbd413865c0be362944df7352625df783aad3a9355962",
+      "src/api/mvp_runtime.py": "dc03904d7f58c8a97f9120290fcb7c44a314bfe167541549dd59b74effecf570",
+      "src/api/research_routes.py": "36e0fa27c1f0748f737d56c4149e3aec06a48323fb884cb01f02f2e75d8c8f5d",
+      "src/api/reviews.py": "ec8056cb666f71154a6e9f853332e52c1fad9ad2cd333dc29b0cdf1eb7fa7051",
+      "src/api/routes.py": "58aac9c8c0f193b3afe86398e8f236786851efd9791a7f547c232f457b78ebfd",
+      "src/api/security.py": "ce4c977c914bc5c1dc92af0a18ebc6817b3f82e93c29e686fd17df94b95461b7",
+      "src/api/vmec_routes.py": "661db155cd4596efc905dd41ca97e16b70f8c33a8ff55763f3c8c2efd69a3086",
+      "src/config.py": "7be14c1ca5f3eb42e09c769f19942d6dc7bf928edc08ba06ac59e0af45dd1240",
+      "src/db.py": "beae97d58b11f5cb29feec4adcc7e12712220e385b7aca55316962d53868d4d7",
+      "src/main.py": "8effb301f8161a6762d8e8ec5fccc842099e5897266e42ee8b655df93f929bd9",
+      "src/models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/models/schemas.py": "ed1cc767ea3922d41165ea66822a3c26249f1934e2de0ab2fa9603911db5fc7a",
+      "src/services/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/services/assessment.py": "121f6c53c2972a3048d97ccd335f2069be6b421a8524a60bdd00bd9c468bc760",
+      "src/services/budget.py": "438c757fa3954ef9f5c267ecf561f62cdb0b6203bcffa101b381c3f706dbaa7d",
+      "src/services/contracts.py": "c94cbd010db29cf1655b867217237e6c622708fa57aea94a60c10e188e0e374b",
+      "src/services/dossier.py": "d5fbea26c4fd78183dd9fa69d78c519ff7fa27e4cc1de955d80bc22dd99e1556",
+      "src/services/errors.py": "ee63069c4303a48d9ca972c3f6e0679afedd7904698fe83a0e64270499954e46",
+      "src/services/evidence/__init__.py": "e8690a1c7dc7044499e7cf1a24b729ca1c51c3f0a0e34f37a5c711fd7a3e1512",
+      "src/services/evidence/analysis.py": "4320ee72c93cf452bf673dfb9e44c091fbf956ee1360b9794c20fef21ae900c1",
+      "src/services/evidence/annotation_review.py": "150b3b2dde94534f32eb11e5d35137e934b219ef86c8245f3ea2de04d0b2f6ec",
+      "src/services/evidence/candidate_provider.py": "00028797a0d40a6e977362c3f5de14d73defaf4f6c75686dd86188afa8fa43a0",
+      "src/services/evidence/check_report.py": "038ea3ac63b9510908c03e41ef2e46cacc863516c56fc8f9e39d7489625f1f76",
+      "src/services/evidence/chunks.py": "b9d07fb75c49ac898367f9244a697ec9fc7cf74fef4fb45a3601f8e7881dd895",
+      "src/services/evidence/citations.py": "8accbe7738955c86701db4edc4d7f4e8a0bb95038ebccac33e432d735ef63723",
+      "src/services/evidence/contracts.py": "05b89b96ca0589eb42cae7864e7e1049d5ce513154d92db8436c338155f7f67b",
+      "src/services/evidence/contradiction.py": "691a0dcdba6a7fbf78c6d0c00a1571e01fce9c39580f52ca80033b6ff9a707b2",
+      "src/services/evidence/corpus.py": "13fe4e06c37a3657e6cd1b781cab7059b353a65bb3be449770ca671cb6d6eec5",
+      "src/services/evidence/corpus_runtime.py": "973409932a13b2dcd34d0ccb77737fc51f9ce147d689f95ebc9c9f17501f2152",
+      "src/services/evidence/demo.py": "d96448d8ab5cbce57a7936b11d8d200ad1ec788edc8982e311bdf6ab11286ca2",
+      "src/services/evidence/dossier.py": "7cf6042547e27cf2fb63e2980acadae072f0f8f6d03ceb04b4ac4e4f968b88d5",
+      "src/services/evidence/drafts.py": "d30edb8ebc1dc5ae112441e4b9482b38803b8a49fdc199430b08cd43a3babc23",
+      "src/services/evidence/extract.py": "e063fb9edec12c91933f77040a78e299dc77cfdd5993cae5016bc726ddd752e6",
+      "src/services/evidence/integration.py": "bfbd3b991db3e630944a761308fb0ccc57ba57e09f78a64729a93d830a42a0ae",
+      "src/services/evidence/nodes.py": "dcc1681421d48047f6e09e2d60b727d6673b301e1235022501638ec61003dacd",
+      "src/services/evidence/normalize.py": "f6e29b1440e78e59c0d6d1d986d9c0069d01f0356dbb917b2e904a73daf54c51",
+      "src/services/evidence/scope.py": "c7dc88e15aae3120bb825c03bd28eb61490f205ec77ba78f6589ee879804b8e4",
+      "src/services/llm.py": "81c2634b4d8fbdab95ec2577f1e6566a2721f2d8f4152b1c8f2a29b5b92228e3",
+      "src/services/planner.py": "6ad4feebdc8339ef34803eb01f01f9fbb1763859dd83e5f94c23d10137ff3bd7",
+      "src/services/policy.py": "99bf622e173b4935e1a316f90425244225ab35579c0257af28bf2a948c494833",
+      "src/services/prompts.py": "fec1aac2e2115eecf06367e2e3a9a5cfb709a6711ccad121e04a4dd465471808",
+      "src/services/review.py": "6e0fedbe303928d8b3174f77e33269f27a0848fc917c5828a72ee970cbaac8bd",
+      "src/services/runner.py": "7c64f19de4f606fbb45b14affe778e128f4f3447f9f6d0fcc7089a2724955356",
+      "src/services/snapshots.py": "58290a300d55a5df8a5d3344b815dc252eb516bf2b6050794037d7a78f10629b",
+      "src/services/sources/__init__.py": "1a38573681428727d2be175b7195eedb10cfadedd3e681de41ac8b4ffa9bdf53",
+      "src/services/sources/base.py": "2b699d587b1490df9dc376ca8f0f14a1fd1f77426a3603ecd8fba4b9c865c837",
+      "src/services/sources/dailymed.py": "384e41f4d74b9f7f557eed90f5d317a1dbc13c9be8786dbc1243355225e287e1",
+      "src/services/sources/faers.py": "cb9740ed0a17319558c2ae6c8e7ba632f8862120195eb04c1235c727d2d52c18",
+      "src/services/sources/parser.py": "2beb1b30e1a232befedf9429e67353cf2efca0bd55e437e018928f5c1ad69161",
+      "src/services/sources/pubmed.py": "5cab3253c28c3c7b9a985be0cfaedbf6ebb92bfcc3a13fb7de6b03b3131b5d14",
+      "src/services/sources/pubmed_local.py": "f94fdb7cf4afcc6d7fec10c873307a7db9a7dec339c5e5dc849ead7bd278489e",
+      "src/services/sources/transport.py": "cbf061279cc67ae45212e1e19b2cc62950935f30f6781e1892b9466317d0ef21",
+      "src/services/stopping.py": "f8d0ffb96faa479f4ae673ee9236632847a101d40751657900413ed015e4f46b",
+      "src/services/store.py": "dc2c47a75b0372e424a478540ee7b35e324df526ba11be6353a94d82281e69a1",
+      "src/vmec.py": "99b42d2fcfdd94356ddb5c547feab1488d3898855aa24515052642eeb9789eef",
+      "src/worker.py": "d1530ac354f7bc2b6aa02f2c1fc078be9133c2d05a3ea092135bd130fa70fc21"
+    }
+  },
+  "backend_test_report": {
+    "checked_at_utc": "2026-10-03T14:02:33.186240+00:00",
+    "python": "3.12.4",
+    "base_commit": "6d760d4f142ac260bb6210db0210920d34c946c6",
+    "checkout": "current working tree, including uncommitted changes",
+    "all_repository_tests": true,
+    "mode": "offline integration; authored HTTP/model responses",
+    "targets": [
+      "tests"
+    ],
+    "exit_code": 0,
+    "pytest_summary": "537 passed, 1 skipped, 28 subtests passed in 32.75s",
+    "dotenv_isolated": true,
+    "external_network_blocked_by_pytest": true,
+    "ui_browser_verified": false,
+    "live_sources_or_llm_used": false,
+    "clinical_gold_measured": false,
+    "command": "python scripts/test_person3_backend.py --all"
+  },
+  "original_expert_files_unchanged": true,
+  "limitations": [
+    "Every AI reference decision abstains: 16 insufficient_evidence, 4 requires_human_review; no adequate class coverage.",
+    "Required/relevant evidence is selected spans, not an exhaustive relevance inventory.",
+    "Citation entailment and clinical accuracy are not measured.",
+    "Agent exact unit-level scope mismatch recall is zero against four selected annotated keys.",
+    "Contradiction gold is not exhaustively reviewed; contradiction performance is not measured.",
+    "Agent sees iterative retrieval and full snapshots; RAG and keyword see one BM25 top-20 retrieval.",
+    "Heldout was exposed to the AI annotator and is only a family-separated technical set.",
+    "Earlier failed RAG attempts remain preserved; replay success is not the overall success rate of all paid attempts.",
+    "Cost and reviewer time savings have not been measured."
+  ]
+}

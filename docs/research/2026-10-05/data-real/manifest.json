@@ -1,0 +1,302 @@
+[
+  {
+    "id": "pubmed-39975698",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "39975698",
+      "retmode": "xml"
+    },
+    "kind": "pubmed_abstract",
+    "retrieved_at_utc": "2026-10-05T13:04:44.784165+00:00",
+    "status": 200,
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=39975698&retmode=xml",
+    "content_type": "text/xml; charset=UTF-8",
+    "file": "pubmed-39975698.xml",
+    "bytes": 25326,
+    "sha256": "ec44cee1ec40a48658f548afd65e73f7a8fe3ad0b834057b22825069d477d2e9",
+    "verified_payload": true
+  },
+  {
+    "id": "pubmed-40285433",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "40285433",
+      "retmode": "xml"
+    },
+    "kind": "pubmed_abstract",
+    "retrieved_at_utc": "2026-10-05T13:04:45.846456+00:00",
+    "status": 200,
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=40285433&retmode=xml",
+    "content_type": "text/xml; charset=UTF-8",
+    "file": "pubmed-40285433.xml",
+    "bytes": 21683,
+    "sha256": "2b83686ead5c87daab6d8e71ea9e7afe4489151635053c241d6574166ca5e6a3",
+    "verified_payload": true
+  },
+  {
+    "id": "pubmed-40988034",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "40988034",
+      "retmode": "xml"
+    },
+    "kind": "pubmed_abstract",
+    "retrieved_at_utc": "2026-10-05T13:04:46.974539+00:00",
+    "status": 200,
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=40988034&retmode=xml",
+    "content_type": "text/xml; charset=UTF-8",
+    "file": "pubmed-40988034.xml",
+    "bytes": 20715,
+    "sha256": "57fe3e0a77daf608a302287146822f835709f2991819352fad9ab198bd48bd7d",
+    "verified_payload": true
+  },
+  {
+    "id": "dailymed-index-ciprofloxacin",
+    "requested_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json",
+    "params": {
+      "drug_name": "ciprofloxacin",
+      "pagesize": 5,
+      "page": 1
+    },
+    "kind": "label_index",
+    "retrieved_at_utc": "2026-10-05T13:04:47.883531+00:00",
+    "status": 200,
+    "final_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?drug_name=ciprofloxacin&pagesize=5&page=1",
+    "content_type": "application/json",
+    "file": "dailymed-index-ciprofloxacin.json",
+    "bytes": 1462,
+    "sha256": "c44039546669ad2238ba1d2e1b112f44b0e5a7a9dc0af7ac27f61ec543290b2e",
+    "verified_payload": true
+  },
+  {
+    "id": "dailymed-label-ciprofloxacin",
+    "requested_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/c47250c2-bece-46b5-8b3b-b7c97d9005d8.xml",
+    "params": null,
+    "kind": "spl_label",
+    "retrieved_at_utc": "2026-10-05T13:04:48.981284+00:00",
+    "status": 200,
+    "final_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/c47250c2-bece-46b5-8b3b-b7c97d9005d8.xml",
+    "content_type": "application/xml",
+    "file": "dailymed-label-ciprofloxacin.xml",
+    "bytes": 345781,
+    "sha256": "2606858bcfd4cce184027fd0dd3236a423d43d22152c8571a1de2044c2d6688f",
+    "verified_payload": true
+  },
+  {
+    "id": "dailymed-index-pantoprazole",
+    "requested_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json",
+    "params": {
+      "drug_name": "pantoprazole",
+      "pagesize": 5,
+      "page": 1
+    },
+    "kind": "label_index",
+    "retrieved_at_utc": "2026-10-05T13:04:50.354561+00:00",
+    "status": 200,
+    "final_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?drug_name=pantoprazole&pagesize=5&page=1",
+    "content_type": "application/json",
+    "file": "dailymed-index-pantoprazole.json",
+    "bytes": 1483,
+    "sha256": "b18a90507eb4074f4ae340141c2c9ab841ec699aae2fb824d5433007172b63cf",
+    "verified_payload": true
+  },
+  {
+    "id": "dailymed-label-pantoprazole",
+    "requested_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/70378eba-3904-4491-9f6d-00f5d1501c4a.xml",
+    "params": null,
+    "kind": "spl_label",
+    "retrieved_at_utc": "2026-10-05T13:04:50.647674+00:00",
+    "status": 200,
+    "final_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/70378eba-3904-4491-9f6d-00f5d1501c4a.xml",
+    "content_type": "application/xml",
+    "file": "dailymed-label-pantoprazole.xml",
+    "bytes": 179503,
+    "sha256": "2bf2e26b8c7613f571f1489c66b97544ba7315d049c3f4b539b50659678e65a6",
+    "verified_payload": true
+  },
+  {
+    "id": "fda-fq-warning-2018",
+    "requested_url": "https://www.fda.gov/media/119532/download",
+    "params": null,
+    "kind": "regulatory_notice",
+    "retrieved_at_utc": "2026-10-05T13:04:50.962049+00:00",
+    "status": 404,
+    "final_url": "https://www.fda.gov/media/119532/download",
+    "content_type": "text/html; charset=UTF-8",
+    "verified_payload": false,
+    "error": "Client error '404 Not Found' for url 'https://www.fda.gov/media/119532/download'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  },
+  {
+    "id": "vn-adr-2024",
+    "requested_url": "https://magazine.canhgiacduoc.org.vn/Magazine/Details/316",
+    "params": null,
+    "kind": "national_pv_bulletin",
+    "retrieved_at_utc": "2026-10-05T13:04:51.563228+00:00",
+    "status": 200,
+    "final_url": "https://magazine.canhgiacduoc.org.vn/Magazine/Details/316",
+    "content_type": "text/html; charset=utf-8",
+    "file": "vn-adr-2024.html",
+    "bytes": 40082,
+    "sha256": "9e44308d134676186ac36ef01555d3929a5c9b1b7ac1ccb2d3b0780527469f0a",
+    "verified_payload": true
+  },
+  {
+    "id": "vn-adr-2025",
+    "requested_url": "https://magazine.canhgiacduoc.org.vn/Magazine/Details/335",
+    "params": null,
+    "kind": "national_pv_bulletin",
+    "retrieved_at_utc": "2026-10-05T13:04:51.697942+00:00",
+    "status": 200,
+    "final_url": "https://magazine.canhgiacduoc.org.vn/Magazine/Details/335",
+    "content_type": "text/html; charset=utf-8",
+    "file": "vn-adr-2025.html",
+    "bytes": 33976,
+    "sha256": "1c5eedc0920fb5f29fff5d4a29d424b76c970c2b9b36f53d7e5cbf936669c973",
+    "verified_payload": true
+  },
+  {
+    "id": "dailymed-label-pantoprazole-oral",
+    "requested_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/6faf465b-c3a3-4ae7-9e16-1ba758f6962a.xml",
+    "params": null,
+    "kind": "spl_label",
+    "retrieved_at_utc": "2026-10-05T13:04:51.771609+00:00",
+    "status": 200,
+    "final_url": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/6faf465b-c3a3-4ae7-9e16-1ba758f6962a.xml",
+    "content_type": "application/xml",
+    "file": "dailymed-label-pantoprazole-oral.xml",
+    "bytes": 267347,
+    "sha256": "208d38ca87c7c975701028e3254b8331d0a85cb4d77eeef02ee1c6d04e02bee8",
+    "verified_payload": true
+  },
+  {
+    "id": "who-umc-causality",
+    "requested_url": "https://cdn.who.int/media/docs/default-source/medicines/pharmacovigilance/whocausality-assessment.pdf?sfvrsn=5d8130bb_2",
+    "params": null,
+    "kind": "case_assessment_guidance",
+    "retrieved_at_utc": "2026-10-05T13:04:52.078742+00:00",
+    "status": 200,
+    "final_url": "https://cdn.who.int/media/docs/default-source/medicines/pharmacovigilance/whocausality-assessment.pdf?sfvrsn=5d8130bb_2",
+    "content_type": "application/pdf",
+    "file": "who-umc-causality.pdf",
+    "bytes": 152380,
+    "sha256": "86df0972e9dc92bea7bcf80d084700886dc10802254bdc0fcd2484527e3816db",
+    "verified_payload": true
+  },
+  {
+    "id": "vn-latest-bulletin-index",
+    "requested_url": "https://magazine.canhgiacduoc.org.vn/",
+    "params": null,
+    "kind": "national_pv_bulletin_index",
+    "retrieved_at_utc": "2026-10-05T13:04:53.714176+00:00",
+    "status": 200,
+    "final_url": "https://magazine.canhgiacduoc.org.vn/",
+    "content_type": "text/html; charset=utf-8",
+    "file": "vn-latest-bulletin-index.html",
+    "bytes": 17818,
+    "sha256": "80c1a424f8b0ffa9fcb6e5f631f24b4fa20e909da1d701065e9358dd95702ece",
+    "verified_payload": true
+  },
+  {
+    "id": "openfda-event-docs",
+    "requested_url": "https://open.fda.gov/apis/drug/event/",
+    "params": null,
+    "kind": "data_source_documentation",
+    "retrieved_at_utc": "2026-10-05T13:04:53.836954+00:00",
+    "status": 200,
+    "final_url": "https://open.fda.gov/apis/drug/event/",
+    "content_type": "text/html; charset=utf-8",
+    "file": "openfda-event-docs.html",
+    "bytes": 130852,
+    "sha256": "d1d6efc23d2b5dc01f17444355868762a51c133cc23f14ff7581084c831bf261",
+    "verified_payload": true
+  },
+  {
+    "id": "adr-cognitive-task-study",
+    "requested_url": "https://scholarworks.indianapolis.iu.edu/server/api/core/bitstreams/3b49a2aa-2432-4b51-8bee-2b4a1268e778/content",
+    "params": null,
+    "kind": "workflow_primary_study",
+    "retrieved_at_utc": "2026-10-05T13:04:54.788691+00:00",
+    "status": 200,
+    "final_url": "https://scholarworks.indianapolis.iu.edu/server/api/core/bitstreams/3b49a2aa-2432-4b51-8bee-2b4a1268e778/content",
+    "content_type": "application/pdf;charset=UTF-8",
+    "file": "adr-cognitive-task-study.pdf",
+    "bytes": 360827,
+    "sha256": "a7b05d3af4f3859805e7683f975bbf0d9aa1afb9706b207ae92683b934bc0894",
+    "verified_payload": true
+  },
+  {
+    "id": "pubmed-41943791",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "41943791",
+      "retmode": "xml"
+    },
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=41943791&retmode=xml",
+    "kind": "hospital_workflow_primary_survey",
+    "retrieved_at_utc": "2026-10-05T13:06:20.395379+00:00",
+    "status": 200,
+    "file": "pubmed-41943791.xml",
+    "bytes": 17853,
+    "sha256": "1199b398f59183eafc088e0bd75b7c54694f8376d8e82434ed83b74fd416dc09",
+    "verified_payload": true,
+    "coverage": "PubMed metadata and abstract only; not full paper or respondent-level data"
+  },
+  {
+    "id": "pubmed-31486525",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "31486525",
+      "retmode": "xml"
+    },
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=31486525&retmode=xml",
+    "kind": "hospital_workflow_primary_survey",
+    "retrieved_at_utc": "2026-10-05T13:06:21.755750+00:00",
+    "status": 200,
+    "file": "pubmed-31486525.xml",
+    "bytes": 15456,
+    "sha256": "e020170519c8666842db3ad458fb4dc7d6c334f729c157a1f84d9d6a7341efe8",
+    "verified_payload": true,
+    "coverage": "PubMed metadata and abstract only; not full paper or respondent-level data"
+  },
+  {
+    "id": "pubmed-35615486",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "35615486",
+      "retmode": "xml"
+    },
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=35615486&retmode=xml",
+    "kind": "hospital_workflow_primary_survey",
+    "retrieved_at_utc": "2026-10-05T13:06:22.785233+00:00",
+    "status": 200,
+    "file": "pubmed-35615486.xml",
+    "bytes": 23490,
+    "sha256": "54e7b286ff8e919f2ce590d7ad6a4f1a447816e553868b46ec01fe8353904608",
+    "verified_payload": true,
+    "coverage": "PubMed metadata and abstract only; not full paper or respondent-level data"
+  },
+  {
+    "id": "pubmed-35799184",
+    "requested_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+    "params": {
+      "db": "pubmed",
+      "id": "35799184",
+      "retmode": "xml"
+    },
+    "final_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=35799184&retmode=xml",
+    "kind": "hospital_workflow_primary_survey",
+    "retrieved_at_utc": "2026-10-05T13:45:36.891515+00:00",
+    "status": 200,
+    "file": "pubmed-35799184.xml",
+    "bytes": 20959,
+    "sha256": "7b6a5eec0b48bf3071e99b82db97af40ff40c934737ad4ec7c8f9a43d76c5f44",
+    "verified_payload": true,
+    "coverage": "PubMed metadata and abstract only; not full paper or respondent-level data"
+  }
+]

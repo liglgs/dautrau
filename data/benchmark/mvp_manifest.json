@@ -1,0 +1,31 @@
+{
+  "version": "person3-candidate-draft-2026-10-02.1",
+  "status": "draft_not_frozen_not_gold",
+  "corpus_sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+  "corpus_cutoff": "2026-10-02T08:29:54.816744+00:00",
+  "development_families": [
+    "metformin"
+  ],
+  "heldout_families": [
+    "ibuprofen",
+    "lisinopril",
+    "amoxicillin"
+  ],
+  "reserve_families": [
+    "atorvastatin"
+  ],
+  "development_count": 5,
+  "heldout_count": 15,
+  "split_family_overlap": [],
+  "clinical_metrics_ready": false,
+  "gold_file": "mvp_gold.jsonl",
+  "expert_reviews_required": 2,
+  "limitations": [
+    "Claims and split are proposals awaiting Person 4/expert acceptance.",
+    "Dose/time/population challenges are requested hypotheses, not source-established contexts.",
+    "Unresolved-brand cases are technical inputs, not attested medicines.",
+    "Supported/contradicted/direct-contradiction coverage is not yet established by experts.",
+    "Heldout validity requires freezing before prompt tuning and recording exposure.",
+    "DailyMed SETIDs may repeat label content; PubMed revision is not verified; FAERS is background."
+  ]
+}

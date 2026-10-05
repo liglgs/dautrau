@@ -1,0 +1,40 @@
+{
+  "source_branch": "origin/main",
+  "source_commit": "e48d5cef75a5a4a7060f6ae13e54e7a84ac12fe7",
+  "target_branch": "VinhDang",
+  "strategy": "selected compatible files; preserve Person 4 changes",
+  "files": {
+    "tests/conftest.py": {
+      "upstream_sha256": "006236651a6b6077f684e0692a0c5377b8f9274431522e755a9dbfdfba220694",
+      "integrated_sha256_lf": "006236651a6b6077f684e0692a0c5377b8f9274431522e755a9dbfdfba220694",
+      "local_adjustment": null
+    },
+    "tests/test_model_transport.py": {
+      "upstream_sha256": "bfe54309e68553dfb8e1a90da0d1c8808de3d5300661610a3856fa36dd525b03",
+      "integrated_sha256_lf": "bfe54309e68553dfb8e1a90da0d1c8808de3d5300661610a3856fa36dd525b03",
+      "local_adjustment": null
+    },
+    "tests/test_network_guard.py": {
+      "upstream_sha256": "c34f2ff291be783c7c04a6e4e9c4eeede0651eb99b6b9225f43275fce194355d",
+      "integrated_sha256_lf": "c34f2ff291be783c7c04a6e4e9c4eeede0651eb99b6b9225f43275fce194355d",
+      "local_adjustment": null
+    },
+    "scripts/submit_log.py": {
+      "upstream_sha256": "ee5b7231d290557f9f739df20491598ceb261420e97e3acde1d0fb6935e79225",
+      "integrated_sha256_lf": "94b4975aa98aef57889f3ffd8f0a6c6f2842aacfde35e6dddc072b63b92927f4",
+      "local_adjustment": "Ruff import ordering/UTC alias"
+    },
+    "tests/test_scripts/test_submit_log.py": {
+      "upstream_sha256": "8edce9feec82894b949f724ed320de22e5413bc1f9afecd921f22fb4945189a3",
+      "integrated_sha256_lf": "8edce9feec82894b949f724ed320de22e5413bc1f9afecd921f22fb4945189a3",
+      "local_adjustment": null
+    },
+    "docs/person3/environment_isolation.md": {
+      "upstream_sha256": "f978de477ba2fbd99ec797cb60588aa24227c58b67abc906a7c5303c016c2983",
+      "integrated_sha256_lf": "f978de477ba2fbd99ec797cb60588aa24227c58b67abc906a7c5303c016c2983",
+      "local_adjustment": null
+    }
+  },
+  "media_and_presentation_unchanged": true,
+  "clinical_benchmark_ready": false
+}

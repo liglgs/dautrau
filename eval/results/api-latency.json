@@ -1,0 +1,12 @@
+{
+  "measured_at": "2026-09-23T08:16:15.182382+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "users": 5,
+  "requests_per_user": 20,
+  "samples": 100,
+  "endpoint": "GET /api/v1/cases",
+  "p50_ms": 48.68,
+  "p95_ms": 130.615,
+  "max_ms": 214.422,
+  "scope": "authenticated read only; local PostgreSQL demo; excludes model execution and writes"
+}

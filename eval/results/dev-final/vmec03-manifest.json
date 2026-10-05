@@ -1,0 +1,326 @@
+{
+  "dataset_version": "vmec03-synthetic-1",
+  "schema_version": "1.0",
+  "catalog_version": "ae9a4b24e1ed59cbfa0e275d4925a9a3b8207042dce21a824e1113ab8c6125d4",
+  "seed": 6603,
+  "cases": [
+    {
+      "case_id": "DEV-01",
+      "split": "dev",
+      "group": "matched",
+      "family_id": "dev-matched-family-01",
+      "sha256": "380121e7634dc7732e1c2ec1482ede5a4366b9f7ec66764ad9f5fa115fc4457a"
+    },
+    {
+      "case_id": "DEV-02",
+      "split": "dev",
+      "group": "matched",
+      "family_id": "dev-matched-family-02",
+      "sha256": "f54f872ffddb9ac447f18d649cdf8b1c0c49a808230a581adb614a6952b380b4"
+    },
+    {
+      "case_id": "DEV-03",
+      "split": "dev",
+      "group": "explained",
+      "family_id": "dev-explained-family-03",
+      "sha256": "37b56e04a4fe7c1921fac56055fffd920ff6e9fd232175db207c1f6c0933cef9"
+    },
+    {
+      "case_id": "DEV-04",
+      "split": "dev",
+      "group": "explained",
+      "family_id": "dev-explained-family-04",
+      "sha256": "767b29a5d89b772e582aef08922c43ae3c6afca1a9277837a3db7bae953f2079"
+    },
+    {
+      "case_id": "DEV-05",
+      "split": "dev",
+      "group": "response_needed",
+      "family_id": "dev-response_needed-family-05",
+      "sha256": "11b063416ef272ea4272f006c9a699ee27381c469baedd78446ec3ca3c263039"
+    },
+    {
+      "case_id": "DEV-06",
+      "split": "dev",
+      "group": "response_needed",
+      "family_id": "dev-response_needed-family-06",
+      "sha256": "d4cce730dfa4b38f8b6eb0493deb57a1c440ab7c4b7f8f6161645da29e8006ea"
+    },
+    {
+      "case_id": "DEV-07",
+      "split": "dev",
+      "group": "ambiguous",
+      "family_id": "dev-ambiguous-family-07",
+      "sha256": "a1315cc3a62419dfef98e972485cbf6edec62e29310042a064e9e11667be87c6"
+    },
+    {
+      "case_id": "DEV-08",
+      "split": "dev",
+      "group": "ambiguous",
+      "family_id": "dev-ambiguous-family-08",
+      "sha256": "a5c9afbeed07225e4f1465bcbda55c76961c18545ef72376e5264d7ab7bcd0fd"
+    },
+    {
+      "case_id": "DEV-09",
+      "split": "dev",
+      "group": "handoff",
+      "family_id": "dev-handoff-family-09",
+      "sha256": "14b1e1fe384b101c4df6b79f60442bc342ba2128d7c2a24faa66c158c42062bf"
+    },
+    {
+      "case_id": "DEV-10",
+      "split": "dev",
+      "group": "late_source",
+      "family_id": "dev-late_source-family-10",
+      "sha256": "da8f37eada0e09bb9e5398952438f27b370c3e4f99dac3361608aaf5ded07663"
+    },
+    {
+      "case_id": "TEST-01",
+      "split": "test",
+      "group": "matched",
+      "family_id": "test-matched-family-01",
+      "sha256": "e032219c9ccbb646f13af9d40f7d08f1ccfa1fc9daa1ad55e4349723c9ce4403"
+    },
+    {
+      "case_id": "TEST-02",
+      "split": "test",
+      "group": "matched",
+      "family_id": "test-matched-family-02",
+      "sha256": "ecac3dfbb67baf1b75e43dfb44e4e83836cf879206c2768328663230070f6f48"
+    },
+    {
+      "case_id": "TEST-03",
+      "split": "test",
+      "group": "matched",
+      "family_id": "test-matched-family-03",
+      "sha256": "65136a3265153940ed04787889d616884202e8a6662291e98b3fe5707e3cf400"
+    },
+    {
+      "case_id": "TEST-04",
+      "split": "test",
+      "group": "matched",
+      "family_id": "test-matched-family-04",
+      "sha256": "e22106196da20ba54b5fef84c0f50b12397fa27772cd1ef09cab22a43a69c42e"
+    },
+    {
+      "case_id": "TEST-05",
+      "split": "test",
+      "group": "matched",
+      "family_id": "test-matched-family-05",
+      "sha256": "ce41f9d0482c8be6e60bb29eafd71219c14e511746d62af119f3830ffc089b44"
+    },
+    {
+      "case_id": "TEST-06",
+      "split": "test",
+      "group": "explained",
+      "family_id": "test-explained-family-06",
+      "sha256": "282b9c5aeb4b7a5d73ece22a531c0f7b1e0fc9a69c8731329a5ae46f193111ef"
+    },
+    {
+      "case_id": "TEST-07",
+      "split": "test",
+      "group": "explained",
+      "family_id": "test-explained-family-07",
+      "sha256": "8d6987cd5d0c8ed57190ff1edd1c68492c88342bb3cdc84d8a4c214e228b9dff"
+    },
+    {
+      "case_id": "TEST-08",
+      "split": "test",
+      "group": "explained",
+      "family_id": "test-explained-family-08",
+      "sha256": "35c4b0bcf3e349568edf4350ea39e3365348c1332fc7ceb742450e6a99ce6bce"
+    },
+    {
+      "case_id": "TEST-09",
+      "split": "test",
+      "group": "explained",
+      "family_id": "test-explained-family-09",
+      "sha256": "d8dae4fbb39f8e0c538d47ec5f6706ba002d66e02a61ebc72c73f041c20d3810"
+    },
+    {
+      "case_id": "TEST-10",
+      "split": "test",
+      "group": "explained",
+      "family_id": "test-explained-family-10",
+      "sha256": "abdbd4f40f5cf36129d4cfec8f13036c3de2caf4a7a72edf24f1ffaef1d90e7c"
+    },
+    {
+      "case_id": "TEST-11",
+      "split": "test",
+      "group": "response_needed",
+      "family_id": "test-response_needed-family-11",
+      "sha256": "816da49add0379334ea970ce3e36e900e0a9654000ee5192d87296988602f0f4"
+    },
+    {
+      "case_id": "TEST-12",
+      "split": "test",
+      "group": "response_needed",
+      "family_id": "test-response_needed-family-12",
+      "sha256": "5f621fd3eb2009243afd41effaf94a3c9949ea83d727b6f9c681fda1781cf283"
+    },
+    {
+      "case_id": "TEST-13",
+      "split": "test",
+      "group": "response_needed",
+      "family_id": "test-response_needed-family-13",
+      "sha256": "4dd2c659b07f1c81bb9ce5bab4460695b55e0f4b029cc999d2b8f024c0ba079b"
+    },
+    {
+      "case_id": "TEST-14",
+      "split": "test",
+      "group": "response_needed",
+      "family_id": "test-response_needed-family-14",
+      "sha256": "413ad57920185227690b1a53a96162892d0ac176ac265c5fccf024ee71857898"
+    },
+    {
+      "case_id": "TEST-15",
+      "split": "test",
+      "group": "response_needed",
+      "family_id": "test-response_needed-family-15",
+      "sha256": "1da4f203ac722d08fa10082edcb70ed75c655a68fa90394a73728b7a0ed9c0c4"
+    },
+    {
+      "case_id": "TEST-16",
+      "split": "test",
+      "group": "ambiguous",
+      "family_id": "test-ambiguous-family-16",
+      "sha256": "aab185b20ffc5be89661c8ff4b305192f9fbad4a6503c254211fdf32c4d7b2c9"
+    },
+    {
+      "case_id": "TEST-17",
+      "split": "test",
+      "group": "ambiguous",
+      "family_id": "test-ambiguous-family-17",
+      "sha256": "cace3e93c018a2f6b40842c2340d1e0c80edac6e6d5daff0df1f8679d6def5c2"
+    },
+    {
+      "case_id": "TEST-18",
+      "split": "test",
+      "group": "ambiguous",
+      "family_id": "test-ambiguous-family-18",
+      "sha256": "b03b32b7f53cf2a4a4f8b52e3ff4ac5a1a925810fa79df84275112a5a0aafa89"
+    },
+    {
+      "case_id": "TEST-19",
+      "split": "test",
+      "group": "ambiguous",
+      "family_id": "test-ambiguous-family-19",
+      "sha256": "2e29d032780346d032dd958dfbd2183453edc9ee5388f295e33ad5d87a982b84"
+    },
+    {
+      "case_id": "TEST-20",
+      "split": "test",
+      "group": "ambiguous",
+      "family_id": "test-ambiguous-family-20",
+      "sha256": "baa48f5371a6fd76c83b866ba478a35cb52919f893662ba7b3b32afa0da9a822"
+    },
+    {
+      "case_id": "TEST-21",
+      "split": "test",
+      "group": "handoff",
+      "family_id": "test-handoff-family-21",
+      "sha256": "72e4034f7db6da511cd9f7d95cbf8e5001ccd587a2a95e875380c4d50338173d"
+    },
+    {
+      "case_id": "TEST-22",
+      "split": "test",
+      "group": "handoff",
+      "family_id": "test-handoff-family-22",
+      "sha256": "e6aeaa5080f650c6c2d55307e4256d59efa753629332c8356b85fec5cb82a65a"
+    },
+    {
+      "case_id": "TEST-23",
+      "split": "test",
+      "group": "handoff",
+      "family_id": "test-handoff-family-23",
+      "sha256": "1343660a62f5d28927f7d2871fe8aeff65c00450e73313e50b4a91d791962635"
+    },
+    {
+      "case_id": "TEST-24",
+      "split": "test",
+      "group": "handoff",
+      "family_id": "test-handoff-family-24",
+      "sha256": "1b7e02c77e7589a70da56083bf39da77033c28f1f6783fc910fcd24652a31a01"
+    },
+    {
+      "case_id": "TEST-25",
+      "split": "test",
+      "group": "handoff",
+      "family_id": "test-handoff-family-25",
+      "sha256": "7f5d65169f507192a855d98fa81d30bb26025b701b2337b040d41c2e6dd3480a"
+    },
+    {
+      "case_id": "TEST-26",
+      "split": "test",
+      "group": "late_source",
+      "family_id": "test-late_source-family-26",
+      "sha256": "ee1a923d6e6b61b392f4c96a7a80811d6ccc844f425c2e96e521fb4d56cdec85"
+    },
+    {
+      "case_id": "TEST-27",
+      "split": "test",
+      "group": "late_source",
+      "family_id": "test-late_source-family-27",
+      "sha256": "f7b656ecdbcbe7e312be1882ca2fc0cf779fe131144fcae0ddc4d98ee3b7d086"
+    },
+    {
+      "case_id": "TEST-28",
+      "split": "test",
+      "group": "late_source",
+      "family_id": "test-late_source-family-28",
+      "sha256": "8f9caa314d4819185b36d560c0a79026133da7b75d68e4288065bdecb5fed4f7"
+    },
+    {
+      "case_id": "TEST-29",
+      "split": "test",
+      "group": "late_source",
+      "family_id": "test-late_source-family-29",
+      "sha256": "654fb1d835eb215016e8e01bf2f265e8018460b0907c2129303655679502fa2e"
+    },
+    {
+      "case_id": "TEST-30",
+      "split": "test",
+      "group": "late_source",
+      "family_id": "test-late_source-family-30",
+      "sha256": "f3fe1c6437467dd9e5f976d27dde56a83b1ccf336ecb5a80b7ba65d44362c909"
+    }
+  ],
+  "status": "completed",
+  "started_at": "2026-09-23T07:58:57.033429+00:00",
+  "selected_cases": [
+    "DEV-01",
+    "DEV-02",
+    "DEV-03",
+    "DEV-04",
+    "DEV-05",
+    "DEV-06",
+    "DEV-07",
+    "DEV-08",
+    "DEV-09",
+    "DEV-10"
+  ],
+  "strategies": [
+    "A",
+    "B1",
+    "B2"
+  ],
+  "provider": "openai_compatible",
+  "requested_model": "gemini-3.6-flash-high",
+  "returned_models": [
+    "gemini-3.6-flash"
+  ],
+  "temperature": 0.0,
+  "prompt_sha256": {
+    "extract": "86b69e30bd7734a12ce52ee47ab8b5c2598f7797098668687a076c5f214573a6",
+    "direct": "ef6e30b0e8cb2be3923b26554783ec3dbe1d419c2a3e71dda2d542b587b70af9",
+    "action": "9bbdc9915dd392fb7c9e2a5960383157214a58d952150c4ad20fcc2601dbdfd0"
+  },
+  "max_calls": null,
+  "max_cost_usd": null,
+  "workers": 4,
+  "pricing": "unknown",
+  "completed_rows": 30,
+  "finished_at": "2026-09-23T08:08:44.853216+00:00",
+  "model_call_attempts": 111,
+  "cost_usd": null
+}

@@ -1,0 +1,53 @@
+{
+  "base_ref": "7c559e4",
+  "files": {
+    "src/models/schemas.py": {
+      "before": "1caded24d03d5bfb2467901f17db9b2e7e5e54e8f65dec4ac0dd0e4f59835a48",
+      "after": "1ed3ff8b45466b9d6fc4f4f76e6cfe109a355d685d0715d6b969ff9c75bb748a"
+    },
+    "src/services/runner.py": {
+      "before": "f85fe1291ed87cdf9e27b03b5c57068828b63bcb30c765e71613c541c6fcd2b3",
+      "after": "86a5213ba129bead471a8576531db69375054ef1e39267a5cd05dc7b1d97203c"
+    },
+    "src/agents/graph.py": {
+      "before": "6f8b0b91f9b3613f8e24c7d00efb78381ec7a6c759666b6e202475c56dee9470",
+      "after": "b5601b8369e55dc086e46fe75258eff3e19bd030d33497c232cb5613a1cd6e1c"
+    },
+    "src/services/llm.py": {
+      "before": "423dc972682cf45d895ddf38a39bf5341cc6667b47a937299c9af6daef37fd74",
+      "after": "34aa7193733c348e47d60cc6270624f2ebd142577910cec1a00c066a0cc93a21"
+    },
+    "src/services/dossier.py": {
+      "before": "f8e02b8ac71fbd0f65e328d108a898b635463e9966f77308695fff4f85ee30fe",
+      "after": "b4ccf54e11b05ccba7dcdf1cdc84dc5b4114c29b8ab2d83753d87b197b7e2315"
+    },
+    "src/prompts/manifest.json": {
+      "before": "59c002763d17b235b47bba08ba920a7009819202e3ce483800f27fa62fd9c0c0",
+      "after": "8cde72994af16abc81b3c123ea0a9cf480d387c8c5dc350257bf85650b44344c"
+    },
+    "src/services/review.py": {
+      "before": "aa3add76691b0ec930082e1bf838250bef062ec32e275bc75da11e912a16c962",
+      "after": "e45bbc8454499455762fc388c1be4e76b5dffd1552730bc78af46155f41c60b0"
+    },
+    "src/config.py": {
+      "before": "30381e8a70d9dbc5f24c1d3ec4f8252206cbf9d9e9845c9d5fd877d831aa8686",
+      "after": "801a9f4fd69f07c3d028f2d313ab5f588c5f64c9db9a304e27f05ea0574896c7"
+    },
+    "src/api/mvp_runtime.py": {
+      "before": "7fee642d6e54b660c98f9e794328cf589d5ec7d45c1fa31c92859c5307688b9b",
+      "after": "71abc0e090d4b1d727ffa0b1a1215eccbcb14b179b5f2921fdfbc63ee58bd8a6"
+    },
+    "src/services/stopping.py": {
+      "before": "eabd0c42f79fc625aac1f7cf37f4e6a250cc0e8604c6860fe4308e31d6b5159a",
+      "after": "cd3fb1edd0c67860b26b959f3cc5b720a92a83974f069bb37131c0e57222af11"
+    },
+    ".env.example": {
+      "before": "a7b01ec7c5895b1a03a4fabbdd7ef128202d24de68bdd0fd13bfa7e51d2cfdbd",
+      "after": "45bc38bcfbc3cb1d251fe92e432dd0e5052b22c58c6b1a1a0364235b38f02cb9"
+    },
+    "src/api/investigations.py": {
+      "before": "d455399c134228d4e448f0ccb522f0de6cd15605f8e72773d45a664fe63e9b0f",
+      "after": "277683b9e22491596b5aa455d1c254103f50fb52252654223365964f411dc603"
+    }
+  }
+}

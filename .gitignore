@@ -1,0 +1,156 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (never commit large data)
+data/
+# Person 3: small authored preparation assets, not runtime or patient data.
+!data/
+data/*
+!data/README.md
+# Candidate bundles & large unzipped collections (do not commit)
+mvp-candidates-50-2026-10-02/
+data/mvp-candidates-50-2026-10-02/
+*.zip
+!data/dictionaries/
+data/dictionaries/*
+!data/dictionaries/person3_synthetic.json
+!data/dictionaries/aspirin_demo.json
+!data/dictionaries/mvp_candidates_2026_10_02.json
+!data/benchmark/
+data/benchmark/*
+!data/benchmark/mvp_claims.jsonl
+!data/benchmark/mvp_gold.jsonl
+!data/benchmark/mvp_manifest.json
+!data/benchmark/reviewer_a.jsonl
+!data/benchmark/reviewer_b.jsonl
+!data/benchmark/README.md
+!data/templates/
+data/templates/*
+!data/templates/dossier.md
+!data/templates/dossier.synthetic.md
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.sqlite3-journal
+# Other local SQLite filenames and sidecars
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+
+# Logs
+logs/
+*.log
+
+# Test coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Docker
+docker-compose.override.yml
+
+# Node (frontend)
+.local-preview/
+node_modules/
+.next/
+out/
+.nuxt/
+
+# Build
+*.pyc
+*.pyo
+
+# AI agent logs and hook infrastructure — not part of this project
+.ai-log/
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.github/hooks/
+scripts/log_antigravity.py
+scripts/log_hook.py
+scripts/log_manual.py
+scripts/submit_log.py
+scripts/setup_hooks.sh
+scripts/setup_hooks.ps1
+
+# Local agent rules (private)
+AGENTS.md
+GEMINI.md
+CLAUDE.md
+**/CLAUDE.md
+
+# Local GitHub Actions runner and its credentials
+actions-runner/
+
+# Local personal tracking
+TODO_NGUOI_2.md
+TRACKING_NGUOI_2.md
+THUC_GIUC_NHOM.md
+
+*.tsbuildinfo
+.tools/
+vigilens/test-results/
+vigilens/playwright-report/
+
+# Locally generated source text/quotes stay with the supplied bundle.
+eval/person3/corpus/offline/CHECK-*.json
+eval/person3/corpus/offline/CHECK-*.md
+eval/person3/corpus/transport/
+
+# Person 3 private source/reviewer bundles, including copies outside data/
+*.zip
+*.7z
+*.rar
+person3-review-package*/
+
+# Raw model recordings/attempts contain supplied source text and full responses.
+# Keep small aggregate/provenance reports in eval/person3 available for handoff.
+*.responses.jsonl
+*.attempts.jsonl
+recordings-*.jsonl
+*.agent.jsonl
+
+# Temporary files and local test/build artifacts
+*.tmp
+*.temp
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+coverage/
+playwright-report/
+test-results/

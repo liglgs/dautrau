@@ -1,0 +1,111 @@
+{
+  "mode": "offline diagnosis of historical v1 raw responses only; not a v2 model run or accuracy score",
+  "live_calls": 0,
+  "clinical_validation_claimed": false,
+  "v1_schema_failure_claims": [
+    "P3-METFORMIN-01",
+    "P3-METFORMIN-04"
+  ],
+  "v1_schema_failure_reason": "Unknown scope fields were bare null instead of Anchor objects",
+  "unchanged_file_sha256": {
+    "data\\person3\\evaluation-ai\\scoped-rag-v1-development.responses.jsonl": "d3e2d6617c8ac3bac1b26eab9a74685b8f726d02372f28b9e55aef45222de7af",
+    "data\\person3\\evaluation-ai\\scoped-rag-v1-development.report.json": "5e64e9f6577482071775c416e0b9601b0678046ff1ec47e666d20aa926ba8e83",
+    "data\\person3\\evaluation-ai\\annotations.jsonl": "22134b0ea2ca2fbbfcfec3d0102298971dac6130be0c4b6bfd87c1c9859d96bf",
+    "data\\person3\\evaluation-ai\\claims.jsonl": "c4b1dc12f58f74b9fbf3918249b8bd50a8d32e12f9d4e1d4fa87859299b9650c",
+    "eval\\person3\\final-ai-evaluation-report.json": "440186f04fe3ce79f573cc3bc6c1cf3538671152c01df9e5eb78eb974fd7a8cf"
+  },
+  "rows": [
+    {
+      "request_sha256": "3509be724cf5faa8580f5bfe5a32a8793570c9655d7d4164feb6e5555a9635b8",
+      "diagnostic_parser": "scoped-rag-v2",
+      "original_request_protocol": "scoped-rag-v1",
+      "null_scope_field_count": 12,
+      "accepted_findings": 1,
+      "excluded_findings": [
+        {
+          "alias": "E02",
+          "reason": "Unverified scope anchor: event"
+        },
+        {
+          "alias": "E06",
+          "reason": "Unverified scope anchor: event"
+        },
+        {
+          "alias": "E03",
+          "reason": "Unverified scope anchor: population"
+        }
+      ]
+    },
+    {
+      "request_sha256": "fd72e7fa5535a9ba4c8ae1cabd40b1ddb575cdb632bca08c68e02f62e3cd99d9",
+      "diagnostic_parser": "scoped-rag-v2",
+      "original_request_protocol": "scoped-rag-v1",
+      "null_scope_field_count": 0,
+      "accepted_findings": 0,
+      "excluded_findings": [
+        {
+          "alias": "E02",
+          "reason": "Unverified scope anchor: route"
+        },
+        {
+          "alias": "E01",
+          "reason": "Unverified scope anchor: route"
+        },
+        {
+          "alias": "E06",
+          "reason": "Unverified scope anchor: route"
+        }
+      ]
+    },
+    {
+      "request_sha256": "49a0393643a92f71275ded838cdb7b78fc44640e4852406d419eeea249b6fedf",
+      "diagnostic_parser": "scoped-rag-v2",
+      "original_request_protocol": "scoped-rag-v1",
+      "null_scope_field_count": 0,
+      "accepted_findings": 0,
+      "excluded_findings": [
+        {
+          "alias": "E02",
+          "reason": "Unverified scope anchor: time_window"
+        },
+        {
+          "alias": "E01",
+          "reason": "Unverified scope anchor: time_window"
+        },
+        {
+          "alias": "E03",
+          "reason": "Unverified scope anchor: route"
+        }
+      ]
+    },
+    {
+      "request_sha256": "411679ee7e20c23dfa0cfc74dbbca44355dbe5a4dea48c2b819d2bb48b1452fd",
+      "diagnostic_parser": "scoped-rag-v2",
+      "original_request_protocol": "scoped-rag-v1",
+      "null_scope_field_count": 6,
+      "accepted_findings": 0,
+      "excluded_findings": [
+        {
+          "alias": "E02",
+          "reason": "Unverified scope anchor: route"
+        },
+        {
+          "alias": "E01",
+          "reason": "Unverified scope anchor: route"
+        },
+        {
+          "alias": "E03",
+          "reason": "Unverified scope anchor: route"
+        }
+      ]
+    },
+    {
+      "request_sha256": "305b3c821275ac5542e949bd4d177b759c72df329eb2cea574b7ed9af6e03126",
+      "diagnostic_parser": "scoped-rag-v2",
+      "original_request_protocol": "scoped-rag-v1",
+      "null_scope_field_count": 0,
+      "accepted_findings": 0,
+      "excluded_findings": []
+    }
+  ]
+}

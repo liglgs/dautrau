@@ -1,0 +1,80 @@
+{
+  "name": "source_error",
+  "synthetic": true,
+  "description": "Nguồn chính (dailymed) lỗi timeout, pubmed rỗng, chỉ còn 1 báo cáo FAERS -> insufficient + source_error.",
+  "claim": {
+    "claim_text": "Rivaroxaban gây chảy máu nội sọ ở người cao tuổi.",
+    "drug": "rivaroxaban",
+    "event": "intracranial haemorrhage",
+    "population": "older adults (75 years and older)",
+    "dose": null,
+    "route": "oral",
+    "time_window": null
+  },
+  "source_results": [
+    {
+      "source": "dailymed",
+      "status": "error",
+      "error": "timeout after 10s",
+      "doc_ids": []
+    },
+    {
+      "source": "pubmed",
+      "status": "empty",
+      "doc_ids": []
+    },
+    {
+      "source": "faers",
+      "status": "ok",
+      "doc_ids": [
+        "DOC-FAERS-RIVAROXABAN"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-FAERS-RIVAROXABAN",
+      "source": "faers",
+      "source_id": "faers:2026q2:rivaroxaban:ich",
+      "version": 1,
+      "title": "FAERS quarterly extract — rivaroxaban / intracranial haemorrhage",
+      "source_url": "https://open.fda.gov/apis/drug/event/",
+      "text": "openFDA — FAERS quarterly extract, suspect drug: rivaroxaban, event: intracranial haemorrhage.\nReports matching the query: 212. The majority of reports concern patients aged 75 years and older\nwho were also taking antiplatelet agents. FAERS cannot establish causation and reporting is voluntary.",
+      "hash": "c6315241a09c492a4bdeae40c06c290b18812f707a313ac174aafbe8e658c211",
+      "retrieved_at": "2026-09-30T09:00:00+00:00"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVI-FAERS-RIVAROXABAN",
+      "doc_id": "DOC-FAERS-RIVAROXABAN",
+      "source": "faers",
+      "stance": "uncertain",
+      "quote": "Reports matching the query: 212.",
+      "locator": {
+        "start": 95,
+        "end": 127,
+        "section": "Summary"
+      },
+      "scope": {
+        "population": "older adults (75 years and older)",
+        "dose": null,
+        "route": "oral",
+        "time_window": null,
+        "study_type": "spontaneous_report"
+      },
+      "confidence": 0.2,
+      "evidence_type": "faers_report",
+      "version": 1,
+      "excluded": false,
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "assessment_status": "insufficient_evidence",
+    "stop_reason": "source_error",
+    "checkpoint": "assessment",
+    "run_status_at_stop": "waiting_for_review",
+    "notes": "Nguồn chính lỗi; hồ sơ phải ghi rõ khoảng trống và không kết luận."
+  }
+}

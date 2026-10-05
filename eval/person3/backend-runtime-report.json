@@ -1,0 +1,10 @@
+{
+  "mode": "synthetic",
+  "checkout": "working tree on tiendat",
+  "exit_code": 0,
+  "pytest_summary": "320 passed, 25 subtests passed in 11.80s",
+  "graph_and_http_api_executed": true,
+  "ui_browser_verified": false,
+  "live_sources_or_llm_used": false,
+  "command": "python scripts/test_person3_backend.py"
+}

@@ -1,0 +1,59 @@
+{
+  "source_mode": "real_frozen_candidates",
+  "provider": "offline_lexical_candidates",
+  "temporary_database": true,
+  "clinical_gold": false,
+  "heldout_evaluated": false,
+  "results": [
+    {
+      "claim_id": "P3-METFORMIN-01",
+      "pass": true,
+      "assessment": "insufficient_evidence",
+      "evidence": 14,
+      "documents": 10,
+      "two_review_checkpoints": true,
+      "markdown_export": true,
+      "live_model": false,
+      "clinical_approval": false
+    },
+    {
+      "claim_id": "P3-METFORMIN-02",
+      "pass": true,
+      "assessment": "insufficient_evidence",
+      "evidence": 14,
+      "documents": 10,
+      "two_review_checkpoints": true,
+      "markdown_export": true,
+      "live_model": false,
+      "clinical_approval": false
+    },
+    {
+      "claim_id": "P3-METFORMIN-03",
+      "pass": true,
+      "assessment": "insufficient_evidence",
+      "evidence": 14,
+      "documents": 10,
+      "two_review_checkpoints": true,
+      "markdown_export": true,
+      "live_model": false,
+      "clinical_approval": false
+    },
+    {
+      "claim_id": "P3-METFORMIN-04",
+      "pass": true,
+      "assessment": "insufficient_evidence",
+      "evidence": 14,
+      "documents": 10,
+      "two_review_checkpoints": true,
+      "markdown_export": true,
+      "live_model": false,
+      "clinical_approval": false
+    },
+    {
+      "claim_id": "P3-METFORMIN-05",
+      "checkpoint": "normalization",
+      "requires_human_mapping": true,
+      "pass": true
+    }
+  ]
+}

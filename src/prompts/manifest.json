@@ -1,0 +1,92 @@
+{
+  "manifest_version": "p11.1",
+  "tasks": {
+    "normalize_claim": {
+      "version": "1.0.0",
+      "description": "Chuẩn hoá claim người dùng thành NormalizedClaim; giữ nguyên unknowns/ambiguities.",
+      "system_file": "normalize_claim.system.md",
+      "user_file": "normalize_claim.user.md",
+      "output_schema": "src.models.schemas:NormalizedClaim",
+      "payload_keys": [
+        "claim_text",
+        "drug",
+        "event"
+      ],
+      "untrusted_char_limit": 4000,
+      "max_output_chars": 8000
+    },
+    "plan": {
+      "version": "1.0.0",
+      "description": "Chọn một hành động tiếp theo (PlannerDecision) từ tóm tắt bằng chứng và gap.",
+      "system_file": "plan.system.md",
+      "user_file": "plan.user.md",
+      "output_schema": "src.models.schemas:PlannerDecision",
+      "payload_keys": [
+        "claim_summary",
+        "evidence_summary",
+        "gaps",
+        "budget"
+      ],
+      "allowed_values": {
+        "action": [
+          "search_source",
+          "change_query",
+          "change_source",
+          "stop"
+        ]
+      },
+      "untrusted_char_limit": 6000,
+      "max_output_chars": 4000
+    },
+    "assess": {
+      "version": "1.0.0",
+      "description": "Tổng hợp bằng chứng đang hoạt động thành AssessmentResult (không bao giờ kết luận nhân quả).",
+      "system_file": "assess.system.md",
+      "user_file": "assess.user.md",
+      "output_schema": "src.models.schemas:AssessmentResult",
+      "payload_keys": [
+        "claim_summary",
+        "evidence_summary",
+        "scope_notes"
+      ],
+      "evidence_refs": {
+        "field": "evidence_ids",
+        "required": true
+      },
+      "untrusted_char_limit": 12000,
+      "max_output_chars": 8000
+    },
+    "build_dossier": {
+      "version": "1.0.0",
+      "description": "Viết hồ sơ nháp (Dossier) từ claim, kết luận và bằng chứng đã duyệt.",
+      "system_file": "build_dossier.system.md",
+      "user_file": "build_dossier.user.md",
+      "output_schema": "src.models.schemas:Dossier",
+      "payload_keys": [
+        "claim_summary",
+        "assessment_status",
+        "rationale",
+        "gaps"
+      ],
+      "evidence_refs": {
+        "field": "sections.evidence_ids",
+        "required": false
+      },
+      "untrusted_char_limit": 12000,
+      "max_output_chars": 12000
+    },
+    "extract_evidence": {
+      "version": "person3.3",
+      "description": "Structured observations with exact quotes; missing scope stays unknown.",
+      "system_file": "extract_evidence.system.md",
+      "user_file": "extract_evidence.user.md",
+      "output_schema": "src.services.evidence.contracts:ExtractionBatch",
+      "payload_keys": [
+        "claim",
+        "document"
+      ],
+      "untrusted_char_limit": 12000,
+      "max_output_chars": 20000
+    }
+  }
+}
