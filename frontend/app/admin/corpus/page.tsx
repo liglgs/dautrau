@@ -4,7 +4,7 @@ import * as React from "react";
 import { Search, ShieldAlert } from "lucide-react";
 import { Alert, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Select, Skeleton } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
-import { warehouseFlagLabel } from "@/lib/warehouse-flags";
+import { WAREHOUSE_FLAG_LABEL, warehouseFlagLabel } from "@/lib/warehouse-flags";
 import { WarehouseDocumentBody, WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
 import { useWarehouseDocument, useWarehouseDocuments, useWarehouseOverview } from "@/lib/hooks/use-data";
 import { ROLE_LABEL, useAppStore } from "@/lib/store/app-store";
@@ -113,7 +113,16 @@ export default function AdminCorpusPage() {
                     <ul className="mt-1 space-y-1">
                       {qualityFindings.map((finding) => (
                         <li key={finding.check_name} className="flex items-center gap-2">
-                          <span className="mono text-[12px] text-foreground">{finding.check_name}</span>
+                          <span className="text-[12px] text-foreground">
+                            {WAREHOUSE_FLAG_LABEL[finding.check_name] ? (
+                              <>
+                                {WAREHOUSE_FLAG_LABEL[finding.check_name]}{" "}
+                                <span className="mono text-[11px] text-muted-foreground">({finding.check_name})</span>
+                              </>
+                            ) : (
+                              <span className="mono">{finding.check_name}</span>
+                            )}
+                          </span>
                           <Chip tone={finding.severity === "warn" ? "caution" : "neutral"}>{finding.severity}</Chip>
                           <span className="tabular ml-auto text-muted-foreground">{formatNumber(finding.count)}</span>
                         </li>
