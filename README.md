@@ -216,10 +216,30 @@ Hệ thống hỗ trợ cấu hình linh hoạt qua biến môi trường hoặc
 
 | Tên biến | Kiểu giá trị | Mặc định | Ý nghĩa & Mô tả |
 |---|:---:|:---:|---|
-| `NEXT_PUBLIC_VIGILENS_AUTH_MODE` | `string` | `session` | Cơ chế xác thực: `session` (cookie HTTP-only an toàn) hoặc `manual_token`. |
-| `VIGILENS_BACKEND_URL` | `string` | `http://127.0.0.1:8000` | URL gốc của dịch vụ backend FastAPI. |
-| `VIGILENS_INVESTIGATOR_TOKEN` | `string` | `test-investigator-token-12345` | Token investigator dùng cho server route proxy. |
+| `NEXT_PUBLIC_VIGILENS_DATA_MODE` | `string` | `mock` | Nguồn dữ liệu của giao diện: `mock` (dữ liệu mẫu) hoặc `api` (gọi backend thật). |
+| `NEXT_PUBLIC_VIGILENS_AUTH_MODE` | `string` | `session` | Cơ chế xác thực: `session` (cookie HTTP-only an toàn) hoặc `token` (công tắc vai trò, chỉ dùng khi demo local). |
+| `NEXT_PUBLIC_VIGILENS_API_PREFIX` | `string` | `/api/backend` | Tiền tố cầu nối server route sang backend FastAPI. |
+| `VIGILENS_API_BASE` | `string` | `http://127.0.0.1:8000` | URL gốc của backend FastAPI mà cầu nối `/api/backend/*` gọi tới. |
+| `VIGILENS_INVESTIGATOR_TOKEN` | `string` | `test-investigator-token-12345` | Token investigator dùng cho server route proxy (không lọt vào bundle trình duyệt). |
 | `VIGILENS_REVIEWER_TOKEN` | `string` | `test-reviewer-token-12345` | Token reviewer dùng cho server route proxy. |
+| `NEXT_ALLOWED_DEV_ORIGINS` | `string` | *(trống)* | Danh sách host cho phép khi chạy dev server sau proxy công khai (cách nhau dấu phẩy). |
+
+### 3. Cấu Hình Kho Dữ Liệu ELT/RAG (backend, trong `.env`)
+
+Các biến này do `./scripts/setup_elt.sh` ghi vào `.env` nếu còn thiếu; xem thêm `docs/data/cau-truc-kho.md`.
+
+| Tên biến | Kiểu giá trị | Mặc định | Ý nghĩa & Mô tả |
+|---|:---:|:---:|---|
+| `ELT_DATABASE_URL` | `string` | `postgresql+psycopg://medreview:medreview@localhost:5433/vigilens_elt` | Chuỗi kết nối kho PostgreSQL của ELT (cổng 5433, tách khỏi kho VMEC cũ). |
+| `ELT_DB_PORT` | `int` | `5433` | Cổng host của container `vigilens-elt-db`. |
+| `RAG_ENABLED` | `bool` | `true` | Bật/tắt các điểm cuối RAG. |
+| `RAG_CHROMA_DIR` | `string` | `./data/chroma` | Thư mục lưu chỉ mục vector ChromaDB. |
+| `RAG_COLLECTION` | `string` | `vigilens_docs` | Tên bộ sưu tập (tên thật gắn thêm nhà cung cấp và mô hình nhúng). |
+| `RAG_EMBEDDING_PROVIDER` | `string` | `auto` | `auto` / `gemini` / `hash`; dùng `hash` khi hết hạn mức để kiểm tra đường ống ngoại tuyến. |
+| `RAG_EMBEDDING_MODEL` | `string` | `gemini-embedding-001` | Mô hình nhúng (3.072 chiều); đổi mô hình phải dựng lại chỉ mục. |
+| `RAG_TOP_K` | `int` | `6` | Số đoạn trả về mặc định cho mỗi truy vấn tìm kiếm ngữ nghĩa. |
+| `GEMINI_API_KEY` … `GEMINI_API_KEY_8` | `string` | *(trống)* | Các khoá Gemini dùng luân phiên cho nhúng vector và mô hình ngôn ngữ. |
+| `NCBI_API_KEY` | `string` | *(trống)* | Khoá NCBI tuỳ chọn, tăng hạn mức khi tải PubMed. |
 
 ---
 

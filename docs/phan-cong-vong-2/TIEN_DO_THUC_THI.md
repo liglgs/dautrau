@@ -68,6 +68,7 @@ Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` 
 | 1 | `docs/runbook.md` và `docs/PERSON4_TIENDAT_INTEGRATION.md` hướng dẫn `cd vigilens` — thư mục này không tồn tại (tên đúng là `frontend`) | đổi thành `cd frontend` |
 | 2 | `docs/mvp-deployment.md` mô tả CI như đang chạy, nhưng `.github/workflows` đã bị xoá ở commit `db5c20f` | thêm ghi chú trạng thái: nội dung chỉ là bản mẫu để khôi phục, không phải bằng chứng CI xanh |
 | 3 | `docs/research/2026-10-05/verify_packet.py` đọc cứng đường dẫn Windows `C:/Users/Admin/.codex/...` nên chết ngay trên máy mới | nhận `--fragment` tuỳ chọn, bỏ qua phần fragment/health khi thiếu, chạy được trên Linux/macOS |
+| 4 | Bảng biến môi trường trong README lệch với mã: ghi `VIGILENS_BACKEND_URL` (tên thật `VIGILENS_API_BASE`), thiếu `NEXT_PUBLIC_VIGILENS_DATA_MODE`, thiếu toàn bộ biến ELT/RAG | cập nhật bảng theo đúng tên biến trong mã, thêm mục cấu hình kho ELT/RAG |
 
 ### 1.3 Kiểm chứng tái lập trên máy mới (bản clone sạch)
 
