@@ -1,0 +1,5 @@
+# Phụ thuộc cho pipeline ELT + RAG (P-066 vòng 2).
+# Cài: python -m pip install -r requirements.txt -r requirements-elt.txt
+chromadb==1.5.9
+gdown==6.4.1
+pypdf==6.19.0

@@ -690,3 +690,25 @@ Mỗi phụ thuộc có một owner phía giao, một người phía nhận và 
 6. **Chỉ sau đó mở R2-2-09 B/C:** mở case/update contract khi có SOP/data/reviewer. Không tự ôm mapping lâm sàng, annotation, deploy và UI; đó vẫn là đầu việc 1/3/4 như phân công cũ.
 
 Bạn cần bàn giao sớm **contract và từng API nhỏ**; bạn cần nhận lại **nguồn/storage từ 1, rubric/nội dung từ 3, flow và lỗi UX từ 4**. Khi thiếu một đầu vào, ghi đúng task và tiếp tục phần độc lập. Chưa có dữ liệu bệnh viện/reviewer là phụ thuộc bên ngoài của cả nhóm, không phải việc Người 2 tự giải quyết bằng thêm agent.
+
+## 20. Nhật ký tiến độ thực thi (cập nhật 05/10/2026)
+
+Tiến độ thật của từng task `R2-1-*`, `R2-2-*`, `R2-3-*`, `R2-4-*` được ghi tại
+[`TIEN_DO_THUC_THI.md`](TIEN_DO_THUC_THI.md) theo đúng mẫu 18.3, kèm artifact, lệnh kiểm chứng và danh sách
+việc còn thiếu. Tài liệu mô tả dữ liệu thật (nguồn, tiền xử lý, cổng chất lượng, cấu trúc kho) nằm trong
+[`docs/data/`](../data/README.md).
+
+Tóm tắt đợt này (chi tiết và bằng chứng trong nhật ký):
+
+- **Dữ liệu và kho:** dựng xong pipeline ELT (PubMed, DailyMed, FAERS, gói 50 mẫu, gói tham chiếu) với
+  manifest ghi URL/tham số/mã HTTP/số byte/sha256; nạp 66 tài liệu vào PostgreSQL `vigilens_elt` (cổng 5433)
+  và 1.832 đoạn vào ChromaDB; kiểm chứng 30/30 băm văn bản khớp gói đã phát hành.
+- **API kho:** thêm 7 điểm cuối (`/api/v1/drugs/lookup`, `/warehouse/*`, `/rag/search`, `/ingestion/*`)
+  có phân quyền theo vai trò, mã lỗi rõ ràng và tự hạ cấp sang từ điển tĩnh khi PostgreSQL chưa chạy.
+- **Tái lập một lệnh:** `scripts/setup_elt.sh` (tạo venv, cài phụ thuộc, dựng PostgreSQL, tải dữ liệu,
+  nạp kho, dựng chỉ mục, kiểm tra, sinh tài liệu) chạy lại nhiều lần không lỗi.
+- **Kiểm thử:** 32 bài kiểm thử ngoại tuyến mới cho cổng chất lượng, bộ phân tích, kho, RAG và API.
+- **Sự cố đã sửa:** 6 lỗi được ghi ở mục 1.1 của nhật ký, gồm lỗi chạy lại ELT vi phạm khoá ngoại và
+  lỗi đọc nhầm cột khi dùng `engine.connect()` với ORM.
+- **Còn thiếu:** chuẩn vàng, dữ liệu bệnh viện, dược sĩ duyệt, nối RAG vào agent — ghi rõ ở mục 6 nhật ký,
+  **không** coi là đã nghiệm thu.

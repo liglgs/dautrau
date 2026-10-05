@@ -40,7 +40,16 @@ class DailyMedAdapter(SourceAdapter):
                 "routes": list(
                     dict.fromkeys(n.get("displayName") or n.get("code") for n in root.findall(".//s:routeCode", NS))
                 ),
-                "ingredients": [text_of(n) for n in root.findall(".//s:activeIngredientSubstance/s:name", NS)],
+                "ingredients": list(
+                    dict.fromkeys(
+                        text_of(n)
+                        for code in ("ACTIB", "ACTIM", "ACTIR")
+                        for n in root.findall(
+                            f".//s:ingredient[@classCode='{code}']/s:ingredientSubstance/s:name", NS
+                        )
+                        if text_of(n)
+                    )
+                ),
                 "effective_time": root.find("s:effectiveTime", NS).get("value")
                 if root.find("s:effectiveTime", NS) is not None
                 else None,

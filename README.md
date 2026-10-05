@@ -102,6 +102,23 @@ flowchart TB
 
 ## 4. Hướng Dẫn Cài Đặt & Khởi Chạy Nhanh
 
+### Kho dữ liệu ELT/RAG (một lệnh cho máy mới)
+
+Ngoài hai ứng dụng trên, repo có kho dữ liệu ELT (PostgreSQL + ChromaDB) cho PubMed/DailyMed/FAERS.
+Trên một máy mới, chạy duy nhất:
+
+```bash
+./scripts/setup_elt.sh          # tạo venv, cài phụ thuộc, dựng PostgreSQL, tải dữ liệu, nạp kho, dựng chỉ mục, kiểm tra
+```
+
+Tùy chọn: `--offline` (không dùng mạng), `--live` (tải thêm từ API nguồn), `--no-rag`, `--reset`, `--skip-install`.
+Kiểm tra lại bất cứ lúc nào bằng `make elt-check`; mô tả dữ liệu nằm trong `docs/data/`;
+tiến độ từng task của vòng hai nằm trong `docs/phan-cong-vong-2/TIEN_DO_THUC_THI.md`.
+
+Các lệnh tiện dụng: `make db-up`, `make db-down`, `make elt-run`, `make elt-docs`, `make dev-api`, `make dev-web`.
+
+---
+
 ### Yêu Cầu Hệ Thống
 - **Python:** 3.11 hoặc mới hơn (khuyên dùng môi trường ảo `.venv`).
 - **Node.js:** 20.x hoặc 24.x (`npm.cmd` trên Windows).

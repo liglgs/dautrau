@@ -77,8 +77,19 @@ class Settings(BaseSettings):
     session_cookie_secure: bool = False
     research_token: str = ""
 
-    # Vector Store
-    chroma_persist_dir: str = "./data/chroma"
+    # Kho ELT (PostgreSQL) — mặc định suy ra từ database_url với tên csdl vigilens_elt
+    elt_database_url: str = ""
+    elt_raw_root: str = "data/elt/raw"
+    elt_staging_root: str = "data/elt/staging"
+    elt_reports_root: str = "data/elt/reports"
+
+    # Vector Store / RAG
+    rag_enabled: bool = True
+    rag_chroma_dir: str = "./data/chroma"
+    rag_collection: str = "vigilens_docs"
+    rag_embedding_provider: Literal["auto", "gemini", "hash"] = "auto"
+    rag_embedding_model: str = "gemini-embedding-001"
+    rag_top_k: int = Field(default=6, ge=1, le=50)
 
     @field_validator("database_url")
     @classmethod

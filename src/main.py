@@ -16,6 +16,7 @@ from src.api.research_routes import router as research_router
 from src.api.reviews import router as reviews_router
 from src.api.routes import router
 from src.api.vmec_routes import router as vmec_router
+from src.api.warehouse_routes import router as warehouse_router
 from src.config import get_settings
 from src.services.errors import MvpError, validation_details
 from src.vmec import DomainError
@@ -51,6 +52,7 @@ app.include_router(investigations_router, prefix="/api/v1")
 app.include_router(reviews_router, prefix="/api/v1")
 app.include_router(router, prefix="/api/v1")
 app.include_router(vmec_router, prefix="/api/v1")
+app.include_router(warehouse_router, prefix="/api/v1")
 app.include_router(research_router)
 
 

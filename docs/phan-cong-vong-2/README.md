@@ -25,6 +25,8 @@ phan-cong-vong-2/
 
 Thứ tự: **H0 đầu vào nghiệp vụ → H1 contract nhỏ → tiếp nhận/làm rõ → bằng chứng → phiếu trả lời/theo dõi → release/pilot**. H1 giúp ba người còn lại bắt đầu phát triển mà không phải chờ toàn bộ agent. Nguồn/storage/rubric/UI cũng là phụ thuộc của Người 2.
 
+Tiến độ thực thi từng task (mẫu 18.3, kèm artifact và bằng chứng) ghi tại [`TIEN_DO_THUC_THI.md`](TIEN_DO_THUC_THI.md). Tài liệu mô tả dữ liệu thật nằm trong [`docs/data/`](../data/README.md).
+
 Phân biệt `DEV_DONE` (xong phần riêng), `INTEGRATED` (nối các bên thật) và `PILOT_ACCEPTED` (người dùng/chuyên viên nghiệm thu). Khi chờ, ghi task/đầu vào thiếu/ai giao/việc có thể tiếp tục; không dùng một trạng thái “xong” chung cho cả ba mức.
 
 Đọc mục 16 báo cáo chính để xem các gói bàn giao H0–H6, thứ tự từng đợt và cách tiếp tục khi thiếu bên khác. ADR đầy đủ/cập nhật an toàn là lát cắt B/C; dữ liệu, SOP và reviewer của bệnh viện là phụ thuộc bên ngoài, không giải quyết bằng mock.

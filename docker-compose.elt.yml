@@ -1,0 +1,23 @@
+# PostgreSQL cho kho ELT/RAG của VigiLens (P-066).
+# Chạy: docker compose -f docker-compose.elt.yml up -d --wait
+# Cổng mặc định 5433 để không trùng cụm VMEC cũ ở cổng 5432.
+services:
+  db-elt:
+    image: postgres:16-alpine
+    container_name: vigilens-elt-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-medreview}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medreview}
+      POSTGRES_DB: ${ELT_DB_NAME:-vigilens_elt}
+    ports:
+      - "127.0.0.1:${ELT_DB_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medreview} -d ${ELT_DB_NAME:-vigilens_elt}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - elt_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  elt_postgres_data:
