@@ -105,12 +105,15 @@ Phép hỏng là soát chất lượng giao diện, và nó tìm ra 5 lỗi mã 
 
 Sau vòng kiểm thử, kho được dọn về đúng trạng thái của lần chạy ELT `20261005T194943Z-all`:
 5 tài liệu thử do tác nhân kiểm thử để lại đã bị xoá khỏi cả PostgreSQL lẫn Chroma. Hai tài liệu
-(`dailymed:c47250c2-bece-46b5-8b3b-b7c97d9005d8:3`, `faers:10006639:1`) bị thiếu 1 đoạn mỗi tài
-liệu trong Chroma do lần dựng chỉ mục bằng Gemini bị ngắt giữa lúc kiểm thử; cần bù 2 đoạn đó
-(bằng `--reset-index`, hoặc ghi bù đúng 2 đoạn) trước khi `check_warehouse` trở lại mã thoát 0.
+(`dailymed:c47250c2-bece-46b5-8b3b-b7c97d9005d8:3`, `faers:10006639:1`) từng thiếu 1 đoạn mỗi tài
+liệu trong Chroma do lần dựng chỉ mục bằng Gemini bị ngắt giữa lúc kiểm thử; hai đoạn đó đã được
+ghi bù, và `check_warehouse` trở lại mã thoát 0 ("kho và chỉ mục đạt yêu cầu kiểm tra", 1.867 = 1.867).
 
-Ảnh và bản ghi của vòng kiểm thử nằm trong `/code/.generated_artifacts/` (15 ảnh, 6 bản ghi,
-1 tệp JSONL nhật ký kiểm toán) — xem mục Testing của pull request.
+Vòng kiểm lại (2) xác nhận cả năm lỗi đều đã được sửa và bước cài đặt một lệnh chạy tới mã thoát 0
+trên bản clone sạch; vòng (3) phát hiện thêm hai chỗ còn in mã cờ thô (cột chất lượng ở bảng kho và
+dòng "cờ:" trong thẻ kết quả nạp) — đã sửa ở commit `edefab3` và kiểm lại đạt. Tổng kết: **40/40
+phép kiểm đạt**. Ảnh và bản ghi của ba vòng nằm trong `/code/.generated_artifacts/` (29 ảnh,
+10 bản ghi, 1 tệp JSONL nhật ký kiểm toán) — xem mục Testing của pull request.
 
 ---
 
