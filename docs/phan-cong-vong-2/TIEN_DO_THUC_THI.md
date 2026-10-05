@@ -58,6 +58,20 @@ Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` 
 | 11 | Tài liệu từng `keep` rồi bị `reject` ở lần chạy sau vẫn nằm trong kho và trả về qua RAG | should-fix | `load_documents` xoá tài liệu bị loại (bản ghi con + đoạn vector + phát hiện của lần chạy hiện tại); `run_elt` truyền cả ba nhóm để bộ nạp tự chặn và tự dọn; `build_index` dọn Chroma | `test_document_that_becomes_rejected_is_removed_from_warehouse_and_index` (đỏ khi lùi mã cũ) |
 | 12 | Cờ `manual_entry_not_verified_with_source` không hiện trên thẻ kết quả tìm kiếm RAG | should-fix | `WarehouseQualityFlagChips` + nhãn tiếng Việt trong `components/pv/warehouse.tsx`, dùng ở `/app/drugs` và panel chi tiết | `tsc`, `eslint`, 42 bài kiểm thử giao diện |
 | 13 | Dọn sự kiện nạp dùng LIKE không thoát `_`/`%` → xoá nhầm sự kiện tài liệu khác | optional | `_ingest_event_pattern()` thoát ký tự đại diện trước khi so khớp | `test_delete_document_does_not_touch_other_documents_events` (đỏ khi lùi mã cũ) |
+| 14 | `database "..." does not exist` khi chạy trên máy mới mà container kho đã tồn tại (đổi `ELT_DB_NAME`) | should-fix | `setup_elt.sh` kiểm tra và tạo cơ sở dữ liệu đích trong container trước khi nạp | chạy lại trên clone sạch: tự tạo `vigilens_elt_fresh`, kết thúc `EXIT=0` |
+
+### 1.3 Kiểm chứng tái lập trên máy mới (bản clone sạch)
+
+Lệnh duy nhất `bash scripts/setup_elt.sh --skip-install` chạy trong `/var/tmp/fresh-clone`
+(git clone nhánh này, `.env` chỉ có 1 khoá Gemini) và kết thúc `EXIT=0`:
+
+- Nạp 66 tài liệu (keep 63, quarantine 3, reject 0), 668 mục nội dung, 32 bản ghi PubMed,
+  13 nhãn DailyMed, 15 báo cáo FAERS, 182 dòng thuốc, 125 phản ứng.
+- Chỉ mục RAG dựng bằng chế độ `hash` (không cần mạng): 1.867 đoạn, **khớp 1.867 dòng
+  `document_chunks`**; `check_warehouse` kết luận "kho và chỉ mục đạt yêu cầu kiểm tra".
+- Bước nhúng bằng Gemini trên máy mới từng dừng ở HTTP 429 (hết hạn mức của cả 8 khoá sau
+  nhiều lần dựng chỉ mục trong ngày) — đây là giới hạn hạn mức, không phải lỗi mã; README
+  nay ghi rõ cách chuyển sang `RAG_EMBEDDING_PROVIDER=hash` để kiểm tra đường ống.
 
 Còn lại có chủ đích (chưa sửa, ghi để không hiểu nhầm là đã xong): nạp tay vẫn cho phép gắn nhãn
 nguồn ELT (nay có thêm cờ `manual_entry_not_verified_with_source`); kho ELT chưa có migration
