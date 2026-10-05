@@ -15,6 +15,7 @@ vẫn dùng được; các endpoint kho khác trả 503 kèm mã ``WAREHOUSE_UNA
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
@@ -28,6 +29,8 @@ from src.services.warehouse import db as wh_db
 from src.services.warehouse import queries as wh_queries
 from src.services.warehouse.ingest import ingest_document
 from src.vmec import DomainError
+
+_log = logging.getLogger(__name__)
 
 router = APIRouter(tags=["mvp", "warehouse"])
 
@@ -114,8 +117,9 @@ def _dictionary_lookup(name: str) -> DrugLookup:
     try:
         dictionary = load_dictionary(settings.mvp_dictionary_path)
     except Exception as exc:  # noqa: BLE001 - từ điển thiếu thì báo rõ nguyên nhân
+        _log.warning("Không đọc được từ điển tĩnh %s: %s", settings.mvp_dictionary_path, exc)
         raise DomainError(503, "WAREHOUSE_UNAVAILABLE",
-                          f"Không đọc được từ điển tĩnh ({settings.mvp_dictionary_path}): {exc}") from exc
+                          "Không đọc được từ điển tĩnh; kiểm tra tệp từ điển rồi thử lại.") from exc
     drugs = []
     for record in dictionary.get("drugs", []):
         names = [record["canonical"], *record.get("aliases", [])]
@@ -157,7 +161,9 @@ async def warehouse_overview(user: Annotated[UserSession, Depends(current_user)]
 
         overview["rag"] = index_stats(engine)
     except Exception as exc:  # noqa: BLE001 - chỉ mục lỗi không chặn trang quản trị
-        overview["rag"] = {"error": f"{exc.__class__.__name__}: {exc}"}
+        # Không trả chi tiết nội bộ ra HTTP; chỉ ghi log phía máy chủ.
+        _log.warning("index_stats lỗi: %s: %s", exc.__class__.__name__, exc)
+        overview["rag"] = {"error": "RAG_INDEX_UNAVAILABLE"}
     return overview
 
 

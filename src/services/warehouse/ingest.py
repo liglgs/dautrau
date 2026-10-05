@@ -10,6 +10,7 @@ nạp tay không đi qua bộ phân tích nguồn; pipeline ELT vẫn dùng cổ
 from __future__ import annotations
 
 import hashlib
+import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -31,7 +32,11 @@ from src.services.warehouse.models import (
 )
 from src.vmec import DomainError
 
+_log = logging.getLogger(__name__)
+
 ALLOWED_SOURCES = {"pubmed", "dailymed", "faers", "reference", "manual"}
+#: Ba nguồn ELT chính — nạp tay bằng nhãn này được đánh dấu là chưa đối chiếu với API gốc.
+PRIMARY_SOURCES = {"pubmed", "dailymed", "faers"}
 MIN_TEXT_CHARS = 40
 MAX_TEXT_CHARS = 200_000
 
@@ -52,6 +57,10 @@ def delete_document(engine: Engine, doc_id: str) -> bool:
         for table in child_tables:
             session.execute(table.__table__.delete().where(table.doc_id == doc_id))
         session.execute(QualityFinding.__table__.delete().where(QualityFinding.doc_id == doc_id))
+        # Sự kiện nạp của chính tài liệu này (mã dạng ``ingest-{doc_id}-{digest}``).
+        session.execute(
+            IngestionEvent.__table__.delete().where(IngestionEvent.event_id.startswith(f"ingest-{doc_id}-"))
+        )
         session.execute(Document.__table__.delete().where(Document.doc_id == doc_id))
     return True
 
@@ -67,7 +76,8 @@ def purge_document(engine: Engine, doc_id: str, settings: Settings | None = None
         existing = collection.get(where={"doc_id": doc_id})
         rag_removed = len(existing.get("ids") or [])
         chroma_delete(collection, doc_id)
-    except Exception:  # noqa: BLE001 - thiếu chỉ mục không chặn việc xoá kho
+    except Exception as exc:  # noqa: BLE001 - thiếu chỉ mục không chặn việc xoá kho
+        _log.warning("Không xoá được đoạn Chroma của %s: %s: %s", doc_id, exc.__class__.__name__, exc)
         rag_removed = 0
     return {"doc_id": doc_id, "postgres_removed": delete_document(engine, doc_id), "chunks_removed": rag_removed}
 
@@ -114,6 +124,10 @@ def ingest_document(
                           f"Tài liệu {doc_id} đã tồn tại với nội dung khác. Tạo phiên bản mới thay vì ghi đè.")
 
     flags = ["manual_ingest"]
+    if source in PRIMARY_SOURCES:
+        # Nạp tay không đi qua bộ tải/đối chiếu bản thô của ELT: ghi rõ để người đọc biết
+        # nội dung này không được xác minh với API gốc.
+        flags.append("manual_entry_not_verified_with_source")
     values = {
         "doc_id": doc_id, "source": source, "source_id": source_id, "version": version,
         "title": title[:500] or source_id, "text": body, "text_sha256": digest,
@@ -140,7 +154,9 @@ def ingest_document(
         rag = index_documents(engine, [doc_id], settings=settings)
         rag["indexed"] = True
     except Exception as exc:  # noqa: BLE001 - nạp tài liệu vẫn thành công dù chỉ mục lỗi
-        rag = {"indexed": False, "error": f"{exc.__class__.__name__}: {exc}"}
+        # Không trả chi tiết nội bộ ra HTTP; chỉ ghi log phía máy chủ.
+        _log.warning("Lập chỉ mục RAG cho %s thất bại: %s: %s", doc_id, exc.__class__.__name__, exc)
+        rag = {"indexed": False, "error": "RAG_INDEX_UNAVAILABLE"}
 
     event = event_id or f"ingest-{doc_id}-{digest[:8]}"
     with session_scope(engine) as session:

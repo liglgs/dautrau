@@ -54,8 +54,14 @@ def chunk_text(text: str, doc_id: str, chunk_size: int = CHUNK_SIZE, overlap: in
     ordinal = 0
     while start < len(body):
         end = _boundary(body, start, chunk_size)
-        piece = body[start:end].strip()
+        piece = body[start:end]
+        # `char_start`/`char_end` phải trỏ đúng vào văn bản đã lưu (dùng cho trích dẫn),
+        # nên chỉ cắt khoảng trắng ở hai đầu đoạn bằng cách dịch con trỏ, không sửa văn bản.
+        lead = len(piece) - len(piece.lstrip())
+        piece = piece.strip()
         if piece:
+            start = start + lead
+            end = start + len(piece)
             chunks.append(
                 Chunk(
                     chunk_id=f"{doc_id}#{ordinal:04d}",

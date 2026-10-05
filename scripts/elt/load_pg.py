@@ -82,11 +82,16 @@ def load_documents(
 ) -> dict:
     inserted = updated = 0
     changed: list[str] = []
+    skipped_rejected = 0
     with engine.begin() as conn:
         for doc in documents:
             verdict = verdicts.get(doc.doc_id)
             decision = verdict.decision if verdict else "keep"
             flags = list(verdict.flags) if verdict else []
+            if decision == "reject":
+                # Hợp đồng cổng chất lượng: bản ghi bị loại không vào kho (xem docs/data/cong-chat-luong.md).
+                skipped_rejected += 1
+                continue
             values = {
                 "doc_id": doc.doc_id,
                 "source": doc.source,
@@ -127,7 +132,8 @@ def load_documents(
                     start=int(section.get("start", 0)), end=int(section.get("end", 0)),
                 ))
             _load_source_row(conn, doc)
-    return {"inserted": inserted, "updated": updated, "content_changed": changed}
+    return {"inserted": inserted, "updated": updated, "content_changed": changed,
+            "skipped_rejected": skipped_rejected}
 
 
 def _load_source_row(conn, doc: ParsedDocument) -> None:

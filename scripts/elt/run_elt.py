@@ -290,7 +290,9 @@ def main(argv: list[str] | None = None) -> int:
             WarehouseBase.metadata.drop_all(engine)
         wh_db.create_schema(engine)
         loaded["pairs"] = load_pg.load_pairs(engine, config.load_spec())
-        loaded.update(load_pg.load_documents(engine, run_id, documents, verdicts))
+        # Cổng chất lượng: `reject` bị loại khỏi kho (xem docs/data/cong-chat-luong.md);
+        # phát hiện của cả ba nhóm vẫn được ghi qua load_findings để phục vụ báo cáo.
+        loaded.update(load_pg.load_documents(engine, run_id, [*keep, *quarantine], verdicts))
         loaded["findings"] = load_pg.load_findings(engine, run_id, findings)
         load_pg.load_run(engine, run_id, args.profile, manifest.git_sha, "loaded", stats, manifest.notes)
         loaded["artifacts"] = load_pg.load_artifacts(engine, run_id, manifest.to_dict())

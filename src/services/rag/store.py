@@ -62,6 +62,21 @@ def delete_document(collection, doc_id: str) -> None:
     collection.delete(where={"doc_id": doc_id})
 
 
+def list_indexed_doc_ids(collection) -> set[str]:
+    """Tập ``doc_id`` đang có mặt trong bộ sưu tập (đọc theo lô để không kéo cả corpus vào RAM)."""
+    doc_ids: set[str] = set()
+    offset = 0
+    batch = 1000
+    while True:
+        window = collection.get(include=["metadatas"], limit=batch, offset=offset)
+        metadatas = window.get("metadatas") or []
+        if not metadatas:
+            break
+        doc_ids.update(str(meta.get("doc_id", "")) for meta in metadatas if meta)
+        offset += len(metadatas)
+    return doc_ids
+
+
 def reset_collection(settings: Settings | None = None, embedder: Embedder | None = None) -> str:
     settings = settings or get_settings()
     embedder = embedder or get_embedder(settings)

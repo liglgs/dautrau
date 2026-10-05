@@ -115,8 +115,9 @@ class GeminiEmbedder:
                 ]
             }
             try:
+                # Khoá gửi qua header (không nằm trong query string để tránh lọt vào log/proxy).
                 with httpx.Client(timeout=60, trust_env=False) as client:
-                    response = client.post(url, params={"key": key}, json=payload)
+                    response = client.post(url, headers={"x-goog-api-key": key}, json=payload)
             except httpx.HTTPError as exc:  # pragma: no cover - lỗi mạng
                 last_error = f"network: {exc.__class__.__name__}"
                 time.sleep(0.5 * min(attempt + 1, 3))
@@ -127,6 +128,10 @@ class GeminiEmbedder:
                     raise DomainError(502, "EMBEDDING_RESPONSE_INVALID", "Số vector trả về không khớp số văn bản.")
                 return [list(item["values"]) for item in embeddings]
             last_error = f"http {response.status_code}"
+            if response.status_code in {401, 403}:
+                # Khoá hỏng/hết quyền chỉ là lỗi của **một** khoá: đổi khoá khác rồi thử lại.
+                last_error = f"http {response.status_code} (khoá bị từ chối)"
+                continue
             if response.status_code in {429, 500, 502, 503, 504}:
                 retry_after = response.headers.get("Retry-After", "")
                 delay = float(retry_after) if retry_after.replace(".", "", 1).isdigit() else 1.5 * (attempt + 1)

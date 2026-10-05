@@ -216,3 +216,55 @@ def test_findings_are_recorded(warehouse) -> None:
     overview = warehouse_overview(engine)
     assert overview["documents_by_quality_status"] == {"keep": 1, "quarantine": 1}
     assert any(item["check_name"] == "missing_abstract" for item in overview["quality_findings"])
+
+
+def test_rejected_document_never_reaches_the_warehouse(warehouse) -> None:
+    """Cổng chất lượng: bản ghi `reject` không được ghi vào kho (docs/data/cong-chat-luong.md)."""
+    engine, _ = warehouse
+    good = _doc("pubmed:1:1", "pubmed", "Tài liệu đạt yêu cầu với tóm tắt đầy đủ cho RAG.")
+    rejected = _doc("pubmed:2:1", "pubmed", "x")
+    keep, quarantine, rejected_docs = apply_gates([good, rejected])
+    assert [doc.doc_id for doc in rejected_docs] == ["pubmed:2:1"]
+
+    load_pairs(engine, {"pairs": [PAIR]})
+    verdicts = verdicts_of([good, rejected])
+    result = load_documents(engine, "run-reject", [good, rejected], verdicts)
+    assert result["inserted"] == 1
+    assert result["skipped_rejected"] == 1
+
+    assert {item["doc_id"] for item in list_documents(engine)} == {"pubmed:1:1"}
+    assert document_detail(engine, "pubmed:2:1") is None
+    assert table_counts(engine)["documents"] == 1
+    assert warehouse_overview(engine)["documents_by_quality_status"] == {"keep": 1}
+
+
+def test_reindex_drops_chunks_of_documents_that_left_the_index(warehouse) -> None:
+    """Đoạn cũ trong Chroma phải bị xoá khi văn bản ngắn lại hoặc tài liệu bị cách ly."""
+    from src.services.warehouse.db import session_scope
+    from src.services.warehouse.models import Document as DocumentModel
+
+    engine, settings = warehouse
+    docs = [
+        _doc("pubmed:1:1", "pubmed", "Bằng chứng dài về fluoroquinolone và phình động mạch chủ ở người lớn tuổi. " * 20),
+        _doc("pubmed:2:1", "pubmed", "Bằng chứng về metformin và tiêu chảy ở bệnh nhân đái tháo đường týp 2. " * 20),
+    ]
+    keep, _, _ = apply_gates(docs)
+    load_documents(engine, "run-prune", keep, verdicts_of(keep))
+    first = build_index(engine, run_id="run-prune", settings=settings)
+    assert first["chunks"] > 2
+    assert index_stats(engine, settings)["chroma_chunks"] == index_stats(engine, settings)["postgres_chunks"]
+
+    # Tài liệu 1 ngắn lại rất nhiều, tài liệu 2 bị cách ly khỏi chỉ mục.
+    with session_scope(engine) as session:
+        session.get(DocumentModel, "pubmed:1:1").text = "Đoạn ngắn."
+        session.get(DocumentModel, "pubmed:2:1").quality_status = "quarantine"
+
+    rebuilt = build_index(engine, run_id="run-prune", settings=settings)
+    assert rebuilt["documents"] == 1
+    assert rebuilt["pruned_documents"] == 1
+    stats = index_stats(engine, settings)
+    assert stats["chroma_chunks"] == stats["postgres_chunks"]
+
+    hits = search(engine, "metformin tiêu chảy", k=5, settings=settings)["hits"]
+    assert all("metformin" not in hit["text"].lower() for hit in hits)
+    assert all(hit["in_postgres"] for hit in hits)

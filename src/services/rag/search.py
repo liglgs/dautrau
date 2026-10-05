@@ -77,7 +77,9 @@ def search(
         hits.append(
             {
                 "chunk_id": chunk_id,
-                "score": round(1.0 - float(distance), 6),
+                # Khoảng cách cosine của Chroma có thể > 1 (đã chuẩn hoá lại), nên kẹp
+                # độ tương đồng về [-1, 1] để điểm số luôn có nghĩa.
+                "score": round(max(-1.0, min(1.0, 1.0 - float(distance))), 6),
                 "text": chunk_text,
                 "ordinal": meta.get("ordinal"),
                 "char_start": meta.get("char_start"),
