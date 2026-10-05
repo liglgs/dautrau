@@ -15,7 +15,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from scripts.elt.config import DATA, REPORTS, ROOT
+from scripts.elt.config import REPORTS, ROOT
 
 DOCS_DATA = ROOT / "docs" / "data"
 OUTPUT = DOCS_DATA / "bao-cao-chat-luong.md"
@@ -58,7 +58,6 @@ def warehouse_counts() -> dict[str, int] | None:
 def rag_stats() -> dict | None:
     try:
         from src.services.rag.build import index_stats
-
         from src.services.warehouse.db import get_warehouse_engine
 
         return index_stats(get_warehouse_engine())

@@ -44,7 +44,7 @@ function IngestError({ error, onBumpVersion }: { error: unknown; onBumpVersion: 
         tone="caution"
         title="Trùng mã nguồn và phiên bản"
         action={
-          <Button variant="outline" size="sm" onClick={onBumpVersion}>
+          <Button type="button" variant="outline" size="sm" onClick={onBumpVersion}>
             Tạo phiên bản mới
           </Button>
         }

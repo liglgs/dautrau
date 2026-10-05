@@ -22,7 +22,6 @@ from src.services.rag.store import (
 from src.services.warehouse.db import read_session
 from src.services.warehouse.models import Document, DocumentChunk
 
-
 _log = logging.getLogger(__name__)
 
 

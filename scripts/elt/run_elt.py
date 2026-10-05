@@ -20,7 +20,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from scripts.elt import config, fetch, load_pg, quality
-from src.config import get_settings
 from scripts.elt.manifest import RunManifest
 from scripts.elt.parse import (
     ParsedDocument,
@@ -31,6 +30,7 @@ from scripts.elt.parse import (
     parse_pubmed_xml,
     parse_reference_file,
 )
+from src.config import get_settings
 
 
 def new_run_id(profile: str) -> str:
@@ -307,8 +307,19 @@ def main(argv: list[str] | None = None) -> int:
         if not (args.skip_rag or not get_settings().rag_enabled):
             from src.services.rag import build as rag_build
 
-            rag = rag_build.build_index(engine, run_id=run_id, reset=args.reset_index)
-            rag["index_stats"] = rag_build.index_stats(engine)
+            try:
+                rag = rag_build.build_index(engine, run_id=run_id, reset=args.reset_index)
+                rag["index_stats"] = rag_build.index_stats(engine)
+            except Exception as exc:  # noqa: BLE001 - kho đã nạp xong, cần chỉ dẫn rõ ràng
+                # Kho PostgreSQL đã cập nhật nhưng chỉ mục vector thì chưa, nên số đoạn hai bên
+                # sẽ lệch cho tới khi dựng lại chỉ mục. In chỉ dẫn thay vì chỉ ném lỗi thô.
+                print(json.dumps({
+                    "run_id": run_id,
+                    "warehouse": "đã nạp xong",
+                    "rag_error": f"{exc.__class__.__name__}: {exc}",
+                    "khắc_phục": "chạy lại: python -m scripts.elt.load_chroma --reset-index",
+                }, indent=2, ensure_ascii=False), file=sys.stderr)
+                raise
     manifest.stats["loaded"] = loaded
     manifest.stats["rag"] = rag
     manifest.stats["reports"] = reports

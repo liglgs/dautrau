@@ -6,11 +6,14 @@ Tên bộ sưu tập gắn với mô hình vector để tránh trộn số chi�
 
 from __future__ import annotations
 
+import logging
 import re
 from functools import lru_cache
 
 from src.config import Settings, get_settings
 from src.services.rag.embeddings import Embedder, get_embedder
+
+_log = logging.getLogger(__name__)
 
 
 def slug(value: str) -> str:
@@ -78,8 +81,15 @@ def list_indexed_doc_ids(collection) -> set[str]:
 
 
 def reset_collection(settings: Settings | None = None, embedder: Embedder | None = None) -> str:
+    """Xoá bộ sưu tập nếu đang tồn tại (chạy trên máy mới thì chưa có gì để xoá)."""
     settings = settings or get_settings()
     embedder = embedder or get_embedder(settings)
     name = collection_name(settings, embedder)
-    get_client(settings).delete_collection(name)
+    client = get_client(settings)
+    try:
+        client.delete_collection(name)
+    except Exception as exc:  # noqa: BLE001 - thiếu bộ sưu tập không phải lỗi
+        if exc.__class__.__name__ != "NotFoundError":
+            raise
+        _log.info("Bộ sưu tập %s chưa tồn tại; bỏ qua bước xoá.", name)
     return name

@@ -4,6 +4,7 @@ import * as React from "react";
 import { ShieldAlert } from "lucide-react";
 import { Alert, Chip } from "@/components/ui";
 import { HashChip, WarehouseSourceChip } from "@/components/pv/badges";
+import { WAREHOUSE_FLAG_LABEL, warehouseFlagLabel } from "@/lib/warehouse-flags";
 import type { BackendError } from "@/lib/api/errors";
 import type { WarehouseDocumentDetail } from "@/lib/api/types";
 import { safeSourceUrl } from "@/lib/evidence-view";
@@ -14,22 +15,6 @@ export const WAREHOUSE_DOCKER_COMMAND = "docker compose -f docker-compose.elt.ym
 export function isWarehouseUnavailable(error: unknown) {
   const err = error as Partial<BackendError> | null | undefined;
   return err?.status === 503 || err?.code === "WAREHOUSE_UNAVAILABLE";
-}
-
-/** Nhãn tiếng Việt cho các cờ chất lượng của kho; cờ lạ hiển thị nguyên mã. */
-export const WAREHOUSE_FLAG_LABEL: Record<string, string> = {
-  manual_entry_not_verified_with_source: "nạp tay, chưa đối chiếu nguồn gốc",
-  no_abstract: "thiếu tóm tắt",
-  missing_drug_start_date: "thiếu ngày bắt đầu dùng thuốc",
-  missing_drug_route: "thiếu đường dùng",
-  suspicion_not_causality: "chỉ là nghi ngờ, không phải quan hệ nhân quả",
-  multi_drug_report: "báo cáo có nhiều thuốc",
-  multiple_actives: "nhiều hoạt chất",
-  non_oral_route: "không dùng đường uống",
-};
-
-export function warehouseFlagLabel(flag: string) {
-  return WAREHOUSE_FLAG_LABEL[flag] ?? flag;
 }
 
 /**
@@ -101,7 +86,11 @@ export function WarehouseDocumentBody({
       </p>
       {detail.quality_flags.length ? (
         <p className="text-[12px] text-muted-foreground">
-          Cờ chất lượng: {detail.quality_flags.map((flag) => `${warehouseFlagLabel(flag)} (${flag})`).join(", ")}
+          Cờ chất lượng:{" "}
+          {detail.quality_flags.map((flag) => {
+            const label = WAREHOUSE_FLAG_LABEL[flag];
+            return label ? `${label} (${flag})` : flag;
+          }).join(", ")}
         </p>
       ) : null}
       {detail.sections.length ? (

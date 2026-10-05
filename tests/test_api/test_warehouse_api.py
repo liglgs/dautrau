@@ -214,3 +214,31 @@ async def test_drug_lookup_falls_back_to_static_dictionary(monkeypatch, tmp_path
     assert payload["origin"] == "dictionary"
     assert payload["matched"] is True
     assert any(drug["name"] == "ibuprofen" for drug in payload["drugs"])
+
+
+@pytest.mark.asyncio
+async def test_rag_search_endpoint_does_not_block_the_event_loop(warehouse_client, monkeypatch) -> None:
+    """`/rag/search` chạy trong threadpool: yêu cầu khác không phải chờ truy vấn chậm."""
+    import asyncio
+    import time
+
+    def slow_search(*args, **kwargs):
+        time.sleep(0.8)
+        return {"query": "cham", "hits": [], "count": 0}
+
+    monkeypatch.setattr("src.services.rag.search.search", slow_search, raising=False)
+
+    started = time.perf_counter()
+    search_task = asyncio.create_task(
+        warehouse_client.post("/api/v1/rag/search", json={"query": "ibuprofen"}, headers=INVESTIGATOR)
+    )
+    await asyncio.sleep(0.05)  # để yêu cầu tìm kiếm đi vào xử lý
+    health = await warehouse_client.get("/health")
+    elapsed = time.perf_counter() - started
+    search_response = await search_task
+
+    assert health.status_code == 200
+    assert search_response.status_code == 200
+    # Nếu hàm xử lý chạy thẳng trên vòng lặp sự kiện, chính `asyncio.sleep` ở trên
+    # cũng bị chặn và `/health` chỉ xong sau khi truy vấn 0,8 giây kết thúc.
+    assert elapsed < 0.6, f"vòng lặp sự kiện bị chặn: {elapsed:.2f}s"

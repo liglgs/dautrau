@@ -103,7 +103,7 @@ def ingest_document(
     source_url: str = "",
     metadata: dict | None = None,
     event_id: str | None = None,
-    settings: "Settings | None" = None,
+    settings: Settings | None = None,
 ) -> dict:
     source = (source or "").strip().lower()
     source_id = (source_id or "").strip()

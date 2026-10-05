@@ -157,10 +157,9 @@ bundle_missing = not BUNDLE.exists()
 @pytest.mark.skipif(bundle_missing, reason="gói 50 mẫu chưa được tải (data/mvp-candidates-50-2026-10-02)")
 def test_bundle_text_hashes_match_released_json() -> None:
     """Kiểm chứng hai chiều: phân tích lại tệp thô phải cho đúng băm đã phát hành."""
-    from scripts.elt.run_elt import parse_bundle
-
     from scripts.elt import config
     from scripts.elt.manifest import RunManifest
+    from scripts.elt.run_elt import parse_bundle
 
     docs, summary = parse_bundle(RunManifest(run_id="test-bundle", profile="bundle", root=config.ROOT))
     assert summary["records"] == 50
@@ -171,11 +170,10 @@ def test_bundle_text_hashes_match_released_json() -> None:
 
 @pytest.mark.skipif(bundle_missing, reason="gói 50 mẫu chưa được tải (data/mvp-candidates-50-2026-10-02)")
 def test_bundle_quality_gate_keeps_most_documents() -> None:
-    from scripts.elt.quality import apply_gates
-    from scripts.elt.run_elt import parse_bundle
-
     from scripts.elt import config
     from scripts.elt.manifest import RunManifest
+    from scripts.elt.quality import apply_gates
+    from scripts.elt.run_elt import parse_bundle
 
     docs, _ = parse_bundle(RunManifest(run_id="test-bundle", profile="bundle", root=config.ROOT))
     keep, quarantine, rejected = apply_gates(docs)

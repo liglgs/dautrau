@@ -246,20 +246,22 @@ export default function DrugLookupPage() {
             ) : (
               <ul className="space-y-2">
                 {rag.data.hits.map((hit) => (
-                  <li key={hit.chunk_id} className="rounded-[var(--radius-card)] border border-border px-4 py-3">
+                  <li key={hit.chunk_id} className="min-w-0 rounded-[var(--radius-card)] border border-border px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <ScoreChip score={hit.score} />
                       <WarehouseSourceChip source={hit.document.source} />
                       <Chip tone={hit.document.quality_status === "keep" ? "support" : "caution"}>{hit.document.quality_status}</Chip>
                       <WarehouseQualityFlagChips flags={hit.document.quality_flags} />
-                      <span className="mono text-[11px] text-muted-foreground">{hit.chunk_id}</span>
+                      <span className="mono break-all text-[11px] text-muted-foreground">{hit.chunk_id}</span>
                       {!hit.in_postgres ? <Chip tone="caution">chỉ có trong Chroma</Chip> : null}
                       {hit.document.retrieved_at ? (
                         <span className="ml-auto text-[11px] text-muted-foreground">{formatDateTime(hit.document.retrieved_at)}</span>
                       ) : null}
                     </div>
                     <p className="mt-1.5 text-[13px] font-medium text-foreground">{hit.document.title}</p>
-                    <p className="mt-1 text-[13px] text-muted-foreground">{hit.text.slice(0, 280)}{hit.text.length > 280 ? "…" : ""}</p>
+                    <p className="mt-1 min-w-0 break-words text-[13px] text-muted-foreground [overflow-wrap:anywhere]">
+                      {hit.text.slice(0, 280)}{hit.text.length > 280 ? "…" : ""}
+                    </p>
                     <div className="mt-2">
                       <Button variant="outline" size="sm" onClick={() => setOpenDocId(hit.document.doc_id)} aria-expanded={openDocId === hit.document.doc_id}>
                         Mở tài liệu

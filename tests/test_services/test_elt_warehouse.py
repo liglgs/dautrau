@@ -17,7 +17,6 @@ from src.services.rag.build import build_index, index_stats
 from src.services.rag.search import search
 from src.services.warehouse.db import create_schema, table_counts
 from src.services.warehouse.ingest import delete_document, ingest_document, purge_document
-from src.services.warehouse.models import Document
 from src.services.warehouse.queries import document_detail, list_documents, lookup_drug, warehouse_overview
 from src.vmec import DomainError
 
@@ -321,3 +320,27 @@ def test_reindex_drops_chunks_of_documents_that_left_the_index(warehouse) -> Non
     hits = search(engine, "metformin tiêu chảy", k=5, settings=settings)["hits"]
     assert all("metformin" not in hit["text"].lower() for hit in hits)
     assert all(hit["in_postgres"] for hit in hits)
+
+
+def test_build_index_reset_on_a_fresh_chroma_dir_does_not_crash(warehouse) -> None:
+    """``--reset`` trên thư mục Chroma trống (máy mới) phải chạy được, không ném NotFoundError.
+
+    Lỗi thật gặp khi chạy ``python -m scripts.elt.load_chroma --provider hash --reset``
+    trên bản clone sạch: bộ sưu tập chưa tồn tại nên ``delete_collection`` ném lỗi.
+    """
+    engine, settings = warehouse
+    docs = [
+        _doc("pubmed:9:1", "pubmed", "Bằng chứng về warfarin và chảy máu tiêu hoá ở người già. " * 20),
+    ]
+    keep, _, _ = apply_gates(docs)
+    load_documents(engine, "run-reset", keep, verdicts_of(keep))
+
+    assert not (Path(settings.rag_chroma_dir)).exists() or not any(Path(settings.rag_chroma_dir).iterdir())
+    first = build_index(engine, run_id="run-reset", reset=True, settings=settings)
+    assert first["chunks"] > 0
+
+    # Lần thứ hai: bộ sưu tập đã tồn tại, ``reset`` vẫn phải xoá và dựng lại sạch.
+    second = build_index(engine, run_id="run-reset", reset=True, settings=settings)
+    assert second["chunks"] == first["chunks"]
+    stats = index_stats(engine, settings)
+    assert stats["chroma_chunks"] == stats["postgres_chunks"]

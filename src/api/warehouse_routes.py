@@ -11,6 +11,11 @@ Nhóm endpoint:
 
 Khi PostgreSQL chưa chạy, endpoint tra cứu thuốc tự hạ cấp sang từ điển tĩnh để giao diện
 vẫn dùng được; các endpoint kho khác trả 503 kèm mã ``WAREHOUSE_UNAVAILABLE``.
+
+Các hàm xử lý cố ý viết dạng ``def`` (không ``async``) vì chúng gọi thư viện đồng bộ
+(SQLAlchemy, ChromaDB, HTTP client của bộ nhúng). FastAPI chạy chúng trong threadpool,
+nhờ vậy một truy vấn RAG chậm không chặn vòng lặp sự kiện và không làm treo các yêu cầu
+khác (ví dụ ``/health``).
 """
 
 from __future__ import annotations
@@ -91,7 +96,7 @@ def _engine():
 
 
 @router.get("/drugs/lookup", response_model=DrugLookup)
-async def drugs_lookup(
+def drugs_lookup(
     name: Annotated[str, Query(min_length=1, max_length=200)],
     user: Annotated[UserSession, Depends(current_user)],
 ) -> DrugLookup:
@@ -151,7 +156,7 @@ def _dictionary_lookup(name: str) -> DrugLookup:
 
 
 @router.get("/warehouse/overview")
-async def warehouse_overview(user: Annotated[UserSession, Depends(current_user)]) -> dict:
+def warehouse_overview(user: Annotated[UserSession, Depends(current_user)]) -> dict:
     """Số liệu kho ELT: tài liệu theo nguồn, trạng thái chất lượng, phát hiện và chỉ mục RAG."""
     engine = _engine()
     overview = wh_queries.warehouse_overview(engine)
@@ -168,7 +173,7 @@ async def warehouse_overview(user: Annotated[UserSession, Depends(current_user)]
 
 
 @router.get("/warehouse/documents")
-async def warehouse_documents(
+def warehouse_documents(
     user: Annotated[UserSession, Depends(current_user)],
     source: Annotated[str | None, Query(max_length=30)] = None,
     pair_id: Annotated[str | None, Query(max_length=120)] = None,
@@ -184,7 +189,7 @@ async def warehouse_documents(
 
 
 @router.get("/warehouse/documents/{doc_id:path}")
-async def warehouse_document(
+def warehouse_document(
     doc_id: str,
     user: Annotated[UserSession, Depends(current_user)],
     preview_chars: Annotated[int, Query(ge=0, le=4000)] = 600,
@@ -212,7 +217,7 @@ async def warehouse_document(
 
 
 @router.post("/rag/search")
-async def rag_search(
+def rag_search(
     payload: Annotated[RagSearchRequest, Body()],
     user: Annotated[UserSession, Depends(current_user)],
 ) -> dict:
@@ -229,7 +234,7 @@ async def rag_search(
 
 
 @router.get("/ingestion/events")
-async def ingestion_events(
+def ingestion_events(
     user: Annotated[UserSession, Depends(current_user)],
     limit: Annotated[int, Query(ge=1, le=200)] = 30,
 ) -> dict:
@@ -240,7 +245,7 @@ async def ingestion_events(
 
 
 @router.post("/ingestion/documents")
-async def ingest_manual_document(
+def ingest_manual_document(
     payload: Annotated[IngestRequest, Body()],
     role: Annotated[Role, Depends(require_reviewer)],
 ) -> dict:

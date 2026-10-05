@@ -11,7 +11,6 @@ import sys
 
 from sqlalchemy import text
 
-from scripts.elt import config
 from src.services.warehouse import db as wh_db
 from src.services.warehouse.queries import warehouse_overview
 

@@ -103,7 +103,7 @@ class Document(WarehouseBase):
     quality_status: Mapped[str] = mapped_column(String(20), default="keep", index=True)
     quality_flags: Mapped[list] = mapped_column(JSON, default=list)
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
-    sections: Mapped[list["DocumentSection"]] = relationship(back_populates="document", cascade="all, delete-orphan")
+    sections: Mapped[list[DocumentSection]] = relationship(back_populates="document", cascade="all, delete-orphan")
 
 
 class DocumentSection(WarehouseBase):
@@ -158,8 +158,8 @@ class FaersReport(WarehouseBase):
     total_hits: Mapped[int | None] = mapped_column(Integer, nullable=True)
     matched_drugs: Mapped[list] = mapped_column(JSON, default=list)
     reactions: Mapped[list] = mapped_column(JSON, default=list)
-    drugs: Mapped[list["FaersReportDrug"]] = relationship(back_populates="report", cascade="all, delete-orphan")
-    reaction_rows: Mapped[list["FaersReportReaction"]] = relationship(
+    drugs: Mapped[list[FaersReportDrug]] = relationship(back_populates="report", cascade="all, delete-orphan")
+    reaction_rows: Mapped[list[FaersReportReaction]] = relationship(
         back_populates="report", cascade="all, delete-orphan"
     )
 

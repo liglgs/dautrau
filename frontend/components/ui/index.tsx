@@ -30,11 +30,14 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className, variant = "primary", size = "md", ...props },
+  // Mặc định `type="button"`: nút nằm trong <form> mà không ghi rõ type sẽ thành nút gửi,
+  // khiến một cú nhấp (ví dụ nút "Tạo phiên bản mới" trong cảnh báo 409) gửi biểu mẫu thật.
+  { className, variant = "primary", size = "md", type = "button", ...props },
   ref,
 ) {
   return (
     <button
+      type={type}
       ref={ref}
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] font-medium transition-colors duration-150",

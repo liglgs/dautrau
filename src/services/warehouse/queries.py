@@ -9,9 +9,9 @@ from src.services.warehouse.db import read_session
 from src.services.warehouse.models import (
     DailymedLabel,
     Document,
-    EltRun,
     Drug,
     DrugEventPair,
+    EltRun,
     FaersReport,
     IngestionEvent,
     PubmedRecord,
