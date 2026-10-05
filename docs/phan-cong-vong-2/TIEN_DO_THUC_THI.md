@@ -59,6 +59,7 @@ Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` 
 | 12 | Cờ `manual_entry_not_verified_with_source` không hiện trên thẻ kết quả tìm kiếm RAG | should-fix | `WarehouseQualityFlagChips` + nhãn tiếng Việt trong `components/pv/warehouse.tsx`, dùng ở `/app/drugs` và panel chi tiết | `tsc`, `eslint`, 42 bài kiểm thử giao diện |
 | 13 | Dọn sự kiện nạp dùng LIKE không thoát `_`/`%` → xoá nhầm sự kiện tài liệu khác | optional | `_ingest_event_pattern()` thoát ký tự đại diện trước khi so khớp | `test_delete_document_does_not_touch_other_documents_events` (đỏ khi lùi mã cũ) |
 | 14 | `database "..." does not exist` khi chạy trên máy mới mà container kho đã tồn tại (đổi `ELT_DB_NAME`) | should-fix | `setup_elt.sh` kiểm tra và tạo cơ sở dữ liệu đích trong container trước khi nạp | chạy lại trên clone sạch: tự tạo `vigilens_elt_fresh`, kết thúc `EXIT=0` |
+| 15 | 3 tệp HTML bản tin quốc gia lệch băm so với `manifest.json` của gói nghiên cứu (do lưu lại ở dạng LF khi nhập repo) | should-fix | ghi thêm `sha256_committed`/`bytes_committed` + `normalization` vào manifest; bước kiểm chứng chấp nhận đúng một trong hai băm và báo `normalized_files`; `verify_packet.py` chạy được trên máy mới (bỏ đường dẫn Windows) | `verify_research_packet` → 18/19 tệp đạt, 0 lỗi, 3 tệp chuẩn hoá; 2 bài kiểm thử mới |
 
 ### 1.3 Kiểm chứng tái lập trên máy mới (bản clone sạch)
 

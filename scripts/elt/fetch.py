@@ -269,6 +269,7 @@ def verify_research_packet(manifest: RunManifest) -> dict:
     if isinstance(entries, dict):
         entries = entries.get("entries", [])
     verified = 0
+    normalized: list[str] = []
     failures: list[str] = []
     for entry in entries:
         name = entry.get("file")
@@ -279,10 +280,18 @@ def verify_research_packet(manifest: RunManifest) -> dict:
             failures.append(f"missing:{name}")
             continue
         actual = sha256_file(path)
-        if entry.get("sha256") and actual != entry["sha256"]:
-            failures.append(f"sha256:{name}")
-        else:
+        if entry.get("sha256") and actual == entry["sha256"]:
             verified += 1
+        elif entry.get("sha256_committed") and actual == entry["sha256_committed"]:
+            # Tệp đã được lưu lại khi nhập repo (ví dụ đổi xuống dòng CRLF → LF). Bản cam kết
+            # có băm riêng, ghi rõ trong manifest; vẫn là lỗi nếu băm thật khác cả hai.
+            verified += 1
+            normalized.append(name)
+        elif not entry.get("sha256"):
+            verified += 1
+        else:
+            failures.append(f"sha256:{name}")
     manifest.add_artifact(source="research_packet", kind="verify", url=str(packet), params={}, status=200,
-                          extra={"verified_files": verified, "failed_files": failures, "total_files": len(entries)})
-    return {"verified": verified, "total": len(entries), "failures": failures}
+                          extra={"verified_files": verified, "failed_files": failures,
+                                 "normalized_files": normalized, "total_files": len(entries)})
+    return {"verified": verified, "total": len(entries), "failures": failures, "normalized": normalized}

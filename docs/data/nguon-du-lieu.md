@@ -98,6 +98,13 @@ cho ra đúng `sha256` văn bản trong JSON đã phát hành — 30/30 khớp, 
 | `who-umc-causality.pdf` | hướng dẫn đánh giá ca | khung đánh giá nhân quả |
 | `adr-cognitive-task-study.txt` | nghiên cứu quy trình | mô tả bối cảnh công việc |
 
+**Kiểm chứng băm của gói này:** `manifest.json` ghi băm của bản tải về; ba tệp HTML của
+bản tin quốc gia được lưu lại ở dạng xuống dòng LF khi nhập repo nên có thêm
+`sha256_committed`/`bytes_committed` và trường `normalization`. Bước kiểm chứng chấp nhận
+đúng một trong hai băm và ghi rõ tệp nào đã chuẩn hoá (`normalized_files`) — vẫn báo lỗi
+nếu băm thật khác cả hai. Lần chạy gần nhất: 18/19 tệp đạt, 0 lỗi, 3 tệp chuẩn hoá.
+Kiểm nhanh bằng `python docs/research/2026-10-05/verify_packet.py --skip-services`.
+
 Không dùng nhóm này để kết luận về thuốc–biến cố.
 
 ## 6. Nguồn đã thử nhưng chưa lấy được

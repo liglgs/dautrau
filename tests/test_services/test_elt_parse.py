@@ -182,3 +182,62 @@ def test_bundle_quality_gate_keeps_most_documents() -> None:
     assert len(keep) == 48
     assert len(quarantine) == 2
     assert rejected == []
+
+
+def test_research_packet_verification_accepts_documented_normalisation(tmp_path: Path) -> None:
+    """Băm ghi trong manifest phải khớp; tệp được chuẩn hoá khi nhập repo dùng `sha256_committed`."""
+    import hashlib
+
+    from scripts.elt.fetch import verify_research_packet
+    from scripts.elt.manifest import RunManifest
+
+    packet = tmp_path / "data-real"
+    packet.mkdir()
+    good = b"<html>noi dung</html>\r\n"
+    normalised = b"<html>noi dung</html>\n"
+    (packet / "good.html").write_bytes(good)
+    (packet / "normalised.html").write_bytes(normalised)
+    (packet / "broken.html").write_bytes(b"<html>khac</html>")
+    (packet / "manifest.json").write_text(
+        json.dumps([
+            {"id": "a", "file": "good.html", "sha256": hashlib.sha256(good).hexdigest(), "verified_payload": True},
+            {
+                "id": "b", "file": "normalised.html", "verified_payload": True,
+                "sha256": hashlib.sha256(b"<html>ban tai ve</html>\r\n").hexdigest(),
+                "sha256_committed": hashlib.sha256(normalised).hexdigest(),
+                "normalization": "crlf_to_lf_at_import",
+            },
+            {"id": "c", "file": "broken.html", "sha256": "0" * 64, "verified_payload": True},
+        ]),
+        encoding="utf-8",
+    )
+    manifest = RunManifest(run_id="test", profile="test", root=tmp_path)
+
+    monkey = pytest.MonkeyPatch()
+    monkey.setattr("scripts.elt.config.RESEARCH_DIR", packet)
+    try:
+        result = verify_research_packet(manifest)
+    finally:
+        monkey.undo()
+
+    assert result["verified"] == 2
+    assert result["normalized"] == ["normalised.html"]
+    assert result["failures"] == ["sha256:broken.html"]
+
+
+def test_committed_research_packet_matches_its_manifest() -> None:
+    """Gói nghiên cứu đã cam kết phải khớp manifest của chính nó (18/19 tệp, 3 tệp chuẩn hoá)."""
+    from scripts.elt import config as elt_config
+    from scripts.elt.fetch import verify_research_packet
+    from scripts.elt.manifest import RunManifest
+
+    manifest = RunManifest(run_id="test", profile="test", root=elt_config.ROOT)
+    result = verify_research_packet(manifest)
+
+    assert result["failures"] == []
+    assert result["verified"] == 18
+    assert sorted(result["normalized"]) == [
+        "vn-adr-2024.html",
+        "vn-adr-2025.html",
+        "vn-latest-bulletin-index.html",
+    ]
