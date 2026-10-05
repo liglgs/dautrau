@@ -93,7 +93,7 @@ out/
 *.pyc
 *.pyo
 
-# AI agent logs and hook infrastructure — not part of this project
+# AI agent logs, hooks and local agent rules — keep out of the repository
 .ai-log/
 .agents/
 .claude/
@@ -101,26 +101,11 @@ out/
 .cursor/
 .gemini/
 .github/hooks/
-scripts/log_antigravity.py
-scripts/log_hook.py
-scripts/log_manual.py
-scripts/submit_log.py
-scripts/setup_hooks.sh
-scripts/setup_hooks.ps1
-
-# Local agent rules (private)
 AGENTS.md
 GEMINI.md
 CLAUDE.md
 **/CLAUDE.md
-
-# Local GitHub Actions runner and its credentials
 actions-runner/
-
-# Local personal tracking
-TODO_NGUOI_2.md
-TRACKING_NGUOI_2.md
-THUC_GIUC_NHOM.md
 
 *.tsbuildinfo
 .tools/
