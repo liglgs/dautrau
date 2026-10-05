@@ -55,6 +55,9 @@ Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` 
 | 8 | Xoá tài liệu để lại sự kiện nạp; lỗi Chroma bị nuốt | should-fix | xoá sự kiện cùng mã tài liệu; ghi log thay vì im lặng | `test_purge_removes_rows_and_chunks` |
 | 9 | `char_start/char_end` lệch văn bản lưu; điểm tương đồng có thể âm | optional | dịch con trỏ thay vì sửa văn bản; kẹp điểm về `[-1, 1]` | 604 bài kiểm thử đạt |
 | 10 | Mã trùng lặp ở giao diện (chi tiết tài liệu, cảnh báo 503) | simplify | gộp vào `frontend/components/pv/warehouse.tsx` | `tsc`, `eslint`, 42 bài kiểm thử giao diện |
+| 11 | Tài liệu từng `keep` rồi bị `reject` ở lần chạy sau vẫn nằm trong kho và trả về qua RAG | should-fix | `load_documents` xoá tài liệu bị loại (bản ghi con + đoạn vector + phát hiện của lần chạy hiện tại); `run_elt` truyền cả ba nhóm để bộ nạp tự chặn và tự dọn; `build_index` dọn Chroma | `test_document_that_becomes_rejected_is_removed_from_warehouse_and_index` (đỏ khi lùi mã cũ) |
+| 12 | Cờ `manual_entry_not_verified_with_source` không hiện trên thẻ kết quả tìm kiếm RAG | should-fix | `WarehouseQualityFlagChips` + nhãn tiếng Việt trong `components/pv/warehouse.tsx`, dùng ở `/app/drugs` và panel chi tiết | `tsc`, `eslint`, 42 bài kiểm thử giao diện |
+| 13 | Dọn sự kiện nạp dùng LIKE không thoát `_`/`%` → xoá nhầm sự kiện tài liệu khác | optional | `_ingest_event_pattern()` thoát ký tự đại diện trước khi so khớp | `test_delete_document_does_not_touch_other_documents_events` (đỏ khi lùi mã cũ) |
 
 Còn lại có chủ đích (chưa sửa, ghi để không hiểu nhầm là đã xong): nạp tay vẫn cho phép gắn nhãn
 nguồn ELT (nay có thêm cờ `manual_entry_not_verified_with_source`); kho ELT chưa có migration
