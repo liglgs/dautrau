@@ -88,6 +88,30 @@ nguồn ELT (nay có thêm cờ `manual_entry_not_verified_with_source`); kho EL
 (chỉ `create_all`/`--reset-db`); Dockerfile backend chưa cài `chromadb` nên RAG trong container
 chưa chạy.
 
+### 1.5 Vòng kiểm thử đầu-cuối trên giao diện thật và năm lỗi đã sửa
+
+Một tác nhân kiểm thử độc lập chạy 38 phép kiểm trên giao diện đang chạy (máy chủ API thật +
+PostgreSQL + ChromaDB): **36 đạt, 1 hỏng, 1 bị chặn**, độ phủ 37/38. Phép bị chặn là bước dựng
+chỉ mục Gemini trong `setup_elt.sh` (hết hạn mức miễn phí của cả 8 khoá), không phải lỗi mã.
+Phép hỏng là soát chất lượng giao diện, và nó tìm ra 5 lỗi mã — đã sửa ở commit `4186171`:
+
+| # | Lỗi quan sát được | Nguyên nhân | Cách sửa |
+| --- | --- | --- | --- |
+| 1 | Nhấp **một lần** nút "Tạo phiên bản mới" trong cảnh báo 409 lại gửi thêm một yêu cầu nạp thật, sinh phiên bản mới ngoài ý muốn | `Button` không có `type` mặc định nên nút nằm trong `<form>` trở thành nút gửi biểu mẫu | `Button` mặc định `type="button"`; nút trong cảnh báo ghi rõ `type="button"` |
+| 2 | Cờ chất lượng hiển thị mã tiếng Anh thô, và một số chỗ lặp `mã (mã)` | Bảng nhãn dùng khoá không tồn tại (`no_abstract`, `multi_drug_report`, `multiple_actives`, `non_oral_route`), thiếu 6 mã thật | Bảng nhãn phủ đủ 30 mã thật, tách sang `frontend/lib/warehouse-flags.ts`, có bài vitest chặn thiếu/thừa nhãn |
+| 3 | `python -m scripts.elt.load_chroma --provider hash --reset` chết trên thư mục Chroma trống | `reset_collection` luôn gọi `delete_collection` dù bộ sưu tập chưa tồn tại | bỏ qua đúng `NotFoundError`; bài kiểm thử mới chứng minh đỏ trên mã cũ |
+| 4 | Trang `/app/drugs` tràn ngang (rộng 2.361 px so với khung 1.280 px) sau khi kết quả RAG hiện ra | đoạn trích chứa JSON FAERS không có chỗ ngắt dòng | thêm `min-w-0`, `break-words`, `overflow-wrap:anywhere`, `break-all` cho mã đoạn |
+| 5 | Truy vấn RAG đang chạy làm `/health` mất 24,8 giây, một yêu cầu 422 bị đẩy sau 218 giây | `POST /rag/search` là `async def` nhưng gọi thư viện đồng bộ (ChromaDB, SQLAlchemy) nên chặn vòng lặp sự kiện | cả 7 hàm xử lý trong `src/api/warehouse_routes.py` chuyển thành `def` để FastAPI chạy trong threadpool; bài kiểm thử mới đo bằng đồng hồ thực và chứng minh đỏ trên mã cũ |
+
+Sau vòng kiểm thử, kho được dọn về đúng trạng thái của lần chạy ELT `20261005T194943Z-all`:
+5 tài liệu thử do tác nhân kiểm thử để lại đã bị xoá khỏi cả PostgreSQL lẫn Chroma. Hai tài liệu
+(`dailymed:c47250c2-bece-46b5-8b3b-b7c97d9005d8:3`, `faers:10006639:1`) bị thiếu 1 đoạn mỗi tài
+liệu trong Chroma do lần dựng chỉ mục bằng Gemini bị ngắt giữa lúc kiểm thử; cần bù 2 đoạn đó
+(bằng `--reset-index`, hoặc ghi bù đúng 2 đoạn) trước khi `check_warehouse` trở lại mã thoát 0.
+
+Ảnh và bản ghi của vòng kiểm thử nằm trong `/code/.generated_artifacts/` (15 ảnh, 6 bản ghi,
+1 tệp JSONL nhật ký kiểm toán) — xem mục Testing của pull request.
+
 ---
 
 ## 2. Người 1 — dữ liệu, nguồn, lưu trữ và deploy
