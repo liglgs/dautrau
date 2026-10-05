@@ -2,9 +2,9 @@
 
 Tài liệu này do `python -m scripts.elt.docs_data` sinh ra từ báo cáo ELT thật. Không sửa tay; chạy lại lệnh trên sau mỗi lần nạp dữ liệu.
 
-- Lần chạy: `20261005T194943Z-all` (profile `all`)
-- Thời điểm sinh báo cáo ELT: 2026-10-05T19:49:43.744668+00:00
-- Thời điểm sinh tài liệu này: 2026-10-05T19:54:42+00:00
+- Lần chạy: `20261005T205616Z-all` (profile `all`)
+- Thời điểm sinh báo cáo ELT: 2026-10-05T20:56:16.789570+00:00
+- Thời điểm sinh tài liệu này: 2026-10-05T21:02:29+00:00
 
 ## 1. Khối lượng theo nguồn
 
@@ -50,24 +50,24 @@ Tài liệu này do `python -m scripts.elt.docs_data` sinh ra từ báo cáo ELT
 | Bảng | Số bản ghi |
 | --- | --- |
 | `dailymed_labels` | 13 |
-| `document_chunks` | 1,865 |
-| `document_sections` | 668 |
-| `documents` | 66 |
+| `document_chunks` | 1,870 |
+| `document_sections` | 673 |
+| `documents` | 71 |
 | `drug_event_pairs` | 5 |
 | `drugs` | 5 |
 | `faers_report_drugs` | 182 |
 | `faers_report_reactions` | 125 |
 | `faers_reports` | 15 |
-| `ingestion_events` | 3 |
+| `ingestion_events` | 12 |
 | `pubmed_records` | 32 |
-| `quality_findings` | 315 |
+| `quality_findings` | 735 |
 
 ## 6. Chỉ mục vector (ChromaDB)
 
 - Bộ sưu tập: `vigilens_docs__gemini__gemini-embedding-001`
 - Mô hình nhúng: `gemini-embedding-001` (provider `gemini`)
-- Số đoạn trong ChromaDB: 1,865
-- Số đoạn trong PostgreSQL: 1,865
+- Số đoạn trong ChromaDB: 1,870
+- Số đoạn trong PostgreSQL: 1,870
 - Lệch: 0 (0 nghĩa là hai kho khớp nhau)
 - Thư mục lưu: `./data/chroma`
 

@@ -92,6 +92,11 @@ if [ ! -f .env ]; then
   cp .env.example .env
   echo "Đã tạo .env từ .env.example."
 fi
+env_value() {
+  # Đọc giá trị hiện có trong .env (bỏ dấu nháy và khoảng trắng hai đầu).
+  sed -n "s/^$1=//p" .env | tail -n 1 | tr -d '\r' | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
+}
+
 ensure_env() {
   local key="$1" value="$2"
   if ! grep -q "^${key}=" .env; then
@@ -130,6 +135,26 @@ if command -v docker >/dev/null 2>&1; then
       warn "docker compose không dựng được PostgreSQL (có thể do cổng 5433 đã bị chiếm"
       warn "bởi một container cùng tên từ thư mục khác). Vẫn tiếp tục các bước sau."
       warn "Kiểm tra: docker compose -f docker-compose.elt.yml up -d --wait"
+    fi
+    # Container có thể đã tồn tại từ một lần chạy trước với tên cơ sở dữ liệu khác
+    # (compose chỉ tạo POSTGRES_DB ở lần khởi tạo đầu tiên). Bảo đảm cơ sở dữ liệu
+    # đích tồn tại để bước nạp kho không chết vì "database does not exist".
+    ensure_database() {
+      local db_name="$1" db_user="${POSTGRES_USER:-medreview}"
+      [ -z "$db_name" ] && return 0
+      if docker exec "$DB_CONTAINER" psql -U "$db_user" -d postgres -tAc \
+          "SELECT 1 FROM pg_database WHERE datname = '$db_name'" 2>/dev/null | grep -q 1; then
+        return 0
+      fi
+      if docker exec "$DB_CONTAINER" createdb -U "$db_user" "$db_name" 2>/dev/null; then
+        echo "Đã tạo cơ sở dữ liệu $db_name trong container $DB_CONTAINER."
+      else
+        warn "Không tạo được cơ sở dữ liệu $db_name; kiểm tra thủ công bằng:"
+        warn "  docker exec $DB_CONTAINER createdb -U $db_user $db_name"
+      fi
+    }
+    if docker ps --format '{{.Names}}' | grep -qx "$DB_CONTAINER"; then
+      ensure_database "$(env_value ELT_DB_NAME)"
     fi
   else
     warn "Docker chưa chạy hoặc không có quyền. Bỏ qua bước dựng PostgreSQL."
