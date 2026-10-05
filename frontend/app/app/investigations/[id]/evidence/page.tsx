@@ -1,14 +1,15 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Alert, Card, CardBody, Skeleton } from "@/components/ui";
 import { EvidenceMatrix } from "@/components/pv/evidence-matrix";
 import { useEvidence } from "@/lib/hooks/use-data";
-import { useAppStore } from "@/lib/store/app-store";
+import { canRequestMore, useAppStore } from "@/lib/store/app-store";
 
 export default function EvidenceTabPage() {
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id ?? "");
+  const router = useRouter();
   const { data, isLoading, error } = useEvidence(id);
   const density = useAppStore((state) => state.density);
   const role = useAppStore((state) => state.role);
@@ -41,7 +42,9 @@ export default function EvidenceTabPage() {
         investigationId={id}
         items={data ?? []}
         density={density}
-        canRequestMore={role === "reviewer" || role === "admin"}
+        canRequestMore={canRequestMore(role)}
+        // Mở tab Duyệt — nơi quyết định "Yêu cầu tìm thêm" được gửi kèm lý do và bằng chứng mục tiêu.
+        onRequestMore={() => router.push(`/app/investigations/${encodeURIComponent(id)}/review`)}
       />
     </div>
   );

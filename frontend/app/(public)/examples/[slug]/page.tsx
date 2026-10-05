@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageHeader, Prose, Section } from "@/components/public/sections";
 import { AssessmentBadge, CoverageGrid, ReviewStateBadge, SourceChip } from "@/components/pv/badges";
 import { DEMO_INVESTIGATIONS, DEMO_EVIDENCE } from "@/lib/mock/seed";
+import { DATA_MODE } from "@/lib/api";
 
 const MAP: Record<string, string> = {
   "inv-0001-metformin": "INV-0001",
@@ -33,12 +34,22 @@ export default async function ExampleDetailPage({ params }: { params: Promise<{ 
         title={`${investigation.claim.drug} → ${investigation.claim.adverseEvent}`}
         description={investigation.claim.rawText}
         actions={
-          <Link
-            href={`/app/investigations/${investigation.id}`}
-            className="inline-flex h-10 items-center rounded-[var(--radius-control)] border border-input px-4 text-[14px] hover:bg-muted"
-          >
-            Mở trong khu vực làm việc
-          </Link>
+          DATA_MODE === "api" ? (
+            // Ca mẫu chỉ tồn tại ở chế độ dữ liệu mẫu; mã INV-* không có trong backend thật.
+            <Link
+              href="/app/investigations"
+              className="inline-flex h-10 items-center rounded-[var(--radius-control)] border border-input px-4 text-[14px] hover:bg-muted"
+            >
+              Ca minh hoạ — mở danh sách cuộc điều tra thật
+            </Link>
+          ) : (
+            <Link
+              href={`/app/investigations/${investigation.id}`}
+              className="inline-flex h-10 items-center rounded-[var(--radius-control)] border border-input px-4 text-[14px] hover:bg-muted"
+            >
+              Mở trong khu vực làm việc
+            </Link>
+          )
         }
       />
 

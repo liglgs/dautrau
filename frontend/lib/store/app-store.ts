@@ -52,3 +52,8 @@ export const ROLE_LABEL: Record<Role, string> = {
 export function canReview(role: Role) {
   return role === "reviewer";
 }
+
+/** Yêu cầu agent tìm thêm bằng chứng: người duyệt gửi quyết định, quản trị xem được cùng luồng. */
+export function canRequestMore(role: Role) {
+  return role === "reviewer" || role === "admin";
+}

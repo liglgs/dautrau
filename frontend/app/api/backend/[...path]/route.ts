@@ -40,8 +40,11 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
       return Response.json({ error: { code: "csrf_rejected", message: "Yêu cầu phải xuất phát từ cùng trang web." } }, { status: 403 });
     }
   }
-  const { token, reason } = tokenMode && !authRoute ? resolveToken(request.headers.get(ROLE_HEADER)) : {};
-  if (tokenMode && !authRoute && !token) {
+  // Chế độ token: gắn token vai trò cho mọi tuyến trừ đăng nhập/đăng xuất.
+  // `/auth/me` vẫn cần token để trả về đúng người dùng đang gọi.
+  const roleTokenRoute = !authRoute || path.join("/") === "api/v1/auth/me";
+  const { token, reason } = tokenMode && roleTokenRoute ? resolveToken(request.headers.get(ROLE_HEADER)) : {};
+  if (tokenMode && roleTokenRoute && !token) {
     console.error(`[vigilens-proxy] cấu hình sai: ${reason}`);
     return Response.json({ error: { code: "proxy_misconfigured", message: "Cầu nối chưa được cấu hình đúng." } }, { status: 500 });
   }

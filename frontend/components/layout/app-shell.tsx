@@ -18,6 +18,7 @@ import {
   Menu,
   MessageSquare,
   Moon,
+  Pill,
   Plus,
   Search,
   Settings,
@@ -36,7 +37,7 @@ import { ROLE_LABEL, useAppStore } from "@/lib/store/app-store";
 import { useInvestigations } from "@/lib/hooks/use-data";
 import { DemoBanner } from "@/components/pv/demo-banner";
 import { useTheme } from "next-themes";
-import type { Role } from "@/lib/types";
+import type { Investigation, Role } from "@/lib/types";
 
 interface NavItem {
   href: string;
@@ -50,6 +51,7 @@ interface NavItem {
 const WORKSPACE_NAV: NavItem[] = [
   { href: "/app", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" aria-hidden /> },
   { href: "/app/investigations", label: "Cuộc điều tra", icon: <FolderSearch className="h-4 w-4" aria-hidden />, badgeKey: "investigations" },
+  { href: "/app/drugs", label: "Tra cứu thuốc", icon: <Pill className="h-4 w-4" aria-hidden /> },
   { href: "/app/reviews", label: "Hàng chờ duyệt", icon: <ShieldCheck className="h-4 w-4" aria-hidden />, roles: ["reviewer"], badgeKey: "reviews" },
 ];
 
@@ -107,12 +109,14 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Chế độ backend thật: lấy người dùng thật từ máy chủ (phiên đăng nhập hoặc token vai trò).
+  // Chế độ minh hoạ giữ nguyên tên demo; không bịa người dùng khi đang gọi backend.
   React.useEffect(() => {
-    if (!sessionMode) return;
+    if (DATA_MODE !== "api") return;
     let active = true;
     let redirecting = false;
     const expired = () => {
-      if (!active || redirecting || logoutStarted.current) return;
+      if (!active || redirecting || logoutStarted.current || !sessionMode) return;
       redirecting = true;
       setSessionReady(false);
       useAppStore.getState().setRole("visitor");
@@ -123,10 +127,15 @@ export function AppShell({
       if (logoutStarted.current) return;
       try {
         const user = await request<{ user_id: string; role: "investigator" | "reviewer" }>("/api/v1/auth/me");
-        if (active && !logoutStarted.current) { useAppStore.getState().setRole(user.role); setUserName(user.user_id); setSessionReady(true); setSessionError(null); }
+        if (active && !logoutStarted.current) {
+          setUserName(user.user_id);
+          useAppStore.getState().setRole(user.role);
+          setSessionReady(true);
+          setSessionError(null);
+        }
       } catch (error) {
         if (active && !logoutStarted.current) {
-          if ((error as { status?: number }).status === 401) expired();
+          if (sessionMode && (error as { status?: number }).status === 401) expired();
           else { setSessionReady(false); setSessionError((error as Error).message); }
         }
       }
@@ -135,9 +144,12 @@ export function AppShell({
     window.addEventListener("focus", verify);
     void verify();
     return () => { active = false; window.removeEventListener("vigilens-session-expired", expired); window.removeEventListener("focus", verify); };
-  }, [sessionMode, queryClient, router]);
+  }, [sessionMode, role, queryClient, router]);
 
   const investigations = useInvestigations(!sessionMode || sessionReady).data?.items ?? [];
+  // Tên hiển thị: tên thật từ backend khi có, nếu backend chỉ trả mã vai trò thì dùng nhãn tiếng Việt.
+  const identity = DATA_MODE === "api" ? (userName && userName !== role ? userName : ROLE_LABEL[role]) : "Trần Minh";
+  const monogram = DATA_MODE === "api" ? identity.slice(0, 2).toUpperCase() : "TM";
   const isAdminArea = variant === "admin" || pathname.startsWith("/admin");
   const primary = isAdminArea ? ADMIN_NAV : WORKSPACE_NAV;
   const secondary = isAdminArea ? [] : LIBRARY_NAV;
@@ -238,10 +250,12 @@ export function AppShell({
           </Link>
         ) : null}
         <div className={cn("mt-2 flex items-center gap-2 rounded-[var(--radius-card)] border border-border px-2 py-2", sidebarCollapsed && "justify-center")}>
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">TM</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">
+            {monogram}
+          </span>
           {!sidebarCollapsed ? (
             <span className="min-w-0">
-              <span className="block truncate text-[12px] font-medium text-foreground">{sessionMode ? userName : "Trần Minh"}</span>
+              <span className="block truncate text-[12px] font-medium text-foreground">{identity}</span>
               <span className="block truncate text-[11px] text-muted-foreground">{ROLE_LABEL[role]}</span>
             </span>
           ) : null}
@@ -334,6 +348,7 @@ export function AppShell({
 
       {commandOpen ? (
         <CommandPalette
+          investigations={investigations}
           onClose={() => setCommandOpen(false)}
           onNavigate={(href) => {
             setCommandOpen(false);
@@ -345,17 +360,35 @@ export function AppShell({
   );
 }
 
-function CommandPalette({ onClose, onNavigate }: { onClose: () => void; onNavigate: (href: string) => void }) {
+function CommandPalette({
+  investigations,
+  onClose,
+  onNavigate,
+}: {
+  investigations: Investigation[];
+  onClose: () => void;
+  onNavigate: (href: string) => void;
+}) {
   const [query, setQuery] = React.useState("");
   const commands = [
     { label: "Điều tra mới", href: "/app/investigations/new" },
+    { label: "Tra cứu thuốc", href: "/app/drugs" },
     { label: "Mở hàng chờ duyệt", href: "/app/reviews" },
     { label: "Danh sách cuộc điều tra", href: "/app/investigations" },
     { label: "Thư viện hồ sơ", href: "/app/dossiers" },
     { label: "Trợ lý VigiLens", href: "/app/assistant" },
     { label: "Giới hạn & cách đọc kết quả", href: "/limitations" },
   ];
-  const filtered = commands.filter((item) => item.label.toLowerCase().includes(query.toLowerCase()));
+  const needle = query.trim().toLowerCase();
+  const filtered = commands.filter((item) => item.label.toLowerCase().includes(needle));
+  // Tìm trong danh sách cuộc điều tra đã tải: mã, hoạt chất, biến cố.
+  const matchedInvestigations = needle
+    ? investigations
+        .filter((item) =>
+          `${item.id} ${item.claim.drug} ${item.claim.adverseEvent}`.toLowerCase().includes(needle),
+        )
+        .slice(0, 6)
+    : investigations.slice(0, 5);
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]" role="dialog" aria-modal="true" aria-label="Bảng lệnh">
       <button className="absolute inset-0 bg-foreground/20 backdrop-blur-[1px]" onClick={onClose} aria-label="Đóng bảng lệnh" />
@@ -373,7 +406,26 @@ function CommandPalette({ onClose, onNavigate }: { onClose: () => void; onNaviga
               </button>
             </li>
           ))}
-          {filtered.length === 0 ? <li className="px-2.5 py-2 text-[13px] text-muted-foreground">Không có kết quả phù hợp.</li> : null}
+          {matchedInvestigations.length ? (
+            <li className="px-2.5 pb-1 pt-2 text-[11px] uppercase tracking-wide text-muted-foreground">Cuộc điều tra</li>
+          ) : null}
+          {matchedInvestigations.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => onNavigate(`/app/investigations/${encodeURIComponent(item.id)}`)}
+                className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-2.5 py-2 text-left text-[13px] hover:bg-muted"
+              >
+                <span className="mono text-[12px] text-muted-foreground">{item.id}</span>
+                <span className="min-w-0 truncate text-foreground">
+                  {item.claim.drug || "—"} → {item.claim.adverseEvent || "—"}
+                </span>
+              </button>
+            </li>
+          ))}
+          {filtered.length === 0 && matchedInvestigations.length === 0 ? (
+            <li className="px-2.5 py-2 text-[13px] text-muted-foreground">Không có kết quả phù hợp.</li>
+          ) : null}
         </ul>
       </div>
     </div>

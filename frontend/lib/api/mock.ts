@@ -9,13 +9,29 @@ import {
 } from "@/lib/mock/seed";
 import { assertNoCausalClaim } from "@/lib/guardrails";
 import { validateClaim } from "@/lib/claim-form";
+import { BackendError } from "@/lib/api/errors";
+import { useAppStore } from "@/lib/store/app-store";
 import type { AgentEvent, AgentStep, AuditEntry, EvidenceItem, Gap, Investigation } from "@/lib/types";
 import type {
   CreateInvestigationInput,
   DataSource,
   DossierPayload,
+  DrugLookupDrug,
+  DrugLookupPair,
+  DrugLookupResult,
+  IngestDocumentInput,
+  IngestDocumentResult,
+  IngestionEventRecord,
   InvestigationListResult,
+  RagHit,
+  RagSearchInput,
+  RagSearchResult,
   TimelinePayload,
+  WarehouseDocumentDetail,
+  WarehouseDocumentSummary,
+  WarehouseDocumentsParams,
+  WarehouseDocumentsResult,
+  WarehouseOverview,
 } from "@/lib/api/types";
 
 /** Hash minh hoạ cho hồ sơ ở chế độ dữ liệu mẫu. */
@@ -72,6 +88,156 @@ function toEvents(id: string, steps: AgentStep[]): AgentEvent[] {
     investigationId: id,
     step,
   }));
+}
+
+// ---------------------------------------------------------------------------------------
+// Kho bằng chứng (demo) — dữ liệu nhỏ, dán nhãn rõ là minh hoạ, cùng hình dạng với backend thật.
+// ---------------------------------------------------------------------------------------
+
+const DEMO_WAREHOUSE_TIME = "2026-10-05T09:00:00+00:00";
+const DEMO_WAREHOUSE_SHA = "9f2c1a7d4b8e5f60718293a4b5c6d7e8f9012345678abcdef0123456789abcd";
+
+const DEMO_WAREHOUSE_DRUGS: DrugLookupDrug[] = [
+  { drug_id: "drug:ibuprofen", name: "ibuprofen", ingredient: "ibuprofen", verified: true, aliases: ["brufen", "advil"] },
+  { drug_id: "drug:metformin", name: "metformin", ingredient: "metformin", verified: true, aliases: ["glucophage"] },
+  { drug_id: "drug:lisinopril", name: "lisinopril", ingredient: "lisinopril", verified: true, aliases: [] },
+  { drug_id: "drug:atorvastatin", name: "atorvastatin", ingredient: "atorvastatin", verified: true, aliases: ["lipitor"] },
+  { drug_id: "drug:amoxicillin", name: "amoxicillin", ingredient: "amoxicillin", verified: true, aliases: ["amoxil"] },
+];
+
+const DEMO_WAREHOUSE_PAIRS: DrugLookupPair[] = [
+  { pair_id: "ibuprofen__gastrointestinal-haemorrhage", drug_name: "ibuprofen", event_term: "Gastrointestinal haemorrhage", status: "candidate_not_gold", source: "bundle" },
+  { pair_id: "metformin__diarrhoea", drug_name: "metformin", event_term: "Diarrhoea", status: "candidate_not_gold", source: "bundle" },
+  { pair_id: "lisinopril__cough", drug_name: "lisinopril", event_term: "Cough", status: "candidate_not_gold", source: "bundle" },
+  { pair_id: "atorvastatin__myalgia", drug_name: "atorvastatin", event_term: "Myalgia", status: "candidate_not_gold", source: "bundle" },
+  { pair_id: "amoxicillin__rash", drug_name: "amoxicillin", event_term: "Rash", status: "candidate_not_gold", source: "bundle" },
+];
+
+const DEMO_WAREHOUSE_DOCUMENTS: WarehouseDocumentSummary[] = [
+  { doc_id: "pubmed:39466269:1", source: "pubmed", source_id: "39466269", version: 1, title: "Peptic Ulcer Disease: A Review.", source_url: "https://pubmed.ncbi.nlm.nih.gov/39466269/", quality_status: "keep", quality_flags: ["has_abstract", "has_journal"], pair_id: "ibuprofen__gastrointestinal-haemorrhage", retrieved_at: DEMO_WAREHOUSE_TIME },
+  { doc_id: "pubmed:40915652:1", source: "pubmed", source_id: "40915652", version: 1, title: "Nonsteroidal Anti-Inflammatory Drugs and Risk of Gastrointestinal Bleeding.", source_url: "https://pubmed.ncbi.nlm.nih.gov/40915652/", quality_status: "keep", quality_flags: ["has_abstract"], pair_id: "ibuprofen__gastrointestinal-haemorrhage", retrieved_at: DEMO_WAREHOUSE_TIME },
+  { doc_id: "dailymed:ibuprofen-label:2", source: "dailymed", source_id: "ibuprofen-label", version: 2, title: "IBUPROFEN tablet, film coated", source_url: "https://dailymed.nlm.nih.gov/dailymed/", quality_status: "keep", quality_flags: [], pair_id: "ibuprofen__gastrointestinal-haemorrhage", retrieved_at: DEMO_WAREHOUSE_TIME },
+  { doc_id: "faers:10001234:1", source: "faers", source_id: "10001234", version: 1, title: "FAERS report 10001234 (minh hoạ)", source_url: "", quality_status: "quarantine", quality_flags: ["missing_age"], pair_id: "ibuprofen__gastrointestinal-haemorrhage", retrieved_at: DEMO_WAREHOUSE_TIME },
+  { doc_id: "reference:who-umc-causality:1", source: "reference", source_id: "who-umc-causality", version: 1, title: "WHO-UMC causality assessment", source_url: "", quality_status: "keep", quality_flags: [], pair_id: null, retrieved_at: DEMO_WAREHOUSE_TIME },
+  { doc_id: "pubmed:30000001:1", source: "pubmed", source_id: "30000001", version: 1, title: "Metformin and gastrointestinal intolerance (minh hoạ)", source_url: "https://pubmed.ncbi.nlm.nih.gov/30000001/", quality_status: "keep", quality_flags: ["has_abstract"], pair_id: "metformin__diarrhoea", retrieved_at: DEMO_WAREHOUSE_TIME },
+];
+
+const DEMO_WAREHOUSE_DOCUMENT_TEXTS: Record<string, string> = {
+  "pubmed:39466269:1":
+    "Peptic Ulcer Disease: A Review.\n\nAbstract\nIMPORTANCE: In the US, peptic ulcer disease affects 1% of the population...\n\n(Dữ liệu minh hoạ ở chế độ mock; nội dung thật nằm trong kho Postgres.)",
+  "pubmed:40915652:1":
+    "Nonsteroidal Anti-Inflammatory Drugs and Risk of Gastrointestinal Bleeding: A Systematic Review and Meta-Analysis.\n\nAbstract\nNSAIDs are associated with gastrointestinal bleeding...\n\n(Dữ liệu minh hoạ ở chế độ mock.)",
+  "dailymed:ibuprofen-label:2":
+    "IBUPROFEN tablet, film coated\n\nWARNING: CARDIOVASCULAR AND GASTROINTESTINAL RISK\nGastrointestinal bleeding, ulceration and perforation can occur...\n\n(Dữ liệu minh hoạ ở chế độ mock.)",
+  "faers:10001234:1":
+    "FAERS report 10001234 (minh hoạ)\nReaction: Gastrointestinal haemorrhage\nSuspect drug: ibuprofen\n\nBáo cáo tự nguyện, không có mẫu số.\n\n(Dữ liệu minh hoạ ở chế độ mock.)",
+  "reference:who-umc-causality:1":
+    "WHO-UMC causality assessment\nCertain / Probable / Possible / Unlikely...\n\n(Dữ liệu minh hoạ ở chế độ mock.)",
+  "pubmed:30000001:1":
+    "Metformin and gastrointestinal intolerance (minh hoạ)\n\nAbstract\nDiarrhoea is a common adverse effect of metformin...\n\n(Dữ liệu minh hoạ ở chế độ mock.)",
+};
+
+const DEMO_INGESTION_EVENTS: IngestionEventRecord[] = [
+  {
+    event_id: "elt-demo-all",
+    kind: "elt_run",
+    status: "completed",
+    title: "ELT demo: 5 tài liệu đạt, 1 cách ly (dữ liệu minh hoạ)",
+    detail: { demo: true, by_source: { pubmed: 3, dailymed: 1, faers: 1, reference: 1 } },
+    created_at: DEMO_WAREHOUSE_TIME,
+  },
+];
+
+/** Tài liệu đã nạp trong phiên mock; giữ trong bộ nhớ để bảng sự kiện có phản hồi ngay. */
+const mockIngestedDocuments = new Map<string, { text: string; docId: string }>();
+const mockIngestionEvents: IngestionEventRecord[] = [...DEMO_INGESTION_EVENTS];
+
+function mockDocumentDetail(docId: string): WarehouseDocumentDetail {
+  const summary = DEMO_WAREHOUSE_DOCUMENTS.find((doc) => doc.doc_id === docId);
+  if (!summary) throw new BackendError(404, "not_found", `Không tìm thấy tài liệu ${docId} trong kho minh hoạ.`);
+  const text = DEMO_WAREHOUSE_DOCUMENT_TEXTS[docId] ?? summary.title;
+  return {
+    ...summary,
+    text_sha256: DEMO_WAREHOUSE_SHA,
+    sections: [{ title: text.split("\n")[0] || "Nội dung", start: 0, end: text.length }],
+    text_preview: text.slice(0, 600),
+    ...(summary.source === "pubmed"
+      ? {
+          pubmed: {
+            pmid: summary.source_id,
+            journal: "Tạp chí minh hoạ",
+            publication_date: "2026-01-01",
+            publication_types: ["Journal Article"],
+            doi: [],
+            authors: ["Tác giả minh hoạ"],
+            has_abstract: true,
+          },
+        }
+      : {}),
+  };
+}
+
+function mockWarehouseOverview(): WarehouseOverview {
+  const bySource = new Map<string, { documents: number; latest: string; levels: Record<string, number> }>();
+  for (const doc of DEMO_WAREHOUSE_DOCUMENTS) {
+    const entry = bySource.get(doc.source) ?? { documents: 0, latest: doc.retrieved_at, levels: {} };
+    entry.documents += 1;
+    entry.levels[doc.source === "pubmed" ? "abstract_only" : "reference_material"] =
+      (entry.levels[doc.source === "pubmed" ? "abstract_only" : "reference_material"] ?? 0) + 1;
+    bySource.set(doc.source, entry);
+  }
+  const quality: Record<string, number> = {};
+  for (const doc of DEMO_WAREHOUSE_DOCUMENTS) quality[doc.quality_status] = (quality[doc.quality_status] ?? 0) + 1;
+  return {
+    documents_by_source: [...bySource.entries()].map(([source, entry]) => ({
+      source,
+      documents: entry.documents,
+      latest_retrieved_at: entry.latest,
+      by_content_level: entry.levels,
+    })),
+    documents_by_quality_status: quality,
+    quality_findings: [
+      { check_name: "has_abstract", severity: "info", count: 3 },
+      { check_name: "missing_age", severity: "warn", count: 1 },
+    ],
+    table_counts: { documents: DEMO_WAREHOUSE_DOCUMENTS.length, document_chunks: 42, drugs: DEMO_WAREHOUSE_DRUGS.length, drug_event_pairs: DEMO_WAREHOUSE_PAIRS.length },
+    rag: {
+      collection: "vigilens_docs__mock",
+      chroma_chunks: 42,
+      postgres_chunks: 42,
+      embedding_provider: "mock",
+      embedding_model: "mock-embedding",
+      persist_dir: "./data/chroma",
+    },
+  };
+}
+
+function mockRagHits(input: RagSearchInput): RagHit[] {
+  const k = input.k ?? 5;
+  const words = input.query.toLowerCase().split(/\s+/).filter((word) => word.length > 2);
+  const scored = DEMO_WAREHOUSE_DOCUMENTS.filter((doc) => !input.source || doc.source === input.source)
+    .filter((doc) => !input.pairId || doc.pair_id === input.pairId)
+    .map((doc) => {
+      const haystack = `${doc.title} ${DEMO_WAREHOUSE_DOCUMENT_TEXTS[doc.doc_id] ?? ""}`.toLowerCase();
+      const ratio = words.length ? words.filter((word) => haystack.includes(word)).length / words.length : 0;
+      return { doc, ratio };
+    })
+    .filter((entry) => entry.ratio > 0)
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, k);
+  return scored.map(({ doc, ratio }, index) => {
+    const text = DEMO_WAREHOUSE_DOCUMENT_TEXTS[doc.doc_id] ?? doc.title;
+    return {
+      chunk_id: `${doc.doc_id}#${String(index).padStart(4, "0")}`,
+      score: Math.round(Math.min(0.95, 0.4 + 0.55 * ratio) * 1000) / 1000,
+      text: text.slice(0, 400),
+      ordinal: index,
+      char_start: 0,
+      char_end: Math.min(text.length, 400),
+      in_postgres: true,
+      document: doc,
+    };
+  });
 }
 
 export function createMockSource(): DataSource {
@@ -298,6 +464,116 @@ export function createMockSource(): DataSource {
         };
       }
       return { ok: true, markdown: DEMO_DOSSIER_MD.replaceAll("INV-0001", id) };
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Kho bằng chứng (demo)
+    // -----------------------------------------------------------------------------------
+
+    async lookupDrug(name: string): Promise<DrugLookupResult> {
+      await delay(120, 320);
+      const query = name.trim().toLowerCase();
+      const drugs = DEMO_WAREHOUSE_DRUGS.filter(
+        (drug) =>
+          drug.name.toLowerCase().includes(query) ||
+          drug.ingredient.toLowerCase().includes(query) ||
+          drug.aliases.some((alias) => alias.toLowerCase().includes(query)),
+      );
+      const names = new Set(drugs.map((drug) => drug.name));
+      const pairs = DEMO_WAREHOUSE_PAIRS.filter((pair) => names.has(pair.drug_name));
+      const documents: Record<string, number> = {};
+      for (const doc of DEMO_WAREHOUSE_DOCUMENTS) {
+        if (doc.pair_id && pairs.some((pair) => pair.pair_id === doc.pair_id)) {
+          documents[doc.source] = (documents[doc.source] ?? 0) + 1;
+        }
+      }
+      return {
+        query: name,
+        matched: drugs.length > 0,
+        origin: drugs.length > 0 ? "warehouse" : "dictionary",
+        drugs,
+        pairs,
+        documents,
+      };
+    },
+
+    async warehouseOverview(): Promise<WarehouseOverview> {
+      await delay(120, 320);
+      return structuredClone(mockWarehouseOverview());
+    },
+
+    async warehouseDocuments(params: WarehouseDocumentsParams = {}): Promise<WarehouseDocumentsResult> {
+      await delay(120, 320);
+      const filtered = DEMO_WAREHOUSE_DOCUMENTS.filter(
+        (doc) =>
+          (!params.source || doc.source === params.source) &&
+          (!params.pairId || doc.pair_id === params.pairId) &&
+          (!params.qualityStatus || doc.quality_status === params.qualityStatus),
+      );
+      const documents = params.limit != null ? filtered.slice(0, params.limit) : filtered;
+      return { documents: structuredClone(documents), count: documents.length };
+    },
+
+    async warehouseDocument(docId: string): Promise<WarehouseDocumentDetail> {
+      await delay(120, 320);
+      const detail = mockDocumentDetail(docId);
+      const ingested = mockIngestedDocuments.get(docId);
+      if (ingested) detail.text_preview = ingested.text.slice(0, 600);
+      return structuredClone(detail);
+    },
+
+    async ragSearch(input: RagSearchInput): Promise<RagSearchResult> {
+      await delay(120, 320);
+      return {
+        query: input.query,
+        k: input.k ?? 5,
+        embedding_model: "mock-embedding",
+        hits: mockRagHits(input),
+      };
+    },
+
+    async ingestionEvents(): Promise<{ events: IngestionEventRecord[]; count: number }> {
+      await delay(120, 320);
+      const events = [...mockIngestionEvents].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+      return { events: structuredClone(events), count: events.length };
+    },
+
+    async ingestDocument(input: IngestDocumentInput): Promise<IngestDocumentResult> {
+      await delay();
+      const role = useAppStore.getState().role;
+      if (role !== "reviewer" && role !== "admin") {
+        throw new BackendError(403, "forbidden", "Chỉ vai trò dược sĩ duyệt hoặc quản trị được nạp tài liệu.");
+      }
+      if (!input.title.trim() || input.text.trim().length < 40 || input.text.length > 200_000 || input.version < 1) {
+        throw new BackendError(422, "invalid_request", "Dữ liệu chưa hợp lệ: cần tiêu đề, phiên bản ≥ 1 và văn bản 40..200.000 ký tự.");
+      }
+      const key = `${input.source}:${input.source_id}:${input.version}`;
+      const previous = mockIngestedDocuments.get(key);
+      if (previous && previous.text !== input.text) {
+        throw new BackendError(409, "INGEST_CONFLICT", "Cùng mã nguồn và phiên bản đã tồn tại với nội dung khác. Tạo phiên bản mới.");
+      }
+      const docId = `${input.source}:${input.source_id}:${input.version}`;
+      mockIngestedDocuments.set(key, { text: input.text, docId });
+      const created = !previous;
+      const event: IngestionEventRecord = {
+        event_id: `ingest-demo-${mockIngestionEvents.length + 1}`,
+        kind: "document_ingest",
+        status: "completed",
+        title: `Nạp ${docId} (dữ liệu minh hoạ)`,
+        detail: { doc_id: docId, created, quality_status: "keep" },
+        created_at: new Date().toISOString(),
+      };
+      mockIngestionEvents.unshift(event);
+      return {
+        doc_id: docId,
+        created,
+        sha256: DEMO_WAREHOUSE_SHA,
+        text_chars: input.text.length,
+        quality_status: "keep",
+        quality_flags: [],
+        rag: { indexed: true, chunks_written: 3, documents_indexed: 1, collection: "vigilens_docs__mock", embedding_model: "mock-embedding" },
+        event_id: event.event_id,
+      };
     },
   };
 }

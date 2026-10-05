@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { PageHeader, Prose, Section } from "@/components/public/sections";
 
 export const metadata = { title: "Tài liệu kỹ thuật" };
+
+/** Gốc API lấy từ biến môi trường máy chủ; ví dụ curl không hard-code cổng cố định. */
+const API_BASE = process.env.VIGILENS_API_BASE ?? "http://127.0.0.1:8000";
 
 const SECTIONS = [
   { href: "/docs", label: "Tổng quan" },
@@ -16,17 +20,17 @@ const CONTENT: Record<string, { title: string; paragraphs: string[]; code?: stri
     title: "Tổng quan",
     paragraphs: [
       "Backend FastAPI cung cấp các endpoint điều tra, bằng chứng, hồ sơ và duyệt. Giao diện này gọi các endpoint đó khi chạy ở chế độ backend thật.",
-      "Đặt NEXT_PUBLIC_VIGILENS_DATA_MODE=api và VIGILENS_API_BASE trỏ tới máy chủ. Token vai trò chỉ nằm ở biến môi trường phía máy chủ; trình duyệt gọi cùng gốc /api/backend/*.",
+      "Đặt NEXT_PUBLIC_VIGILENS_DATA_MODE=api và VIGILENS_API_BASE trỏ tới máy chủ. Trình duyệt gọi cùng gốc /api/backend/*; token vai trò nằm ở biến môi trường phía máy chủ. Backend cũng nhận phiên đăng nhập qua POST /api/v1/auth/login.",
     ],
-    code: "curl -H 'X-API-Token: <token>' http://127.0.0.1:8000/api/v1/investigations",
+    code: `curl -H 'X-API-Token: <token>' ${API_BASE}/api/v1/investigations`,
   },
   api: {
     title: "API điều tra",
     paragraphs: [
       "Tạo cuộc điều tra trả về 202 kèm mã ca. Chạy lại một cuộc điều tra đang bận trả về 429; gửi cùng Idempotency-Key chỉ tạo một job.",
-      "Danh sách, chi tiết, sự kiện, bằng chứng và tài liệu đều nằm dưới /api/v1/investigations.",
+      "Danh sách, chi tiết, sự kiện, bằng chứng và tài liệu đều nằm dưới /api/v1/investigations. Hủy một cuộc điều tra bằng POST /api/v1/investigations/{id}/cancel; thao tác được ghi vào nhật ký kiểm toán.",
     ],
-    code: "POST /api/v1/investigations\nGET  /api/v1/investigations/{id}/events?after_id=0",
+    code: "POST /api/v1/investigations\nGET  /api/v1/investigations/{id}/events?after_id=0\nPOST /api/v1/investigations/{id}/cancel",
   },
   review: {
     title: "Luồng duyệt",
@@ -48,7 +52,8 @@ const CONTENT: Record<string, { title: string; paragraphs: string[]; code?: stri
     title: "Giới hạn & ngân sách",
     paragraphs: [
       "Ngân sách bước, tài liệu, lượt gọi model và token đều bị chặn ở phía máy chủ. Hết ngân sách thì hệ thống không gọi model nữa.",
-      "Bản MVP chưa có endpoint hủy cuộc điều tra và chưa có xác thực theo tài khoản.",
+      "Xác thực dùng token vai trò (X-API-Token) hoặc phiên đăng nhập qua POST /api/v1/auth/login; vai trò quyết định quyền duyệt hồ sơ và quyền nạp tài liệu vào kho.",
+      "Cuộc điều tra đang chạy có thể hủy bằng POST /api/v1/investigations/{id}/cancel.",
     ],
   },
 };
@@ -56,7 +61,9 @@ const CONTENT: Record<string, { title: string; paragraphs: string[]; code?: stri
 export default async function DocsPage({ params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params;
   const key = slug?.[0] ?? "";
-  const page = CONTENT[key] ?? CONTENT[""];
+  // Slug lạ phải trả 404 thay vì lặng lẽ hiển thị trang tổng quan.
+  if (slug && (slug.length > 1 || !(key in CONTENT))) notFound();
+  const page = CONTENT[key];
 
   return (
     <>

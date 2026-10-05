@@ -1,5 +1,17 @@
 import type { AgentStep, AuditEntry, Cov, CoverageField, EvidenceItem, Gap, Investigation, ReviewAction, SourceId } from "@/lib/types";
 import type { CreateInvestigationInput, DataSource, DossierPayload, TimelinePayload } from "@/lib/api/types";
+import type {
+  DrugLookupResult,
+  IngestDocumentInput,
+  IngestDocumentResult,
+  IngestionEventsResult,
+  RagSearchInput,
+  RagSearchResult,
+  WarehouseDocumentDetail,
+  WarehouseDocumentsParams,
+  WarehouseDocumentsResult,
+  WarehouseOverview,
+} from "@/lib/api/types";
 import { useAppStore } from "@/lib/store/app-store";
 import { BackendError, responseError } from "@/lib/api/errors";
 import { evidenceDetails } from "@/lib/api/evidence-details";
@@ -606,6 +618,69 @@ export function createApiSource(): DataSource {
       } catch (error) {
         return { ok: false, code: "network_error", message: (error as Error).message };
       }
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Kho bằng chứng (ELT + Postgres + ChromaDB)
+    // -----------------------------------------------------------------------------------
+
+    async lookupDrug(name: string) {
+      return request<DrugLookupResult>(`/api/v1/drugs/lookup?name=${encodeURIComponent(name)}`);
+    },
+
+    async warehouseOverview() {
+      return request<WarehouseOverview>("/api/v1/warehouse/overview");
+    },
+
+    async warehouseDocuments(params: WarehouseDocumentsParams = {}) {
+      const query = new URLSearchParams();
+      if (params.source) query.set("source", params.source);
+      if (params.pairId) query.set("pair_id", params.pairId);
+      if (params.qualityStatus) query.set("quality_status", params.qualityStatus);
+      if (params.limit != null) query.set("limit", String(params.limit));
+      const suffix = query.toString() ? `?${query.toString()}` : "";
+      return request<WarehouseDocumentsResult>(`/api/v1/warehouse/documents${suffix}`);
+    },
+
+    async warehouseDocument(docId: string, previewChars?: number) {
+      // `doc_id` chứa dấu hai chấm (ví dụ `pubmed:39466269:1`) nên phải mã hoá cả đoạn đường dẫn.
+      const suffix = previewChars != null ? `?preview_chars=${previewChars}` : "";
+      return request<WarehouseDocumentDetail>(
+        `/api/v1/warehouse/documents/${encodeURIComponent(docId)}${suffix}`,
+      );
+    },
+
+    async ragSearch(input: RagSearchInput) {
+      return request<RagSearchResult>("/api/v1/rag/search", {
+        method: "POST",
+        body: {
+          query: input.query,
+          ...(input.k != null ? { k: input.k } : {}),
+          ...(input.source ? { source: input.source } : {}),
+          ...(input.pairId ? { pair_id: input.pairId } : {}),
+        },
+      });
+    },
+
+    async ingestionEvents(limit?: number) {
+      const suffix = limit != null ? `?limit=${limit}` : "";
+      return request<IngestionEventsResult>(`/api/v1/ingestion/events${suffix}`, { role: "reviewer" });
+    },
+
+    async ingestDocument(input: IngestDocumentInput) {
+      return request<IngestDocumentResult>("/api/v1/ingestion/documents", {
+        method: "POST",
+        role: "reviewer",
+        body: {
+          source: input.source,
+          source_id: input.source_id,
+          version: input.version,
+          title: input.title,
+          text: input.text,
+          source_url: input.source_url || undefined,
+          metadata: input.metadata,
+        },
+      });
     },
   };
 }

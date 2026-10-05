@@ -6,6 +6,7 @@ import { Card, CardBody, EmptyState, Input, Select } from "@/components/ui";
 import { HashChip, SourceChip } from "@/components/pv/badges";
 import { useEvidence, useInvestigations, useTimeline } from "@/lib/hooks/use-data";
 import { getDataSource } from "@/lib/api";
+import { safeSourceUrl } from "@/lib/evidence-view";
 import { useQuery } from "@tanstack/react-query";
 import { formatDateTime } from "@/lib/utils";
 import type { DocumentRecord, SourceId } from "@/lib/types";
@@ -85,27 +86,31 @@ export default function LibraryPage() {
         />
       ) : (
         <ul className="space-y-2">
-          {filtered.map((document) => (
-            <li key={document.id} className="rounded-[var(--radius-card)] border border-border bg-card px-4 py-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <SourceChip source={document.source} />
-                <span className="mono text-[12px] text-muted-foreground">{document.id}</span>
-                <span className="ml-auto text-[12px] text-muted-foreground">{formatDateTime(document.retrievedAt)}</span>
-              </div>
-              <p className="mt-1.5 flex items-center gap-2 text-[14px] text-foreground">
-                <FileText className="h-3.5 w-3.5 text-muted-foreground" aria-hidden /> {document.title}
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
-                <span className="mono">{document.url ?? document.id}</span>
-                <HashChip hash={document.sha256} status={document.hashStatus} />
-                {document.url ? (
-                  <a href={document.url} target="_blank" rel="noreferrer" className="underline">
-                    Mở nguồn gốc
-                  </a>
-                ) : null}
-              </div>
-            </li>
-          ))}
+          {filtered.map((document) => {
+            // Chỉ hiển thị và mở URL nguồn khi vượt qua bộ lọc an toàn (https + tên miền nguồn đã biết).
+            const safeUrl = safeSourceUrl(document.url);
+            return (
+              <li key={document.id} className="rounded-[var(--radius-card)] border border-border bg-card px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <SourceChip source={document.source} />
+                  <span className="mono text-[12px] text-muted-foreground">{document.id}</span>
+                  <span className="ml-auto text-[12px] text-muted-foreground">{formatDateTime(document.retrievedAt)}</span>
+                </div>
+                <p className="mt-1.5 flex items-center gap-2 text-[14px] text-foreground">
+                  <FileText className="h-3.5 w-3.5 text-muted-foreground" aria-hidden /> {document.title}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+                  <span className="mono">{safeUrl ?? document.id}</span>
+                  <HashChip hash={document.sha256} status={document.hashStatus} />
+                  {safeUrl ? (
+                    <a href={safeUrl} target="_blank" rel="noreferrer" className="underline">
+                      Mở nguồn gốc
+                    </a>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

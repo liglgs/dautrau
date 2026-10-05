@@ -5,8 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDateTime(iso: string) {
+/** Định dạng ngày giờ; trả về gạch ngang khi backend không trả mốc thời gian (không làm vỡ trang). */
+export function formatDateTime(iso?: string | null) {
+  if (!iso) return "—";
   const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("vi-VN", {
     dateStyle: "short",
     timeStyle: "short",

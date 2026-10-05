@@ -17,6 +17,19 @@ export default function AuditTabPage() {
 
   const entries = (data ?? []).filter((entry) => (onlyHuman ? entry.actor.kind === "human" : true));
 
+  /** Kết xuất JSONL phía máy khách: mỗi dòng một bản ghi của nhật ký đang hiển thị. */
+  const exportJsonl = () => {
+    if (!entries.length) return;
+    const jsonl = `${entries.map((entry) => JSON.stringify(entry)).join("\n")}\n`;
+    const blob = new Blob([jsonl], { type: "application/x-ndjson;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${id}-audit.jsonl`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
       <CardBody className="space-y-3">
@@ -29,7 +42,13 @@ export default function AuditTabPage() {
             <Button variant="ghost" size="sm" onClick={() => setOnlyHuman((value) => !value)}>
               {onlyHuman ? "Hiện tất cả" : "Chỉ thao tác người"}
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportJsonl}
+              disabled={entries.length === 0}
+              title="Tải nhật ký đang hiển thị dưới dạng JSONL"
+            >
               <Download className="h-3.5 w-3.5" aria-hidden /> Kết xuất JSONL
             </Button>
           </div>
