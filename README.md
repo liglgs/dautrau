@@ -115,6 +115,13 @@ Tùy chọn: `--offline` (không dùng mạng), `--live` (tải thêm từ API n
 Kiểm tra lại bất cứ lúc nào bằng `make elt-check`; mô tả dữ liệu nằm trong `docs/data/`;
 tiến độ từng task của vòng hai nằm trong `docs/phan-cong-vong-2/TIEN_DO_THUC_THI.md`.
 
+**Khi hết hạn mức nhúng vector:** bước dựng chỉ mục cần khoá Gemini (8 khoá luân phiên).
+Nếu tất cả khoá đều trả HTTP 429, đặt `RAG_EMBEDDING_PROVIDER=hash` trong `.env` rồi chạy lại
+`./scripts/setup_elt.sh --skip-install`. Chế độ `hash` chạy cục bộ, không cần mạng — chỉ để kiểm tra
+đường ống (kho PostgreSQL, ChromaDB, số đoạn khớp nhau); chất lượng ngữ nghĩa thấp hơn Gemini.
+Chỉ mục sinh bằng `hash` nằm ở bộ sưu tập khác, nên muốn quay lại Gemini thì chạy lại với
+`--reset` (hoặc `python -m scripts.elt.load_chroma --reset-index`).
+
 Các lệnh tiện dụng: `make db-up`, `make db-down`, `make elt-run`, `make elt-docs`, `make dev-api`, `make dev-web`.
 
 ---

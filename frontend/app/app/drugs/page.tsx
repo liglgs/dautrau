@@ -4,6 +4,7 @@ import * as React from "react";
 import { BookOpen, Info, Library, Search } from "lucide-react";
 import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Skeleton, Textarea } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
+import { WarehouseQualityFlagChips } from "@/components/pv/warehouse";
 import { WarehouseDocumentBody, WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
 import { useDrugLookup, useRagSearch, useWarehouseDocument } from "@/lib/hooks/use-data";
 import { formatDateTime } from "@/lib/utils";
@@ -250,6 +251,7 @@ export default function DrugLookupPage() {
                       <ScoreChip score={hit.score} />
                       <WarehouseSourceChip source={hit.document.source} />
                       <Chip tone={hit.document.quality_status === "keep" ? "support" : "caution"}>{hit.document.quality_status}</Chip>
+                      <WarehouseQualityFlagChips flags={hit.document.quality_flags} />
                       <span className="mono text-[11px] text-muted-foreground">{hit.chunk_id}</span>
                       {!hit.in_postgres ? <Chip tone="caution">chỉ có trong Chroma</Chip> : null}
                       {hit.document.retrieved_at ? (

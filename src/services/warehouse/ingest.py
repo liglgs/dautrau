@@ -41,6 +41,12 @@ MIN_TEXT_CHARS = 40
 MAX_TEXT_CHARS = 200_000
 
 
+def _ingest_event_pattern(doc_id: str) -> str:
+    """Mẫu LIKE cho sự kiện nạp của một tài liệu, đã thoát ký tự đại diện."""
+    escaped = doc_id.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"ingest-{escaped}-%"
+
+
 def delete_document(engine: Engine, doc_id: str) -> bool:
     """Xoá một tài liệu và mọi bản ghi con (thứ tự an toàn cho khoá ngoại).
 
@@ -58,8 +64,12 @@ def delete_document(engine: Engine, doc_id: str) -> bool:
             session.execute(table.__table__.delete().where(table.doc_id == doc_id))
         session.execute(QualityFinding.__table__.delete().where(QualityFinding.doc_id == doc_id))
         # Sự kiện nạp của chính tài liệu này (mã dạng ``ingest-{doc_id}-{digest}``).
+        # `doc_id` có thể chứa `_` hoặc `%` — ký tự đại diện của LIKE — nên phải thoát
+        # để không xoá nhầm sự kiện của tài liệu khác.
         session.execute(
-            IngestionEvent.__table__.delete().where(IngestionEvent.event_id.startswith(f"ingest-{doc_id}-"))
+            IngestionEvent.__table__.delete().where(
+                IngestionEvent.event_id.like(_ingest_event_pattern(doc_id), escape="\\")
+            )
         )
         session.execute(Document.__table__.delete().where(Document.doc_id == doc_id))
     return True

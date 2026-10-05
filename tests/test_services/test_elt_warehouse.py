@@ -160,6 +160,27 @@ def test_ingest_document_conflict_and_validation(warehouse) -> None:
     assert table_counts(engine)["documents"] == 0
 
 
+def test_delete_document_does_not_touch_other_documents_events(warehouse) -> None:
+    """Mã tài liệu chứa `_`/`%` không được xoá nhầm sự kiện nạp của tài liệu khác."""
+    from src.services.warehouse.queries import ingestion_events
+
+    engine, settings = warehouse
+    for source_id in ("a_b", "axb"):
+        ingest_document(
+            engine, source="manual", source_id=source_id, version=1, title=f"Tài liệu {source_id}",
+            text="Nội dung đủ dài cho một tài liệu nạp tay dùng để kiểm thử dọn sự kiện.", settings=settings,
+        )
+    before = {event["event_id"] for event in ingestion_events(engine)}
+    assert any(event.startswith("ingest-manual:a_b:1-") for event in before)
+    assert any(event.startswith("ingest-manual:axb:1-") for event in before)
+
+    assert delete_document(engine, "manual:a_b:1") is True
+
+    after = {event["event_id"] for event in ingestion_events(engine)}
+    assert not any(event.startswith("ingest-manual:a_b:1-") for event in after)
+    assert any(event.startswith("ingest-manual:axb:1-") for event in after), "sự kiện của tài liệu khác phải còn nguyên"
+
+
 def test_purge_document_removes_postgres_rows_and_chunks(warehouse) -> None:
     engine, settings = warehouse
     ingest_document(
@@ -236,6 +257,38 @@ def test_rejected_document_never_reaches_the_warehouse(warehouse) -> None:
     assert document_detail(engine, "pubmed:2:1") is None
     assert table_counts(engine)["documents"] == 1
     assert warehouse_overview(engine)["documents_by_quality_status"] == {"keep": 1}
+
+
+def test_document_that_becomes_rejected_is_removed_from_warehouse_and_index(warehouse) -> None:
+    """Tài liệu đạt ở lần chạy trước, bị `reject` ở lần sau thì phải rời cả hai kho."""
+    engine, settings = warehouse
+    long_text = "Bằng chứng về ibuprofen và xuất huyết tiêu hoá ở người lớn. " * 20
+    first_run = [_doc("pubmed:1:1", "pubmed", long_text)]
+    keep, _, _ = apply_gates(first_run)
+    assert len(keep) == 1
+    load_documents(engine, "run-a", keep, verdicts_of(keep))
+    build_index(engine, run_id="run-a", settings=settings)
+    assert search(engine, "ibuprofen xuất huyết", k=5, settings=settings)["hits"]
+
+    # Lần chạy sau: cùng doc_id nhưng văn bản co xuống dưới ngưỡng → bị `reject`.
+    short = _doc("pubmed:1:1", "pubmed", "x")
+    keep_b, _, rejected_b = apply_gates([short])
+    assert [doc.doc_id for doc in rejected_b] == ["pubmed:1:1"]
+
+    result = load_documents(engine, "run-b", [*keep_b, *rejected_b], verdicts_of([short]))
+    assert result["skipped_rejected"] == 1
+    assert result["removed_rejected"] == 1
+
+    assert list_documents(engine) == []
+    assert document_detail(engine, "pubmed:1:1") is None
+    assert table_counts(engine)["documents"] == 0
+    # Bước dọn của chỉ mục xoá nốt đoạn cũ trong Chroma.
+    rebuilt = build_index(engine, run_id="run-b", settings=settings)
+    assert rebuilt["documents"] == 0
+    assert rebuilt["pruned_documents"] == 1
+    assert search(engine, "ibuprofen xuất huyết", k=5, settings=settings)["hits"] == []
+    stats = index_stats(engine, settings)
+    assert stats["chroma_chunks"] == stats["postgres_chunks"] == 0
 
 
 def test_reindex_drops_chunks_of_documents_that_left_the_index(warehouse) -> None:

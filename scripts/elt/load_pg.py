@@ -13,6 +13,7 @@ from scripts.elt.quality import DocVerdict, Finding
 from src.services.warehouse.models import (
     DailymedLabel,
     Document,
+    DocumentChunk,
     DocumentSection,
     Drug,
     DrugEventPair,
@@ -74,6 +75,32 @@ def load_pairs(engine: Engine, spec: dict, *, status: str = "candidate_not_gold"
     return count
 
 
+def _delete_child_rows(conn, doc_id: str) -> None:
+    """Xoá các bảng con gắn với một tài liệu (không gồm đoạn vector và phát hiện chất lượng)."""
+    conn.execute(delete(DocumentSection).where(DocumentSection.doc_id == doc_id))
+    conn.execute(delete(PubmedRecord).where(PubmedRecord.doc_id == doc_id))
+    conn.execute(delete(DailymedLabel).where(DailymedLabel.doc_id == doc_id))
+    conn.execute(delete(FaersReportDrug).where(FaersReportDrug.doc_id == doc_id))
+    conn.execute(delete(FaersReportReaction).where(FaersReportReaction.doc_id == doc_id))
+    conn.execute(delete(FaersReport).where(FaersReport.doc_id == doc_id))
+
+
+def _delete_document_rows(conn, doc_id: str, run_id: str | None = None) -> None:
+    """Xoá một tài liệu và mọi bản ghi con (thứ tự an toàn cho khoá ngoại).
+
+    ``run_id`` chỉ giới hạn phạm vi xoá ``quality_findings``: phát hiện của lần chạy
+    hiện tại bị bỏ đi cùng tài liệu, còn phát hiện của các lần chạy trước giữ nguyên
+    để không mất dấu vết kiểm toán.
+    """
+    _delete_child_rows(conn, doc_id)
+    conn.execute(delete(DocumentChunk).where(DocumentChunk.doc_id == doc_id))
+    findings = delete(QualityFinding).where(QualityFinding.doc_id == doc_id)
+    if run_id is not None:
+        findings = findings.where(QualityFinding.run_id == run_id)
+    conn.execute(findings)
+    conn.execute(delete(Document).where(Document.doc_id == doc_id))
+
+
 def load_documents(
     engine: Engine,
     run_id: str,
@@ -83,6 +110,7 @@ def load_documents(
     inserted = updated = 0
     changed: list[str] = []
     skipped_rejected = 0
+    removed_rejected = 0
     with engine.begin() as conn:
         for doc in documents:
             verdict = verdicts.get(doc.doc_id)
@@ -90,7 +118,15 @@ def load_documents(
             flags = list(verdict.flags) if verdict else []
             if decision == "reject":
                 # Hợp đồng cổng chất lượng: bản ghi bị loại không vào kho (xem docs/data/cong-chat-luong.md).
+                # Tài liệu đã nằm trong kho từ lần chạy trước (ví dụ bài bị gỡ, hoặc văn bản co
+                # xuống dưới ngưỡng) cũng phải bị xoá, nếu không nó vẫn trả về qua RAG.
                 skipped_rejected += 1
+                exists = conn.execute(
+                    select(Document.doc_id).where(Document.doc_id == doc.doc_id)
+                ).scalar_one_or_none()
+                if exists is not None:
+                    _delete_document_rows(conn, doc.doc_id, run_id=run_id)
+                    removed_rejected += 1
                 continue
             values = {
                 "doc_id": doc.doc_id,
@@ -120,12 +156,8 @@ def load_documents(
                     changed.append(doc.doc_id)
                 conn.execute(Document.__table__.update().where(Document.doc_id == doc.doc_id).values(**values))
                 updated += 1
-                conn.execute(delete(DocumentSection).where(DocumentSection.doc_id == doc.doc_id))
-                conn.execute(delete(PubmedRecord).where(PubmedRecord.doc_id == doc.doc_id))
-                conn.execute(delete(DailymedLabel).where(DailymedLabel.doc_id == doc.doc_id))
-                conn.execute(delete(FaersReportDrug).where(FaersReportDrug.doc_id == doc.doc_id))
-                conn.execute(delete(FaersReportReaction).where(FaersReportReaction.doc_id == doc.doc_id))
-                conn.execute(delete(FaersReport).where(FaersReport.doc_id == doc.doc_id))
+                # Xoá bản ghi con trước khi ghi lại (không xoá bản ghi chính vì đang cập nhật tại chỗ).
+                _delete_child_rows(conn, doc.doc_id)
             for ordinal, section in enumerate(doc.sections):
                 conn.execute(DocumentSection.__table__.insert().values(
                     doc_id=doc.doc_id, ordinal=ordinal, title=str(section.get("title", ""))[:300],
@@ -133,7 +165,7 @@ def load_documents(
                 ))
             _load_source_row(conn, doc)
     return {"inserted": inserted, "updated": updated, "content_changed": changed,
-            "skipped_rejected": skipped_rejected}
+            "skipped_rejected": skipped_rejected, "removed_rejected": removed_rejected}
 
 
 def _load_source_row(conn, doc: ParsedDocument) -> None:

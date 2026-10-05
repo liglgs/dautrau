@@ -16,6 +16,50 @@ export function isWarehouseUnavailable(error: unknown) {
   return err?.status === 503 || err?.code === "WAREHOUSE_UNAVAILABLE";
 }
 
+/** Nhãn tiếng Việt cho các cờ chất lượng của kho; cờ lạ hiển thị nguyên mã. */
+export const WAREHOUSE_FLAG_LABEL: Record<string, string> = {
+  manual_entry_not_verified_with_source: "nạp tay, chưa đối chiếu nguồn gốc",
+  no_abstract: "thiếu tóm tắt",
+  missing_drug_start_date: "thiếu ngày bắt đầu dùng thuốc",
+  missing_drug_route: "thiếu đường dùng",
+  suspicion_not_causality: "chỉ là nghi ngờ, không phải quan hệ nhân quả",
+  multi_drug_report: "báo cáo có nhiều thuốc",
+  multiple_actives: "nhiều hoạt chất",
+  non_oral_route: "không dùng đường uống",
+};
+
+export function warehouseFlagLabel(flag: string) {
+  return WAREHOUSE_FLAG_LABEL[flag] ?? flag;
+}
+
+/**
+ * Chip cảnh báo cho các cờ chất lượng của tài liệu. Dùng ở mọi nơi hiển thị nhãn
+ * nguồn, để tài liệu nạp tay không trông giống bằng chứng gốc.
+ */
+export function WarehouseQualityFlagChips({
+  flags,
+  max = 2,
+  className,
+}: {
+  flags?: string[] | null;
+  max?: number;
+  className?: string;
+}) {
+  if (!flags?.length) return null;
+  const shown = flags.slice(0, max);
+  const rest = flags.length - shown.length;
+  return (
+    <>
+      {shown.map((flag) => (
+        <Chip key={flag} tone="caution" className={className}>
+          {warehouseFlagLabel(flag)}
+        </Chip>
+      ))}
+      {rest > 0 ? <Chip tone="neutral" className={className}>+{rest} cờ khác</Chip> : null}
+    </>
+  );
+}
+
 /** Cảnh báo dùng chung khi kho chưa sẵn sàng (backend 503). */
 export function WarehouseUnavailableAlert({ error }: { error: unknown }) {
   return (
@@ -56,7 +100,9 @@ export function WarehouseDocumentBody({
         <HashChip hash={detail.text_sha256} />
       </p>
       {detail.quality_flags.length ? (
-        <p className="text-[12px] text-muted-foreground">Cờ chất lượng: {detail.quality_flags.join(", ")}</p>
+        <p className="text-[12px] text-muted-foreground">
+          Cờ chất lượng: {detail.quality_flags.map((flag) => `${warehouseFlagLabel(flag)} (${flag})`).join(", ")}
+        </p>
       ) : null}
       {detail.sections.length ? (
         <div>
