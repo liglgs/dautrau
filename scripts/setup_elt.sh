@@ -96,9 +96,18 @@ fi
 # 3. PostgreSQL
 # ---------------------------------------------------------------------------
 log "Bước 3/6: PostgreSQL (docker compose -f docker-compose.elt.yml)"
+DB_CONTAINER="vigilens-elt-db"
 if command -v docker >/dev/null 2>&1; then
   if docker info >/dev/null 2>&1; then
-    docker compose -f docker-compose.elt.yml up -d --wait
+    if docker ps --format '{{.Names}}' | grep -qx "$DB_CONTAINER"; then
+      echo "Container $DB_CONTAINER đang chạy — bỏ qua docker compose."
+    elif docker compose -f docker-compose.elt.yml up -d --wait; then
+      echo "Đã dựng PostgreSQL bằng docker compose."
+    else
+      warn "docker compose không dựng được PostgreSQL (có thể do cổng 5433 đã bị chiếm"
+      warn "bởi một container cùng tên từ thư mục khác). Vẫn tiếp tục các bước sau."
+      warn "Kiểm tra: docker compose -f docker-compose.elt.yml up -d --wait"
+    fi
   else
     warn "Docker chưa chạy hoặc không có quyền. Bỏ qua bước dựng PostgreSQL."
     warn "Chạy lại: docker compose -f docker-compose.elt.yml up -d --wait"
