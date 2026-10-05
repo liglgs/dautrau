@@ -1,32 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Info, Library, Search, ShieldAlert } from "lucide-react";
+import { BookOpen, Info, Library, Search } from "lucide-react";
 import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Skeleton, Textarea } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
+import { WarehouseDocumentBody, WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
 import { useDrugLookup, useRagSearch, useWarehouseDocument } from "@/lib/hooks/use-data";
-import type { BackendError } from "@/lib/api/errors";
-import { cn, formatDateTime } from "@/lib/utils";
-import { safeSourceUrl } from "@/lib/evidence-view";
-
-/** Lệnh dựng kho ELT khi backend trả 503 WAREHOUSE_UNAVAILABLE. */
-const DOCKER_COMMAND = "docker compose -f docker-compose.elt.yml up -d --wait";
-
-function isWarehouseUnavailable(error: unknown) {
-  const err = error as Partial<BackendError> | null | undefined;
-  return err?.status === 503 || err?.code === "WAREHOUSE_UNAVAILABLE";
-}
-
-function WarehouseUnavailable({ error }: { error: unknown }) {
-  return (
-    <Alert tone="caution" title="Kho bằng chứng chưa sẵn sàng" icon={<ShieldAlert className="h-4 w-4" aria-hidden />}>
-      <p>{(error as Error | null)?.message}</p>
-      <p className="mt-1">
-        Khởi động kho rồi thử lại: <code className="mono rounded bg-muted px-1.5 py-0.5 text-[12px]">{DOCKER_COMMAND}</code>
-      </p>
-    </Alert>
-  );
-}
+import { formatDateTime } from "@/lib/utils";
 
 function ScoreChip({ score }: { score: number }) {
   const tone = score >= 0.75 ? "support" : score >= 0.5 ? "ai" : "neutral";
@@ -51,49 +31,12 @@ function DocumentDetailPanel({ docId, onClose }: { docId: string; onClose: () =>
         {detail.isLoading ? <Skeleton className="h-24 w-full" /> : null}
         {detail.error ? (
           isWarehouseUnavailable(detail.error) ? (
-            <WarehouseUnavailable error={detail.error} />
+            <WarehouseUnavailableAlert error={detail.error} />
           ) : (
             <p className="text-contradict-fg">Không tải được tài liệu: {(detail.error as Error).message}</p>
           )
         ) : null}
-        {detail.data ? (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <WarehouseSourceChip source={detail.data.source} />
-              <Chip tone={detail.data.quality_status === "keep" ? "support" : "caution"}>{detail.data.quality_status}</Chip>
-              <Chip tone="neutral">v{detail.data.version}</Chip>
-              {detail.data.pair_id ? <Chip tone="scope">{detail.data.pair_id}</Chip> : null}
-            </div>
-            <p className="text-[14px] font-medium text-foreground">{detail.data.title}</p>
-            <p className="mono break-all text-[11px] text-muted-foreground">sha256: {detail.data.text_sha256}</p>
-            {detail.data.quality_flags.length ? (
-              <p className="text-[12px] text-muted-foreground">Cờ chất lượng: {detail.data.quality_flags.join(", ")}</p>
-            ) : null}
-            {detail.data.sections.length ? (
-              <div>
-                <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Mục nội dung</p>
-                <ul className="mt-1 space-y-0.5">
-                  {detail.data.sections.map((section) => (
-                    <li key={`${section.title}-${section.start}`} className="text-[12px] text-muted-foreground">
-                      {section.title} <span className="mono">[{section.start}..{section.end}]</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            <div>
-              <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Trích đoạn văn bản</p>
-              <pre className="mono mt-1 max-h-64 overflow-y-auto whitespace-pre-wrap rounded-[var(--radius-card)] border border-border bg-muted px-3 py-2 text-[12px] leading-relaxed text-foreground">
-                {detail.data.text_preview || "Tài liệu không có phần xem trước."}
-              </pre>
-            </div>
-            {safeSourceUrl(detail.data.source_url) ? (
-              <a href={safeSourceUrl(detail.data.source_url)!} target="_blank" rel="noreferrer" className="inline-block underline">
-                Mở nguồn gốc
-              </a>
-            ) : null}
-          </>
-        ) : null}
+        {detail.data ? <WarehouseDocumentBody detail={detail.data} /> : null}
       </CardBody>
     </Card>
   );
@@ -171,7 +114,7 @@ export default function DrugLookupPage() {
           {lookup.isLoading ? <Skeleton className="h-20 w-full" /> : null}
           {lookup.error && !result ? (
             isWarehouseUnavailable(lookup.error) ? (
-              <WarehouseUnavailable error={lookup.error} />
+              <WarehouseUnavailableAlert error={lookup.error} />
             ) : (
               <p className="text-[13px] text-contradict-fg">Không tra được kho: {(lookup.error as Error).message}</p>
             )
@@ -291,7 +234,7 @@ export default function DrugLookupPage() {
           {rag.isPending ? <Skeleton className="h-24 w-full" /> : null}
           {rag.error ? (
             isWarehouseUnavailable(rag.error) ? (
-              <WarehouseUnavailable error={rag.error} />
+              <WarehouseUnavailableAlert error={rag.error} />
             ) : (
               <p className="text-[13px] text-contradict-fg">Không tìm được trong kho: {(rag.error as Error).message}</p>
             )
@@ -326,7 +269,7 @@ export default function DrugLookupPage() {
             )
           ) : null}
           {rag.data ? (
-            <p className={cn("text-[12px] text-muted-foreground")}>
+            <p className="text-[12px] text-muted-foreground">
               Mô hình nhúng: <span className="mono">{rag.data.embedding_model}</span> · {rag.data.hits.length} đoạn gần nhất
             </p>
           ) : null}

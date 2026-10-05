@@ -1,0 +1,118 @@
+{
+  "spec_version": "elt-dataset-v1",
+  "generated_at": "2026-10-05",
+  "notes": [
+    "Spec điều khiển pipeline ELT: danh sách cặp thuốc–biến cố, PMID, SETID và mã báo cáo FAERS cần lấy.",
+    "Nguồn gốc: gói 50 mẫu ứng viên (mvp-candidates-50-2026-10-02, thu thập 2026-10-02) + gói nguồn công khai docs/research/2026-10-05/data-real.",
+    "Gói 50 mẫu là corpus ứng viên cho phát triển (candidate_not_gold), không phải gold hay benchmark đã đóng băng.",
+    "Không đổi các ID ở đây khi chưa ghi lại lý do: chúng là mốc tái lập của pipeline."
+  ],
+  "bundle": {
+    "drive_url": "https://drive.google.com/drive/folders/1G4Xd-Nve_Zs0IN3Eu5Xngrb56uSA1hu-",
+    "zip_name": "mvp-candidates-50-2026-10-02.zip",
+    "sha256": "6fbcfd1970318cb0562e6b260be1da6cfe783c8b9961ddb923a59d0195ad66f7",
+    "bytes": 1153367,
+    "extract_to": "data/mvp-candidates-50-2026-10-02",
+    "zip_to": "data/mvp-candidates-50-2026-10-02.zip"
+  },
+  "pairs": [
+    {
+      "pair_id": "ibuprofen__gastrointestinal-haemorrhage",
+      "drug": "ibuprofen",
+      "drug_ingredient": "ibuprofen",
+      "event": "Gastrointestinal haemorrhage",
+      "pubmed_query": "ibuprofen AND (gastrointestinal bleeding OR fecal blood loss)",
+      "pubmed_pmids": ["39466269", "34376069", "40915652", "23137151", "35585779"],
+      "dailymed_setids": [
+        "1662a495-4f6a-4515-a405-557681e1a496",
+        "3b9773c6-42a0-4834-bef4-4fd60556af48"
+      ],
+      "faers_report_ids": ["10006463", "10016136", "10025167"]
+    },
+    {
+      "pair_id": "metformin__diarrhoea",
+      "drug": "metformin",
+      "drug_ingredient": "metformin hydrochloride",
+      "event": "Diarrhoea",
+      "pubmed_query": "metformin AND (diarrhea OR diarrhoea) AND gastrointestinal",
+      "pubmed_pmids": ["27987248", "26780750", "37414069", "34907435", "36187122"],
+      "dailymed_setids": [
+        "e087ce3b-8d7f-43a3-8d20-54513da7617d",
+        "0ef9de1a-b786-4b6c-a250-3f5ac532b16a"
+      ],
+      "faers_report_ids": ["10004629", "10005223", "10005995"]
+    },
+    {
+      "pair_id": "lisinopril__cough",
+      "drug": "lisinopril",
+      "drug_ingredient": "lisinopril",
+      "event": "Cough",
+      "pubmed_query": "lisinopril AND cough AND (ACE inhibitor)",
+      "pubmed_pmids": ["37417783", "9089428", "9055135", "7619667", "10344043"],
+      "dailymed_setids": [
+        "f2e09150-22f2-4028-b214-917d686200ad",
+        "764d51bf-731f-4a37-8e30-e79328cf5a12"
+      ],
+      "faers_report_ids": ["10005720", "10007368", "10008690"]
+    },
+    {
+      "pair_id": "atorvastatin__myalgia",
+      "drug": "atorvastatin",
+      "drug_ingredient": "atorvastatin calcium",
+      "event": "Myalgia",
+      "pubmed_query": "atorvastatin AND (muscle symptoms OR myalgia OR statin-associated muscle)",
+      "pubmed_pmids": ["27616593", "36049498", "40529509", "35175631", "27039291"],
+      "dailymed_setids": [
+        "7c58bf4a-4a92-4db8-89bc-4de1b5831efc",
+        "d57720ab-9f83-4da9-a57f-0d55e00a605c"
+      ],
+      "faers_report_ids": ["10004497", "10004825", "10006639"]
+    },
+    {
+      "pair_id": "amoxicillin__rash",
+      "drug": "amoxicillin",
+      "drug_ingredient": "amoxicillin",
+      "event": "Rash",
+      "pubmed_query": "amoxicillin AND rash AND (adverse reaction)",
+      "pubmed_pmids": ["38055983", "36756024", "35872212", "38690250", "10718859"],
+      "dailymed_setids": [
+        "26c3694b-d7ef-4068-95d3-4f7a9210e117",
+        "b07b5ac4-253e-4c83-91c3-3fdc46e91a0f"
+      ],
+      "faers_report_ids": ["26940768", "26943176", "26943602"]
+    }
+  ],
+  "reference": {
+    "notes": [
+      "Nguồn tham chiếu bổ sung cho các ca đặc biệt trong plan vòng hai (fluoroquinolone, PPI/hạ magnesi, workflow bệnh viện).",
+      "PMID nằm trong docs/research/2026-10-05/data-real (đã kiểm hash trong manifest của gói)."
+    ],
+    "pubmed_pmids": ["39975698", "40285433", "40988034", "41943791", "31486525", "35799184", "35615486"],
+    "dailymed_setids": [
+      "c47250c2-bece-46b5-8b3b-b7c97d9005d8",
+      "6faf465b-c3a3-4ae7-9e16-1ba758f6962a",
+      "70378eba-3904-4491-9f6d-00f5d1501c4a"
+    ],
+    "reference_drugs": [
+      {"drug": "ciprofloxacin", "note": "ca FQ/aortic aneurysm; nhãn Mỹ, không phải nhãn Việt Nam"},
+      {"drug": "pantoprazole", "note": "ca PPI/hạ magnesi; phải phân biệt dạng viên và dạng tiêm"}
+    ]
+  },
+  "quality_gates": {
+    "pubmed": {
+      "require": ["pmid", "title", "text"],
+      "quarantine_if": ["missing_abstract"],
+      "reject_if": ["no_title", "no_text", "hash_mismatch"]
+    },
+    "dailymed": {
+      "require": ["setid", "version", "title", "effective_time"],
+      "quarantine_if": ["missing_sections", "multi_ingredient"],
+      "reject_if": ["no_title", "no_sections", "setid_mismatch"]
+    },
+    "faers": {
+      "require": ["safetyreportid", "reactions", "drugs"],
+      "quarantine_if": ["missing_age", "missing_sex", "missing_route", "missing_dose_start_date", "large_report", "event_not_exact"],
+      "reject_if": ["no_reactions", "no_drugs", "report_too_large"]
+    }
+  }
+}

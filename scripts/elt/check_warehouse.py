@@ -9,6 +9,8 @@ import argparse
 import json
 import sys
 
+from sqlalchemy import text
+
 from scripts.elt import config
 from src.services.warehouse import db as wh_db
 from src.services.warehouse.queries import warehouse_overview
@@ -23,7 +25,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         engine = wh_db.get_warehouse_engine()
         with engine.connect() as conn:
-            conn.execute(__import__("sqlalchemy").text("SELECT 1"))
+            conn.execute(text("SELECT 1"))
     except Exception as exc:
         print(f"KHÔNG kết nối được PostgreSQL: {exc.__class__.__name__}: {exc}")
         print(f"Địa chỉ đang dùng: {wh_db.elt_database_url()}")

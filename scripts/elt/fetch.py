@@ -164,16 +164,6 @@ def fetch_pubmed_by_pmids(fetcher: Fetcher, pmids: list[str]) -> list[FetchResul
     return results
 
 
-def fetch_pubmed_search(fetcher: Fetcher, term: str, retmax: int = 20) -> FetchResult:
-    params = {"db": "pubmed", "term": term, "retmode": "json", "retmax": str(retmax), "sort": "relevance"}
-    if config.ncbi_api_key():
-        params["api_key"] = config.ncbi_api_key()
-    params["tool"] = "vigilens-elt"
-    params["email"] = config.ncbi_email()
-    return fetcher.get("pubmed", "esearch", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
-                       params, label=f"term:{term}")
-
-
 def fetch_dailymed_index(fetcher: Fetcher, drug: str, pagesize: int = 100) -> FetchResult:
     return fetcher.get(
         "dailymed", "spls-index", "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json",
@@ -193,13 +183,6 @@ def fetch_faers_report(fetcher: Fetcher, report_id: str) -> FetchResult:
         "faers", "report", "https://api.fda.gov/drug/event.json",
         {"search": f'safetyreportid:"{report_id}"', "limit": "1"}, label=f"report:{report_id}",
     )
-
-
-def fetch_faers_query(fetcher: Fetcher, search: str, limit: int = 20, skip: int = 0) -> FetchResult:
-    params = {"search": search, "limit": str(limit)}
-    if skip:
-        params["skip"] = str(skip)
-    return fetcher.get("faers", "search", "https://api.fda.gov/drug/event.json", params, label=f"search:{search[:80]}")
 
 
 # ------------------------------------------------------------------ gói 50 mẫu

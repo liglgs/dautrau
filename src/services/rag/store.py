@@ -62,10 +62,6 @@ def delete_document(collection, doc_id: str) -> None:
     collection.delete(where={"doc_id": doc_id})
 
 
-def collection_stats(collection) -> dict:
-    return {"name": collection.name, "count": int(collection.count())}
-
-
 def reset_collection(settings: Settings | None = None, embedder: Embedder | None = None) -> str:
     settings = settings or get_settings()
     embedder = embedder or get_embedder(settings)

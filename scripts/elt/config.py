@@ -36,10 +36,6 @@ def load_spec(path: Path | None = None) -> dict:
     return json.loads((path or SPEC_PATH).read_text(encoding="utf-8"))
 
 
-def pairs(spec: dict | None = None) -> list[dict]:
-    return list((spec or load_spec()).get("pairs", []))
-
-
 def bundle_spec(spec: dict | None = None) -> dict:
     return dict((spec or load_spec()).get("bundle", {}))
 

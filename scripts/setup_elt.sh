@@ -145,10 +145,11 @@ fi
 # ---------------------------------------------------------------------------
 log "Bước 4/6: tải dữ liệu và ghi manifest"
 # `--profile live` gọi API PubMed/DailyMed/openFDA; `all` = gói đóng băng + tham chiếu + trực tiếp.
+# `--skip-db`: bước 4 chỉ tải/phân tích/chấm chất lượng; bước 5 mới nạp kho (tránh nạp hai lần).
 if [ "$LIVE" -eq 1 ]; then
   PROFILE="live"
 fi
-FETCH_ARGS=(--profile "$PROFILE")
+FETCH_ARGS=(--profile "$PROFILE" --skip-db)
 if [ "$OFFLINE" -eq 1 ]; then
   FETCH_ARGS+=(--offline)
 fi

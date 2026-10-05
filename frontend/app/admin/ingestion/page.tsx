@@ -4,6 +4,7 @@ import * as React from "react";
 import { Database, FileUp, RefreshCcw, ShieldAlert } from "lucide-react";
 import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Label, Select, Skeleton, Textarea } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
+import { WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
 import { useIngestDocument, useIngestionEvents } from "@/lib/hooks/use-data";
 import type { BackendError } from "@/lib/api/errors";
 import { formatDateTime } from "@/lib/utils";
@@ -24,8 +25,6 @@ const STATUS_TONE: Record<string, "support" | "caution" | "contradict" | "ai" | 
   running: "ai",
   queued: "neutral",
 };
-
-const DOCKER_COMMAND = "docker compose -f docker-compose.elt.yml up -d --wait";
 
 /** Lỗi nạp tài liệu theo mã HTTP của backend; giữ thông điệp gốc để người vận hành xử lý. */
 function IngestError({ error, onBumpVersion }: { error: unknown; onBumpVersion: () => void }) {
@@ -54,15 +53,8 @@ function IngestError({ error, onBumpVersion }: { error: unknown; onBumpVersion: 
       </Alert>
     );
   }
-  if (status === 503 || err?.code === "WAREHOUSE_UNAVAILABLE") {
-    return (
-      <Alert tone="caution" title="Kho bằng chứng chưa sẵn sàng">
-        <p>{message}</p>
-        <p className="mt-1">
-          Khởi động kho rồi thử lại: <code className="mono rounded bg-muted px-1.5 py-0.5 text-[12px]">{DOCKER_COMMAND}</code>
-        </p>
-      </Alert>
-    );
+  if (isWarehouseUnavailable(error)) {
+    return <WarehouseUnavailableAlert error={error} />;
   }
   return (
     <Alert tone="contradict" title={status === 422 ? "Dữ liệu chưa hợp lệ" : "Chưa nạp được tài liệu"}>
@@ -230,13 +222,8 @@ export default function AdminIngestionPage() {
               </div>
             ) : null}
             {events.error ? (
-              (events.error as Partial<BackendError>)?.status === 503 || (events.error as Partial<BackendError>)?.code === "WAREHOUSE_UNAVAILABLE" ? (
-                <Alert tone="caution" title="Kho bằng chứng chưa sẵn sàng">
-                  <p>{(events.error as Error).message}</p>
-                  <p className="mt-1">
-                    Khởi động kho rồi thử lại: <code className="mono rounded bg-muted px-1.5 py-0.5 text-[12px]">{DOCKER_COMMAND}</code>
-                  </p>
-                </Alert>
+              isWarehouseUnavailable(events.error) ? (
+                <WarehouseUnavailableAlert error={events.error} />
               ) : (
                 <Alert tone="contradict" title="Không tải được dòng sự kiện">{(events.error as Error).message}</Alert>
               )

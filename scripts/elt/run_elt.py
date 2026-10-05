@@ -13,6 +13,7 @@ Kết quả: kho PostgreSQL ``vigilens_elt``, chỉ mục ChromaDB, manifest và
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from datetime import UTC, datetime
@@ -72,7 +73,7 @@ def parse_bundle(manifest: RunManifest) -> tuple[list[ParsedDocument], dict]:
                 if raw_ref not in cache:
                     raw = raw_path.read_bytes()
                     if record.get("metadata", {}).get("raw_hash") and \
-                            record["metadata"]["raw_hash"] != __import__("hashlib").sha256(raw).hexdigest():
+                            record["metadata"]["raw_hash"] != hashlib.sha256(raw).hexdigest():
                         cross["raw_hash_mismatch"].append(raw_ref)
                     if record["source"] == "pubmed":
                         parsed = parse_pubmed_tagged(raw, pair_id=pair_id, raw_path=str(raw_path.relative_to(config.ROOT)),
@@ -264,11 +265,10 @@ def main(argv: list[str] | None = None) -> int:
         unique.setdefault(doc.doc_id, doc)
     documents = list(unique.values())
 
-    keep, quarantine, rejected = quality.apply_gates(documents)
-    verdicts: dict[str, quality.DocVerdict] = {}
-    for doc in documents:
-        verdicts[doc.doc_id] = quality.evaluate_document(doc)
-    findings = [finding for verdict in verdicts.values() for finding in verdict.findings]
+    results = quality.evaluate_all(documents)
+    keep, quarantine, rejected = quality.partition(results)
+    verdicts = quality.verdict_map(results)
+    findings = [finding for _, verdict in results for finding in verdict.findings]
     stats = quality.dataset_stats(documents, findings)
     stats["keep"] = len(keep)
     stats["quarantine"] = len(quarantine)

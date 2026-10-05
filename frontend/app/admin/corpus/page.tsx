@@ -4,29 +4,10 @@ import * as React from "react";
 import { Search, ShieldAlert } from "lucide-react";
 import { Alert, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Select, Skeleton } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
+import { WarehouseDocumentBody, WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
 import { useWarehouseDocument, useWarehouseDocuments, useWarehouseOverview } from "@/lib/hooks/use-data";
 import { ROLE_LABEL, useAppStore } from "@/lib/store/app-store";
-import type { BackendError } from "@/lib/api/errors";
 import { formatDateTime, formatNumber } from "@/lib/utils";
-import { safeSourceUrl } from "@/lib/evidence-view";
-
-const DOCKER_COMMAND = "docker compose -f docker-compose.elt.yml up -d --wait";
-
-function isWarehouseUnavailable(error: unknown) {
-  const err = error as Partial<BackendError> | null | undefined;
-  return err?.status === 503 || err?.code === "WAREHOUSE_UNAVAILABLE";
-}
-
-function UnavailableAlert({ error }: { error: unknown }) {
-  return (
-    <Alert tone="caution" title="Kho bằng chứng chưa sẵn sàng" icon={<ShieldAlert className="h-4 w-4" aria-hidden />}>
-      <p>{(error as Error | null)?.message}</p>
-      <p className="mt-1">
-        Khởi động kho rồi thử lại: <code className="mono rounded bg-muted px-1.5 py-0.5 text-[12px]">{DOCKER_COMMAND}</code>
-      </p>
-    </Alert>
-  );
-}
 
 function QualityChip({ status }: { status: string }) {
   return <Chip tone={status === "keep" ? "support" : status === "quarantine" ? "caution" : "neutral"}>{status}</Chip>;
@@ -82,7 +63,7 @@ export default function AdminCorpusPage() {
           ) : null}
           {overview.error ? (
             isWarehouseUnavailable(overview.error) ? (
-              <UnavailableAlert error={overview.error} />
+              <WarehouseUnavailableAlert error={overview.error} />
             ) : (
               <Alert tone="contradict" title="Không tải được tổng quan kho">{(overview.error as Error).message}</Alert>
             )
@@ -203,7 +184,7 @@ export default function AdminCorpusPage() {
               {documents.isLoading ? <Skeleton className="h-32 w-full" /> : null}
               {documents.error ? (
                 isWarehouseUnavailable(documents.error) ? (
-                  <UnavailableAlert error={documents.error} />
+                  <WarehouseUnavailableAlert error={documents.error} />
                 ) : (
                   <Alert tone="contradict" title="Không tải được danh sách tài liệu">{(documents.error as Error).message}</Alert>
                 )
@@ -264,49 +245,12 @@ export default function AdminCorpusPage() {
                 {detail.isLoading ? <Skeleton className="h-24 w-full" /> : null}
                 {detail.error ? (
                   isWarehouseUnavailable(detail.error) ? (
-                    <UnavailableAlert error={detail.error} />
+                    <WarehouseUnavailableAlert error={detail.error} />
                   ) : (
                     <p className="text-contradict-fg">Không tải được chi tiết: {(detail.error as Error).message}</p>
                   )
                 ) : null}
-                {detail.data ? (
-                  <>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <WarehouseSourceChip source={detail.data.source} />
-                      <QualityChip status={detail.data.quality_status} />
-                      <Chip tone="neutral">v{detail.data.version}</Chip>
-                      {detail.data.pair_id ? <Chip tone="scope">{detail.data.pair_id}</Chip> : null}
-                    </div>
-                    <p className="text-[14px] font-medium text-foreground">{detail.data.title}</p>
-                    <p className="mono break-all text-[11px] text-muted-foreground">sha256: {detail.data.text_sha256}</p>
-                    {detail.data.quality_flags.length ? (
-                      <p className="text-[12px] text-muted-foreground">Cờ chất lượng: {detail.data.quality_flags.join(", ")}</p>
-                    ) : null}
-                    {detail.data.sections.length ? (
-                      <div>
-                        <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Mục nội dung</p>
-                        <ul className="mt-1 space-y-0.5">
-                          {detail.data.sections.map((section) => (
-                            <li key={`${section.title}-${section.start}`} className="text-[12px] text-muted-foreground">
-                              {section.title} <span className="mono">[{section.start}..{section.end}]</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                    <div>
-                      <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Trích đoạn văn bản</p>
-                      <pre className="mono mt-1 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-[var(--radius-card)] border border-border bg-muted px-3 py-2 text-[12px] leading-relaxed text-foreground">
-                        {detail.data.text_preview || "Tài liệu không có phần xem trước."}
-                      </pre>
-                    </div>
-                    {safeSourceUrl(detail.data.source_url) ? (
-                      <a href={safeSourceUrl(detail.data.source_url)!} target="_blank" rel="noreferrer" className="inline-block underline">
-                        Mở nguồn gốc
-                      </a>
-                    ) : null}
-                  </>
-                ) : null}
+                {detail.data ? <WarehouseDocumentBody detail={detail.data} previewClassName="max-h-72" /> : null}
               </CardBody>
             </Card>
           ) : null}

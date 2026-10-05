@@ -55,6 +55,10 @@ data/benchmark/*
 data/templates/*
 !data/templates/dossier.md
 !data/templates/dossier.synthetic.md
+# Đặc tả nguồn ELT (nhỏ, cần cho máy mới); phần thô/staging/manifest thì không commit.
+!data/elt/
+data/elt/*
+!data/elt/dataset-spec.json
 *.db
 *.db-wal
 *.db-shm

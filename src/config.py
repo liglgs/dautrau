@@ -79,9 +79,6 @@ class Settings(BaseSettings):
 
     # Kho ELT (PostgreSQL) — mặc định suy ra từ database_url với tên csdl vigilens_elt
     elt_database_url: str = ""
-    elt_raw_root: str = "data/elt/raw"
-    elt_staging_root: str = "data/elt/staging"
-    elt_reports_root: str = "data/elt/reports"
 
     # Vector Store / RAG
     rag_enabled: bool = True

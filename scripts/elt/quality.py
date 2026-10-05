@@ -135,12 +135,9 @@ def evaluate_document(doc: ParsedDocument) -> DocVerdict:
     return verdict
 
 
-def apply_gates(documents: list[ParsedDocument]) -> tuple[list[ParsedDocument], list[ParsedDocument], list[Finding]]:
-    """Trả về (giữ cho RAG, cách ly, bị loại) kèm danh sách phát hiện."""
-    keep: list[ParsedDocument] = []
-    quarantine: list[ParsedDocument] = []
-    rejected: list[ParsedDocument] = []
-    findings: list[Finding] = []
+def evaluate_all(documents: list[ParsedDocument]) -> list[tuple[ParsedDocument, DocVerdict]]:
+    """Chấm điểm từng tài liệu **một lần** và gắn cổng trùng định danh trong cùng lần chạy."""
+    results: list[tuple[ParsedDocument, DocVerdict]] = []
     seen: set[tuple[str, str, int]] = set()
     for doc in documents:
         verdict = evaluate_document(doc)
@@ -148,7 +145,23 @@ def apply_gates(documents: list[ParsedDocument]) -> tuple[list[ParsedDocument], 
         if key in seen:
             verdict.add(doc, "duplicate_in_run", "error", "reject", "Trùng định danh trong cùng lần chạy.")
         seen.add(key)
-        findings.extend(verdict.findings)
+        results.append((doc, verdict))
+    return results
+
+
+def verdict_map(results: list[tuple[ParsedDocument, DocVerdict]]) -> dict[str, DocVerdict]:
+    """Bảng tra ``doc_id → verdict`` cho bước ghi staging/báo cáo."""
+    return {doc.doc_id: verdict for doc, verdict in results}
+
+
+def partition(
+    results: list[tuple[ParsedDocument, DocVerdict]],
+) -> tuple[list[ParsedDocument], list[ParsedDocument], list[ParsedDocument]]:
+    """Chia tài liệu thành ba nhóm theo quyết định đã chấm."""
+    keep: list[ParsedDocument] = []
+    quarantine: list[ParsedDocument] = []
+    rejected: list[ParsedDocument] = []
+    for doc, verdict in results:
         if verdict.decision == "reject":
             rejected.append(doc)
         elif verdict.decision == "quarantine":
@@ -156,6 +169,11 @@ def apply_gates(documents: list[ParsedDocument]) -> tuple[list[ParsedDocument], 
         else:
             keep.append(doc)
     return keep, quarantine, rejected
+
+
+def apply_gates(documents: list[ParsedDocument]) -> tuple[list[ParsedDocument], list[ParsedDocument], list[ParsedDocument]]:
+    """Trả về (giữ cho RAG, cách ly, bị loại)."""
+    return partition(evaluate_all(documents))
 
 
 def dataset_stats(documents: list[ParsedDocument], findings: list[Finding]) -> dict:

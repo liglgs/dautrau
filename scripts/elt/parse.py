@@ -40,10 +40,6 @@ class ParsedDocument:
     raw_path: str = ""
     structured: dict = field(default_factory=dict)
 
-    @property
-    def warnings(self) -> list[str]:
-        return list(self.metadata.get("warnings", []))
-
 
 def _wrap(source_document, *, pair_id: str | None, raw_path: str, structured: dict | None = None) -> ParsedDocument:
     metadata = dict(source_document.metadata or {})
@@ -326,10 +322,6 @@ def parse_faers_json(raw: bytes, *, pair_id: str | None, raw_path: str, drug: st
         parsed.append(_faers_report_document(report, raw, pair_id=pair_id, raw_path=raw_path,
                                              drug=drug, total_hits=total_hits))
     return parsed
-
-
-def load_raw(path: Path) -> bytes:
-    return Path(path).read_bytes()
 
 
 # ------------------------------------------------------------------ Tài liệu tham chiếu (không thuộc 3 nguồn chính)
