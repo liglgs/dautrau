@@ -21,9 +21,9 @@ nên phần lớn kết quả nằm ở nhánh Người 1, cộng thêm hạ t�
 | Gói 50 mẫu đã tải và kiểm băm | `data/mvp-candidates-50-2026-10-02.zip`, sha256 `6fbcfd…66f7`, 44/44 mục khớp `files.sha256.json` |
 | ELT đầy đủ (PubMed + DailyMed + FAERS + tham chiếu) | `data/elt/manifests/20261005T192255Z-all.json`, `data/elt/reports/20261005T192255Z-all-quality.{json,md}` |
 | Kho PostgreSQL | `docker compose -f docker-compose.elt.yml up -d --wait` → 66 tài liệu, 668 mục, 32 bản ghi PubMed, 13 nhãn DailyMed, 15 báo cáo FAERS, 182 dòng thuốc, 125 phản ứng |
-| Chỉ mục vector | `vigilens_docs__gemini__gemini-embedding-001`, 1.832 đoạn, khớp 1.832 dòng `document_chunks` (lệch 0) |
+| Chỉ mục vector | `vigilens_docs__gemini__gemini-embedding-001`, 1.865 đoạn, khớp 1.865 dòng `document_chunks` (lệch 0) |
 | API kho | `GET /api/v1/drugs/lookup`, `/warehouse/overview`, `/warehouse/documents`, `/warehouse/documents/{id}`, `POST /rag/search`, `GET /ingestion/events`, `POST /ingestion/documents` |
-| Kiểm thử | `tests/test_services/test_elt_quality.py` (12), `test_elt_parse.py` (7), `test_elt_warehouse.py` (6), `tests/test_api/test_warehouse_api.py` (7) — tất cả ngoại tuyến |
+| Kiểm thử | `tests/test_services/test_elt_quality.py` (12), `test_elt_parse.py` (7), `test_elt_warehouse.py` (8), `tests/test_api/test_warehouse_api.py` (7) — 34 bài mới, tất cả ngoại tuyến; toàn bộ `tests/`: 604 đạt, 1 bỏ qua, 2 lỗi có sẵn từ trước |
 | Một lệnh cài đặt | `scripts/setup_elt.sh` (+ `--offline`, `--live`, `--reset`, `--no-rag`, `--skip-install`) |
 | Tài liệu dữ liệu | `docs/data/{README,nguon-du-lieu,tien-xu-ly,cong-chat-luong,bao-cao-chat-luong,cau-truc-kho}.md` |
 
@@ -37,6 +37,29 @@ nên phần lớn kết quả nằm ở nhánh Người 1, cộng thêm hạ t�
 | 4 | Hoạt chất DailyMed rỗng | XPath sai (`activeIngredientSubstance`), chỉ phủ một lớp | lặp `ACTIB`/`ACTIM`/`ACTIR` trong cả adapter và bộ phân tích |
 | 5 | Chạy lại ELT vi phạm khoá ngoại `documents_pair_id_fkey` | `load_pairs` xoá rồi chèn lại cặp thuốc–biến cố đang được `documents` tham chiếu | chuyển sang cập nhật tại chỗ (upsert) + `ON DELETE SET NULL` cho `documents.pair_id` |
 | 6 | Xoá tài liệu mồ côi trong Chroma | hàm xoá nhận sai tham số, không đếm được số đoạn | `purge_document()` đếm trước khi xoá, trả về số đoạn đã xoá |
+
+### 1.2 Đợt rà soát mã (review/simplify) và các lỗi đã sửa
+
+Nhánh `vorflux/elt-warehouse-rag` được rà soát độc lập; các phát hiện dưới đây đã sửa và có kiểm thử hồi quy.
+Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` (cổng chất lượng, chỉ mục, khoá nhúng).
+
+| # | Phát hiện | Mức | Cách xử lý | Kiểm chứng |
+| --- | --- | --- | --- | --- |
+| 1 | Bản ghi `reject` vẫn được ghi vào kho, trái hợp đồng cổng chất lượng | blocking | `run_elt` chỉ nạp `keep + quarantine`; `load_documents` chặn lần nữa và trả `skipped_rejected` | `test_rejected_document_never_reaches_the_warehouse` |
+| 2 | `data/elt/dataset-spec.json` không được commit → máy mới không cài được | blocking | thêm ngoại lệ `!data/elt/dataset-spec.json` vào `.gitignore`, commit đặc tả | `git cat-file -e HEAD:data/elt/dataset-spec.json`; chạy thử bản clone sạch |
+| 3 | Đoạn cũ trong Chroma không bị xoá khi văn bản ngắn lại hoặc tài liệu bị cách ly | blocking | xoá theo `doc_id` trước khi ghi lại + bước dọn (`prune`) cả hai kho | `test_reindex_drops_chunks_of_documents_that_left_the_index` |
+| 4 | `setup_elt.sh` nạp kho và sinh vector hai lần | should-fix | bước 4 dùng `--skip-db`; bước 5 mới nạp | chạy lại script trên clone sạch |
+| 5 | `python3 -m venv` hỏng khi máy chỉ có `python3.11-venv` | should-fix | tự chọn trình thông dịch có `ensurepip`, xoá `.venv` hỏng trước khi tạo lại | chạy trên clone sạch (chọn python3.11) |
+| 6 | Khoá Gemini nằm trong query string; 401/403 làm hỏng cả lô | should-fix | gửi qua header `x-goog-api-key`; 401/403 xoay khoá kế tiếp | 604 bài kiểm thử đạt |
+| 7 | Lộ chi tiết lỗi nội bộ ra HTTP | should-fix | trả mã chung (`RAG_INDEX_UNAVAILABLE`), ghi log phía máy chủ | kiểm thử API |
+| 8 | Xoá tài liệu để lại sự kiện nạp; lỗi Chroma bị nuốt | should-fix | xoá sự kiện cùng mã tài liệu; ghi log thay vì im lặng | `test_purge_removes_rows_and_chunks` |
+| 9 | `char_start/char_end` lệch văn bản lưu; điểm tương đồng có thể âm | optional | dịch con trỏ thay vì sửa văn bản; kẹp điểm về `[-1, 1]` | 604 bài kiểm thử đạt |
+| 10 | Mã trùng lặp ở giao diện (chi tiết tài liệu, cảnh báo 503) | simplify | gộp vào `frontend/components/pv/warehouse.tsx` | `tsc`, `eslint`, 42 bài kiểm thử giao diện |
+
+Còn lại có chủ đích (chưa sửa, ghi để không hiểu nhầm là đã xong): nạp tay vẫn cho phép gắn nhãn
+nguồn ELT (nay có thêm cờ `manual_entry_not_verified_with_source`); kho ELT chưa có migration
+(chỉ `create_all`/`--reset-db`); Dockerfile backend chưa cài `chromadb` nên RAG trong container
+chưa chạy.
 
 ---
 

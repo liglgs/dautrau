@@ -53,6 +53,9 @@ trong khi văn bản vẫn dùng được để *phát hiện* vấn đề. Cờ
 - Mỗi đoạn giữ `doc_id`, `ordinal`, `char_start`, `char_end` để ánh xạ ngược về văn bản gốc.
 - Mỗi đoạn có bản ghi trong PostgreSQL (`document_chunks`) **và** một vector trong ChromaDB;
   số lượng hai bên phải bằng nhau (lệch 0) — `check_warehouse` kiểm tra điều này.
+- Ghi lại chỉ mục luôn xoá đoạn cũ của chính tài liệu đó trước khi ghi (văn bản ngắn lại không để lại
+  đoạn mồ côi), và lần dựng toàn bộ sẽ dọn khỏi **cả hai kho** những tài liệu không còn đủ điều kiện
+  (chuyển sang `quarantine`/`reject`). Thống kê `pruned_documents` cho biết số tài liệu đã dọn.
 
 **Vì sao cần cả hai kho:** ChromaDB phục vụ truy vấn ngữ nghĩa trên dữ liệu tĩnh, ít đổi (nhãn, tóm tắt, báo cáo);
 PostgreSQL là nguồn sự thật cho dữ liệu hay đổi (trạng thái điều tra, hàng đợi duyệt, nhật ký nạp tài liệu).

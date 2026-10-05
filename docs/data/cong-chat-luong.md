@@ -10,8 +10,8 @@ Mã nguồn: `scripts/elt/quality.py`. Số liệu thật của lần chạy g�
 | Quyết định | Nghĩa | Vào kho? | Vào chỉ mục RAG? | Dùng làm bằng chứng? |
 | --- | --- | --- | --- | --- |
 | `keep` | đạt | có | có | có |
-| `quarantine` | chưa đạt nhưng còn giá trị nền | có | có (mặc định loại khỏi chỉ mục khi dựng `--only-keep`) | **không** — UI hiển thị cờ |
-| `reject` | không dùng được | không | không | không |
+| `quarantine` | chưa đạt nhưng còn giá trị nền | có | không (mặc định chỉ lập chỉ mục `keep`; `load_chroma --include-quarantine` mới thêm vào) | **không** — UI hiển thị cờ |
+| `reject` | không dùng được | không (bộ nạp chặn ở `load_documents`) | không | không |
 
 ## Kiểm tra chung (mọi nguồn)
 
