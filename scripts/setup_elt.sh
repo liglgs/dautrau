@@ -20,7 +20,7 @@ LIVE=0
 SKIP_INSTALL=0
 RESET=0
 DO_RAG=1
-PYTHON_BIN="${PYTHON_BIN:-python3}"
+PYTHON_BIN="${PYTHON_BIN:-}"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -41,15 +41,38 @@ log()  { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m!! %s\033[0m\n' "$*" >&2; }
 die()  { printf '\033[1;31mxx %s\033[0m\n' "$*" >&2; exit 1; }
 
-command -v "$PYTHON_BIN" >/dev/null 2>&1 || die "Không tìm thấy $PYTHON_BIN. Cài Python 3.11+ trước."
-"$PYTHON_BIN" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' \
-  || die "Cần Python 3.11 trở lên."
+# Chọn trình thông dịch tạo được môi trường ảo: python3.12 trước, rồi python3.11,
+# rồi python3. Trên Ubuntu thiếu gói python3.X-venv thì `-m venv` sẽ hỏng, nên
+# phải thử bằng `import ensurepip` chứ không chỉ kiểm tra phiên bản.
+python_ok() {
+  command -v "$1" >/dev/null 2>&1 || return 1
+  "$1" -c 'import sys, ensurepip; sys.exit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1
+}
+if [ -n "${PYTHON_BIN:-}" ] && python_ok "$PYTHON_BIN"; then
+  :
+elif [ -n "${PYTHON_BIN:-}" ] && command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  die "$PYTHON_BIN không tạo được môi trường ảo (thiếu ensurepip/venv). Cài python3-venv hoặc đặt PYTHON_BIN khác."
+else
+  for candidate in python3.12 python3.11 python3; do
+    if python_ok "$candidate"; then
+      PYTHON_BIN="$candidate"
+      break
+    fi
+  done
+  python_ok "${PYTHON_BIN:-python3}" \
+    || die "Không tìm thấy Python 3.11+ tạo được môi trường ảo. Cài python3-venv (hoặc python3.11-venv) rồi chạy lại."
+fi
+echo "Dùng trình thông dịch: $PYTHON_BIN ($("$PYTHON_BIN" -V 2>&1))"
 
 # ---------------------------------------------------------------------------
 # 1. Môi trường ảo và phụ thuộc
 # ---------------------------------------------------------------------------
 if [ "$SKIP_INSTALL" -eq 0 ]; then
   log "Bước 1/6: môi trường ảo và phụ thuộc Python"
+  if [ -d .venv ] && [ ! -x .venv/bin/python ]; then
+    warn "Thấy .venv hỏng (thiếu bin/python) — xoá để tạo lại."
+    rm -rf .venv
+  fi
   [ -d .venv ] || "$PYTHON_BIN" -m venv .venv
   .venv/bin/python -m pip install --upgrade pip >/dev/null
   .venv/bin/python -m pip install -r requirements.txt -r requirements-elt.txt
