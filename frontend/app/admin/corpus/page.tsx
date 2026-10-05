@@ -4,6 +4,7 @@ import * as React from "react";
 import { Search, ShieldAlert } from "lucide-react";
 import { Alert, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Select, Skeleton } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
+import { warehouseFlagLabel } from "@/lib/warehouse-flags";
 import { WarehouseDocumentBody, WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
 import { useWarehouseDocument, useWarehouseDocuments, useWarehouseOverview } from "@/lib/hooks/use-data";
 import { ROLE_LABEL, useAppStore } from "@/lib/store/app-store";
@@ -220,7 +221,11 @@ export default function AdminCorpusPage() {
                           <td className="max-w-[360px] truncate py-2 pr-4 text-foreground">{doc.title}</td>
                           <td className="py-2 pr-4">
                             <QualityChip status={doc.quality_status} />
-                            {doc.quality_flags.length ? <span className="ml-2 text-[11px] text-muted-foreground">{doc.quality_flags.join(", ")}</span> : null}
+                            {doc.quality_flags.length ? (
+                              <span className="ml-2 text-[11px] text-muted-foreground">
+                                {doc.quality_flags.map((flag) => warehouseFlagLabel(flag)).join(", ")}
+                              </span>
+                            ) : null}
                           </td>
                           <td className="tabular py-2 pr-4 text-muted-foreground">v{doc.version}</td>
                           <td className="py-2 text-muted-foreground">{formatDateTime(doc.retrieved_at)}</td>

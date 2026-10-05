@@ -5,6 +5,7 @@ import { Database, FileUp, RefreshCcw, ShieldAlert } from "lucide-react";
 import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Chip, EmptyState, Input, Label, Select, Skeleton, Textarea } from "@/components/ui";
 import { WarehouseSourceChip } from "@/components/pv/badges";
 import { WarehouseUnavailableAlert, isWarehouseUnavailable } from "@/components/pv/warehouse";
+import { warehouseFlagLabel } from "@/lib/warehouse-flags";
 import { useIngestDocument, useIngestionEvents } from "@/lib/hooks/use-data";
 import type { BackendError } from "@/lib/api/errors";
 import { formatDateTime } from "@/lib/utils";
@@ -73,7 +74,9 @@ function IngestResultCard({ result }: { result: IngestDocumentResult }) {
         <p className="mono break-all text-[11px]">sha256: {result.sha256}</p>
         <p>
           Chất lượng: <Chip tone={result.quality_status === "keep" ? "support" : "caution"}>{result.quality_status}</Chip>
-          {result.quality_flags.length ? <span className="ml-2">cờ: {result.quality_flags.join(", ")}</span> : null}
+          {result.quality_flags.length ? (
+            <span className="ml-2">cờ: {result.quality_flags.map((flag) => warehouseFlagLabel(flag)).join(", ")}</span>
+          ) : null}
         </p>
         <p>
           RAG:{" "}
