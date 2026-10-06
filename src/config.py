@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    app_name: str = "MedReview VMEC-03"
+    app_name: str = "VigiLens"
     app_env: Literal["development", "production", "test"] = "development"
     app_port: int = Field(default=8000, ge=1, le=65535)
     app_host: str = "0.0.0.0"
@@ -55,6 +55,17 @@ class Settings(BaseSettings):
             self.gemini_api_key_8,
         ]
         return [k.strip() for k in raw if k and k.strip()]
+
+    # Xác thực và phân quyền (B1)
+    #: ``auto`` = có ``SUPABASE_URL`` thì Supabase, không thì chế độ nội bộ.
+    auth_provider: Literal["auto", "local", "supabase", "test"] = "auto"
+    #: Bật ``X-Test-User`` cho bài kiểm thử. Bị chặn cứng khi ``app_env=production``.
+    vigilens_test_auth: bool = False
+    supabase_url: str = ""
+    supabase_anon_key: str = ""
+    #: Chỉ đặt ở phía máy chủ; **không bao giờ** lộ ra trình duyệt.
+    supabase_service_role_key: str = ""
+    supabase_jwt_audience: str = "authenticated"
 
     # MVP điều tra an toàn thuốc (P-066)
     investigator_token: str = ""

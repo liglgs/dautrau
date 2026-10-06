@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Input, Label, Select, Textarea } from "@/components/ui";
 import { useEvidence, useInvestigation, useReviewAction } from "@/lib/hooks/use-data";
 import { canReview, useAppStore } from "@/lib/store/app-store";
+import { MIN_REVIEW_REASON } from "@/lib/review-rules";
 import type { EvidenceItem, Investigation, ReviewAction } from "@/lib/types";
 
 const ACTIONS = [
@@ -112,7 +113,7 @@ export default function ReviewTabPage() {
   const unavailable = refreshing || Boolean(refreshError) || evidence.isPending || evidence.isError || state.isError;
   const submit = () => {
     if (pending.current || refreshPending.current || !canReview(role) || !viewed || stale || unavailable) return;
-    if (reason.trim().length < 15) { setResult({ ok: false, message: "Ghi lý do ít nhất 15 ký tự." }); return; }
+    if (reason.trim().length < MIN_REVIEW_REASON) { setResult({ ok: false, message: `Ghi lý do ít nhất ${MIN_REVIEW_REASON} ký tự.` }); return; }
     if ((selected === "edit" || selected === "exclude_evidence") && !target) { setResult({ ok: false, message: "Chọn bằng chứng cần xử lý." }); return; }
     const checkpoint = (viewed.checkpoint as ReviewAction["checkpoint"]) ?? "assessment";
     const action: ReviewAction = { action: selected, reason: reason.trim(), expectedVersion: viewed.version, checkpoint,
@@ -164,7 +165,7 @@ export default function ReviewTabPage() {
           <Input id={`review-${key}`} maxLength={key === "population" ? 200 : 120} value={value} onChange={(e) => setScope((current) => ({ ...current, [key]: e.target.value }))} />
         </div>)}</div>
       </> : null}
-      <div><Label htmlFor="reason">Lý do (ít nhất 15 ký tự)</Label><Textarea id="reason" rows={3} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} /></div>
+      <div><Label htmlFor="reason">Lý do (ít nhất {MIN_REVIEW_REASON} ký tự)</Label><Textarea id="reason" rows={3} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} /></div>
       {result ? <Alert tone={result.ok ? "support" : "contradict"} title={result.ok ? "Đã ghi nhận" : "Chưa thực hiện được"}>{result.message}</Alert> : null}
       <Button onClick={submit} disabled={review.isPending || !viewed || stale || unavailable || (selected === "approve" && !viewed.checkpoint)}>Gửi quyết định</Button>
     </CardBody>

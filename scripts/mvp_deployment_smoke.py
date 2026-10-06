@@ -20,18 +20,37 @@ CLAIM = {
 }
 
 
+# RV-04: ngưỡng lý do duyệt dùng chung với giao diện (frontend/lib/review-rules.ts).
+REVIEW_REASON = "Bộ kiểm tra triển khai: lý do đủ dài để qua ngưỡng RV-04."
+
+
 def _request(client, prefix, method, path, headers, *, expected=200, **kwargs):
     response = client.request(method, prefix + path, headers=headers, **kwargs)
     assert response.status_code == expected, f"{method} {path}: expected {expected}, got {response.status_code}"
     return response
 
 
-def session_headers(client, token, *, origin):
-    """Log in through the proxy and keep each role's cookie independent of the jar."""
-    response = _request(client, "/api/v1", "POST", "/auth/login", {"Origin": origin}, json={"token": token})
-    cookie = response.cookies.get("session_id")
-    assert cookie, "Login did not return a session cookie"
-    return {"Cookie": f"session_id={cookie}", "Origin": origin}
+def role_headers(token, *, origin):
+    """Header cho một vai, dùng khoá tĩnh cấu hình trên máy chủ.
+
+    AUTH-01: trước đây hàm này đăng nhập bằng ``{"token": ...}`` để lấy cookie phiên. Tuyến
+    đăng nhập nay đòi email + mật khẩu thật, nên bộ kiểm tra triển khai đi thẳng bằng khoá tĩnh
+    — đúng thứ mà một máy chủ đã cấu hình sẵn để chạy kiểm tra.
+    """
+    return {"X-API-Token": token, "Origin": origin}
+
+
+def check_auth_hardening(client, prefix, *, origin):
+    """AUTH-01: tuyến đăng nhập không được cấp phiên từ vai do người gọi tự khai."""
+    for body in ({"role": "reviewer"}, {"token": "bat-ky", "username": "ke-gia-danh"}):
+        response = client.post(prefix + "/auth/login", headers={"Origin": origin}, json=body)
+        assert response.status_code in (401, 422), (
+            f"POST /auth/login nhận vai tự khai: {response.status_code} {response.text}"
+        )
+        assert not response.cookies.get("session_id"), "Đăng nhập tự khai vẫn cấp cookie phiên"
+    anonymous = client.get(prefix + "/investigations", headers={"Origin": origin})
+    assert anonymous.status_code == 401, "Đọc danh sách ca mà không có danh tính phải trả 401"
+    return {"self_declared_role_rejected": True, "anonymous_read_rejected": True}
 
 
 def _checkpoint(client, prefix, headers, identifier, timeout):
@@ -88,10 +107,13 @@ def check_new_investigation(client, prefix, investigator, reviewer, *, timeout=6
         "action": "approve",
         "checkpoint": "assessment",
         "expected_version": state["version"],
+        "reason": REVIEW_REASON,
     }
     _request(client, prefix, "POST", base + "/reviews", investigator, expected=403, json=decision)
     _request(client, prefix, "POST", base + "/reviews", reviewer, json=decision)
     _request(client, prefix, "GET", base + "/export", investigator, expected=409)
+    # RV-06: ``expected_version`` phải là bản hiện tại — quyết định duyệt vừa làm tăng phiên bản.
+    current = _request(client, prefix, "GET", base, investigator).json()
     _request(
         client,
         prefix,
@@ -99,7 +121,7 @@ def check_new_investigation(client, prefix, investigator, reviewer, *, timeout=6
         base + "/continue",
         {**investigator, "Idempotency-Key": uuid4().hex},
         expected=202,
-        json={},
+        json={"expected_version": current["version"]},
     )
     state = _checkpoint(client, prefix, investigator, identifier, timeout)
     assert state["checkpoint"] == "dossier"
@@ -114,6 +136,7 @@ def check_new_investigation(client, prefix, investigator, reviewer, *, timeout=6
             "action": "approve",
             "checkpoint": "dossier",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     return check_investigation(client, prefix, investigator, identifier)
@@ -142,14 +165,16 @@ def main():
         assert ready.status_code == 200 and ready.json()["status"] == "ready", "Backend not ready"
         assert client.get(args.frontend).status_code == 200, "Frontend unavailable"
     with httpx.Client(base_url=args.frontend.rstrip("/") + "/api/backend", timeout=30, trust_env=False) as client:
-        investigator = session_headers(client, investigator_token, origin=origin)
-        reviewer = session_headers(client, reviewer_token, origin=origin)
+        auth_check = check_auth_hardening(client, "/api/v1", origin=origin)
+        investigator = role_headers(investigator_token, origin=origin)
+        reviewer = role_headers(reviewer_token, origin=origin)
         if args.verify_result:
             previous = json.loads(args.verify_result.read_text(encoding="utf-8"))
             result = check_investigation(client, "/api/v1", investigator, previous["investigation_id"])
             assert result == previous, "Persisted investigation changed after restart/restore"
         else:
             result = check_new_investigation(client, "/api/v1", investigator, reviewer, timeout=args.timeout)
+        result.update(auth_check)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")

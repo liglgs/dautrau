@@ -39,6 +39,11 @@ RESERVED_LLM_CALLS_FOR_DOSSIER = 2
 
 SOURCE_NAMES: tuple[str, ...] = ("pubmed", "dailymed", "faers")
 
+#: RV-04 — ngưỡng lý do duyệt tối thiểu, dùng chung cho giao diện và máy chủ.
+#: Giao diện đã đòi 15 ký tự từ trước; máy chủ chỉ cần khác rỗng, nên gọi thẳng API là lách được
+#: yêu cầu ghi lý do. Giao diện giữ cùng con số ở ``frontend/lib/review-rules.ts``.
+MIN_REVIEW_REASON = 15
+
 UNKNOWN_TOKENS: frozenset[str] = frozenset(
     {
         "",
@@ -220,6 +225,26 @@ class ClaimInput(BaseModel):
     route: str | None = Field(default=None, max_length=120)
     time_window: str | None = Field(default=None, max_length=120)
     config: InvestigationConfig | None = Field(default=None)
+
+    @field_validator("claim_text", "drug", "event")
+    @classmethod
+    def _reject_blank(cls, value: str) -> str:
+        """IN-05: chuỗi chỉ gồm khoảng trắng không phải là nội dung.
+
+        Giao diện đã chặn từ trước, nhưng gọi thẳng API thì lọt: ``min_length=1`` để ``"   "``
+        đi qua, và ca đó chạy hết ngân sách rồi trả về hồ sơ rỗng.
+        """
+        if not value.strip():
+            raise ValueError("không được chỉ gồm khoảng trắng")
+        return value
+
+    @field_validator("population", "dose", "route", "time_window")
+    @classmethod
+    def _blank_optional_is_absent(cls, value: str | None) -> str | None:
+        """Trường tuỳ chọn gửi lên toàn khoảng trắng được coi như không khai."""
+        if value is None:
+            return None
+        return value.strip() or None
 
 
 class NormalizedClaim(BaseModel):
@@ -663,6 +688,150 @@ class CancelResponse(BaseModel):
     run_status: RunStatus
     cancelled: bool
     message: str = ""
+
+
+# --------------------------------------------------------------------------------------
+# Mô hình phản hồi HTTP (API-01)
+#
+# Trước đây các điểm cuối dưới đây khai ``-> dict[str, Any]`` nên OpenAPI chỉ ghi ``object``:
+# hợp đồng không nói được trường nào tồn tại, và giao diện phải đoán. Phần bao ngoài được mô
+# hình hoá chặt; các khối JSON sâu bên trong (claim, ngân sách, bằng chứng) vẫn để dạng dict vì
+# chúng được đọc thẳng từ bản ghi cũ và không nên bị lọc lại khi trả về.
+# --------------------------------------------------------------------------------------
+
+
+class CreateInvestigationResponse(BaseModel):
+    """202 khi tạo cuộc điều tra mới."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    created: bool
+    started: bool
+    run_status: str
+    version: int = Field(ge=1)
+    events_url: str
+
+
+class InvestigationSummary(BaseModel):
+    """Một dòng trong danh sách cuộc điều tra."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    run_status: str
+    assessment_status: str | None = None
+    checkpoint: str | None = None
+    next_stage: str | None = None
+    version: int = Field(ge=1)
+    drug: str | None = None
+    event: str | None = None
+    review_status: str | None = None
+    last_review: dict[str, Any] | None = None
+    created_by: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class InvestigationListResponse(BaseModel):
+    """Danh sách có phân trang; ``scope`` nói rõ đang nhìn thấy ca của ai."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[InvestigationSummary]
+    total: int = Field(ge=0)
+    limit: int = Field(ge=1)
+    offset: int = Field(ge=0)
+    has_more: bool
+    scope: Literal["own", "any"]
+
+
+class InvestigationDetailResponse(BaseModel):
+    """Trạng thái đầy đủ để giao diện polling."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    created_at: str | None = None
+    updated_at: str | None = None
+    claim: dict[str, Any]
+    normalized_claim: dict[str, Any] | None = None
+    run_status: str
+    assessment_status: str | None = None
+    assessment: dict[str, Any] | None = None
+    stop_reason: str | None = None
+    checkpoint: str | None = None
+    next_stage: str | None = None
+    review_status: str | None = None
+    last_review: dict[str, Any] | None = None
+    version: int = Field(ge=1)
+    budget: dict[str, Any]
+    step_index: int = Field(ge=0)
+    searched_sources: list[str] = Field(default_factory=list)
+    source_status: dict[str, str] = Field(default_factory=dict)
+    counters: dict[str, int] = Field(default_factory=dict)
+    gaps: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class EventListResponse(BaseModel):
+    """Timeline tiến trình cho polling."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    last_id: int = Field(ge=0)
+
+
+class EvidenceListResponse(BaseModel):
+    """Bằng chứng kèm tài liệu nguồn và kết quả so khớp phạm vi."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    active_count: int = Field(ge=0)
+
+
+class DocumentResponse(BaseModel):
+    """Nội dung tài liệu gốc + locator để đối chiếu trích dẫn."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    document: SourceDocument
+    locators: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class DossierResponse(BaseModel):
+    """Hồ sơ nháp hoặc đã duyệt gần nhất, kèm báo cáo kiểm tra."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    dossier: Dossier | None = None
+    approved: Dossier | None = None
+    validation: ValidationReport | None = None
+
+
+class ContinueResponse(BaseModel):
+    """202 khi chạy tiếp; ``resumed=False`` nghĩa là yêu cầu trùng đã được xử lý."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    run_status: str
+    resumed: bool
+    detail: str | None = None
+
+
+class TraceResponse(BaseModel):
+    """Vết suy luận, các bước chạy LLM và tình trạng ngân sách."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    run_status: str
+    step_index: int = Field(ge=0)
+    budget: dict[str, Any]
+    counters: dict[str, int] = Field(default_factory=dict)
+    traces: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------------------

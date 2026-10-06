@@ -28,8 +28,9 @@ from fastapi import APIRouter, Body, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.api.auth import Role, UserSession, current_user, require_reviewer
+from src.api.auth import Principal, require_permission
 from src.config import get_settings
+from src.services.identity import Permission
 from src.services.warehouse import db as wh_db
 from src.services.warehouse import queries as wh_queries
 from src.services.warehouse.ingest import ingest_document
@@ -98,7 +99,7 @@ def _engine():
 @router.get("/drugs/lookup", response_model=DrugLookup)
 def drugs_lookup(
     name: Annotated[str, Query(min_length=1, max_length=200)],
-    user: Annotated[UserSession, Depends(current_user)],
+    user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_READ))],
 ) -> DrugLookup:
     """Tra cứu thuốc trong kho ELT; hạ cấp sang từ điển tĩnh khi kho chưa sẵn sàng."""
     try:
@@ -156,7 +157,7 @@ def _dictionary_lookup(name: str) -> DrugLookup:
 
 
 @router.get("/warehouse/overview")
-def warehouse_overview(user: Annotated[UserSession, Depends(current_user)]) -> dict:
+def warehouse_overview(user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_READ))]) -> dict:
     """Số liệu kho ELT: tài liệu theo nguồn, trạng thái chất lượng, phát hiện và chỉ mục RAG."""
     engine = _engine()
     overview = wh_queries.warehouse_overview(engine)
@@ -174,7 +175,7 @@ def warehouse_overview(user: Annotated[UserSession, Depends(current_user)]) -> d
 
 @router.get("/warehouse/documents")
 def warehouse_documents(
-    user: Annotated[UserSession, Depends(current_user)],
+    user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_READ))],
     source: Annotated[str | None, Query(max_length=30)] = None,
     pair_id: Annotated[str | None, Query(max_length=120)] = None,
     quality_status: Annotated[Literal["keep", "quarantine", "reject"] | None, Query()] = None,
@@ -191,7 +192,7 @@ def warehouse_documents(
 @router.get("/warehouse/documents/{doc_id:path}")
 def warehouse_document(
     doc_id: str,
-    user: Annotated[UserSession, Depends(current_user)],
+    user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_READ))],
     preview_chars: Annotated[int, Query(ge=0, le=4000)] = 600,
 ) -> dict:
     """Chi tiết một tài liệu, kèm trích đoạn đầu để kiểm tra nhanh."""
@@ -219,7 +220,7 @@ def warehouse_document(
 @router.post("/rag/search")
 def rag_search(
     payload: Annotated[RagSearchRequest, Body()],
-    user: Annotated[UserSession, Depends(current_user)],
+    user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_READ))],
 ) -> dict:
     """Truy vấn ngữ nghĩa trên chỉ mục ChromaDB đã dựng từ kho ELT."""
     engine = _engine()
@@ -235,7 +236,7 @@ def rag_search(
 
 @router.get("/ingestion/events")
 def ingestion_events(
-    user: Annotated[UserSession, Depends(current_user)],
+    user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_READ))],
     limit: Annotated[int, Query(ge=1, le=200)] = 30,
 ) -> dict:
     """Nhật ký nạp tài liệu gần nhất (chạy ELT và nạp thủ công)."""
@@ -247,7 +248,7 @@ def ingestion_events(
 @router.post("/ingestion/documents")
 def ingest_manual_document(
     payload: Annotated[IngestRequest, Body()],
-    role: Annotated[Role, Depends(require_reviewer)],
+    user: Annotated[Principal, Depends(require_permission(Permission.WAREHOUSE_INGEST))],
 ) -> dict:
     """Nạp một tài liệu thủ công (chỉ reviewer). Tài liệu đạt cổng rút gọn sẽ vào kho và chỉ mục RAG."""
     engine = _engine()

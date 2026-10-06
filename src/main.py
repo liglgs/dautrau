@@ -8,6 +8,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from src.api.admin import router as admin_router
 from src.api.auth import TOKEN_HEADER
 from src.api.auth import router as auth_router
 from src.api.investigations import router as investigations_router
@@ -32,8 +33,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="MedReview VMEC-03",
-    description="Nghiên cứu đối chiếu thuốc trên dữ liệu mô phỏng",
+    title="VigiLens",
+    description="Điều tra nhận định an toàn thuốc trên PubMed, DailyMed và openFDA FAERS, có bằng chứng và có người duyệt.",
     version="0.1.0",
     lifespan=lifespan,
 )
@@ -53,6 +54,7 @@ app.include_router(reviews_router, prefix="/api/v1")
 app.include_router(router, prefix="/api/v1")
 app.include_router(vmec_router, prefix="/api/v1")
 app.include_router(warehouse_router, prefix="/api/v1")
+app.include_router(admin_router, prefix="/api/v1")
 app.include_router(research_router)
 
 

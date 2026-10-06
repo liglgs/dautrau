@@ -117,10 +117,6 @@ class InProcessRunner:
         self._lock = threading.Lock()
         self._current: str | None = None
         self._cancelled_ids: set[str] = set()
-        #: Chống double-click cho ``/continue``: khoá theo ``investigation_id`` + token
-        #: (Idempotency-Key kèm version). Chỉ trong tiến trình — khớp thiết kế runner đơn tiến
-        #: trình của MVP (P04); khi tách worker bền vững thì thay bằng bảng trong DB.
-        self._resume_seen: dict[str, set[str]] = {}
 
     def is_cancelled(self, investigation_id: str) -> bool:
         return investigation_id in self._cancelled_ids
@@ -139,22 +135,20 @@ class InProcessRunner:
         return saved
 
     def register_resume(self, investigation_id: str, token: str | None) -> bool:
-        """Ghi nhận yêu cầu chạy tiếp; ``False`` nghĩa là double-click đã xử lý."""
+        """Ghi nhận yêu cầu chạy tiếp; ``False`` nghĩa là double-click đã xử lý.
+
+        RV-06: khoá chống lặp nằm trong kho, không nằm trong RAM — sống sót qua khởi động lại
+        tiến trình và dùng chung cho mọi tiến trình.
+        """
         if token is None:
             return True
-        seen = self._resume_seen.setdefault(investigation_id, set())
-        if token in seen:
-            return False
-        seen.add(token)
-        return True
+        return self.store.register_resume_request(investigation_id, token)
 
     def forget_resume(self, investigation_id: str, token: str | None) -> None:
         """Bỏ ghi nhận khi lần chạy tiếp không thực sự bắt đầu (lỗi/không chiếm được khoá)."""
         if token is None:
             return
-        seen = self._resume_seen.get(investigation_id)
-        if seen is not None:
-            seen.discard(token)
+        self.store.forget_resume_request(investigation_id, token)
 
     # ------------------------------------------------------------------ khóa
 

@@ -1,6 +1,19 @@
 {
   "components": {
     "schemas": {
+      "AssessmentStatus": {
+        "description": "Kết luận an toàn thuốc được phép.\n\nLưu ý: ``causal`` (kết luận nhân quả) KHÔNG nằm trong enum này — agent không bao giờ\nđược phép tự kết luận quan hệ nhân quả.",
+        "enum": [
+          "supported_for_scope",
+          "contradicted_for_scope",
+          "insufficient_evidence",
+          "scope_mismatch",
+          "out_of_scope",
+          "requires_human_review"
+        ],
+        "title": "AssessmentStatus",
+        "type": "string"
+      },
       "Body_append_sources_api_v1_cases__case_id__sources_post": {
         "properties": {
           "expected_revision": {
@@ -179,21 +192,333 @@
       },
       "ContinueRequest": {
         "additionalProperties": false,
+        "description": "Body của ``/continue``. ``expected_version`` là **bắt buộc** (RV-06).\n\nTrước đây bỏ trống được, nên hai lần bấm chạy tiếp cùng lúc đều qua. Nay thiếu trường này\ntrả 422; gửi sai phiên bản trả 409 ``version_conflict``.",
         "properties": {
           "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "ContinueRequest",
+        "type": "object"
+      },
+      "ContinueResponse": {
+        "additionalProperties": false,
+        "description": "202 khi chạy tiếp; ``resumed=False`` nghĩa là yêu cầu trùng đã được xử lý.",
+        "properties": {
+          "detail": {
             "anyOf": [
               {
-                "minimum": 1.0,
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Expected Version"
+            "title": "Detail"
+          },
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "resumed": {
+            "title": "Resumed",
+            "type": "boolean"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
           }
         },
-        "title": "ContinueRequest",
+        "required": [
+          "investigation_id",
+          "run_status",
+          "resumed"
+        ],
+        "title": "ContinueResponse",
+        "type": "object"
+      },
+      "CreateInvestigationResponse": {
+        "additionalProperties": false,
+        "description": "202 khi tạo cuộc điều tra mới.",
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "boolean"
+          },
+          "events_url": {
+            "title": "Events Url",
+            "type": "string"
+          },
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "started": {
+            "title": "Started",
+            "type": "boolean"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "created",
+          "started",
+          "run_status",
+          "version",
+          "events_url"
+        ],
+        "title": "CreateInvestigationResponse",
+        "type": "object"
+      },
+      "DocumentResponse": {
+        "additionalProperties": false,
+        "description": "Nội dung tài liệu gốc + locator để đối chiếu trích dẫn.",
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/SourceDocument"
+          },
+          "locators": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Locators",
+            "type": "array"
+          }
+        },
+        "required": [
+          "document"
+        ],
+        "title": "DocumentResponse",
+        "type": "object"
+      },
+      "Dossier": {
+        "additionalProperties": false,
+        "description": "Hồ sơ tổng hợp; chỉ phiên bản đã duyệt mới được export.",
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "assessment_status": {
+            "$ref": "#/components/schemas/AssessmentStatus"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "content_hash": {
+            "default": "",
+            "maxLength": 128,
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "dossier_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Dossier Id",
+            "type": "string"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gaps",
+            "type": "array"
+          },
+          "investigation_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/DossierSection"
+            },
+            "title": "Sections",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus",
+            "default": "pending"
+          },
+          "summary": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "version": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dossier_id",
+          "investigation_id",
+          "assessment_status",
+          "summary"
+        ],
+        "title": "Dossier",
+        "type": "object"
+      },
+      "DossierResponse": {
+        "additionalProperties": false,
+        "description": "Hồ sơ nháp hoặc đã duyệt gần nhất, kèm báo cáo kiểm tra.",
+        "properties": {
+          "approved": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Dossier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dossier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Dossier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationReport"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "DossierResponse",
+        "type": "object"
+      },
+      "DossierSection": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "statements": {
+            "items": {
+              "$ref": "#/components/schemas/DossierStatement"
+            },
+            "title": "Statements",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "body"
+        ],
+        "title": "DossierSection",
+        "type": "object"
+      },
+      "DossierStatement": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_refs": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceReference"
+            },
+            "title": "Evidence Refs",
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "quote",
+              "fact",
+              "inference",
+              "hypothesis"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "title": "DossierStatement",
         "type": "object"
       },
       "DrugLookup": {
@@ -245,6 +570,104 @@
           "origin"
         ],
         "title": "DrugLookup",
+        "type": "object"
+      },
+      "EventListResponse": {
+        "additionalProperties": false,
+        "description": "Timeline tiến trình cho polling.",
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "last_id": {
+            "minimum": 0.0,
+            "title": "Last Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "last_id"
+        ],
+        "title": "EventListResponse",
+        "type": "object"
+      },
+      "EvidenceListResponse": {
+        "additionalProperties": false,
+        "description": "Bằng chứng kèm tài liệu nguồn và kết quả so khớp phạm vi.",
+        "properties": {
+          "active_count": {
+            "minimum": 0.0,
+            "title": "Active Count",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "active_count"
+        ],
+        "title": "EvidenceListResponse",
+        "type": "object"
+      },
+      "EvidenceReference": {
+        "additionalProperties": false,
+        "description": "Evidence and source versions pinned by a dossier statement (M06).",
+        "properties": {
+          "doc_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Doc Id",
+            "type": "string"
+          },
+          "document_hash": {
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Document Hash",
+            "type": "string"
+          },
+          "document_version": {
+            "minimum": 1.0,
+            "title": "Document Version",
+            "type": "integer"
+          },
+          "evidence_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "evidence_version": {
+            "minimum": 1.0,
+            "title": "Evidence Version",
+            "type": "integer"
+          },
+          "source_url": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "evidence_version",
+          "doc_id",
+          "document_version",
+          "document_hash",
+          "source_url"
+        ],
+        "title": "EvidenceReference",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -342,10 +765,23 @@
         "title": "InvestigationConfig",
         "type": "object"
       },
-      "LoginRequest": {
-        "description": "Yêu cầu đăng nhập hoặc khởi tạo phiên.",
+      "InvestigationDetailResponse": {
+        "additionalProperties": false,
+        "description": "Trạng thái đầy đủ để giao diện polling.",
         "properties": {
-          "password": {
+          "assessment": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment"
+          },
+          "assessment_status": {
             "anyOf": [
               {
                 "type": "string"
@@ -354,19 +790,14 @@
                 "type": "null"
               }
             ],
-            "title": "Password"
+            "title": "Assessment Status"
           },
-          "role": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Role"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "budget": {
+            "additionalProperties": true,
+            "title": "Budget",
+            "type": "object"
           },
-          "token": {
+          "checkpoint": {
             "anyOf": [
               {
                 "type": "string"
@@ -375,9 +806,21 @@
                 "type": "null"
               }
             ],
-            "title": "Token"
+            "title": "Checkpoint"
           },
-          "username": {
+          "claim": {
+            "additionalProperties": true,
+            "title": "Claim",
+            "type": "object"
+          },
+          "counters": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counters",
+            "type": "object"
+          },
+          "created_at": {
             "anyOf": [
               {
                 "type": "string"
@@ -386,9 +829,336 @@
                 "type": "null"
               }
             ],
-            "title": "Username"
+            "title": "Created At"
+          },
+          "gaps": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Gaps",
+            "type": "array"
+          },
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "last_review": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Review"
+          },
+          "next_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Stage"
+          },
+          "normalized_claim": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalized Claim"
+          },
+          "review_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Status"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "searched_sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Searched Sources",
+            "type": "array"
+          },
+          "source_status": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Source Status",
+            "type": "object"
+          },
+          "step_index": {
+            "minimum": 0.0,
+            "title": "Step Index",
+            "type": "integer"
+          },
+          "stop_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Reason"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
           }
         },
+        "required": [
+          "investigation_id",
+          "claim",
+          "run_status",
+          "version",
+          "budget",
+          "step_index"
+        ],
+        "title": "InvestigationDetailResponse",
+        "type": "object"
+      },
+      "InvestigationListResponse": {
+        "additionalProperties": false,
+        "description": "Danh sách có phân trang; ``scope`` nói rõ đang nhìn thấy ca của ai.",
+        "properties": {
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InvestigationSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "minimum": 0.0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "scope": {
+            "enum": [
+              "own",
+              "any"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "total": {
+            "minimum": 0.0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more",
+          "scope"
+        ],
+        "title": "InvestigationListResponse",
+        "type": "object"
+      },
+      "InvestigationSummary": {
+        "additionalProperties": false,
+        "description": "Một dòng trong danh sách cuộc điều tra.",
+        "properties": {
+          "assessment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Status"
+          },
+          "checkpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "drug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drug"
+          },
+          "event": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event"
+          },
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "last_review": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Review"
+          },
+          "next_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Stage"
+          },
+          "review_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Status"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "run_status",
+          "version"
+        ],
+        "title": "InvestigationSummary",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "additionalProperties": false,
+        "description": "Đăng nhập nội bộ: email + mật khẩu. Không nhận vai hay mã người do người gọi khai.",
+        "properties": {
+          "email": {
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
         "title": "LoginRequest",
         "type": "object"
       },
@@ -488,7 +1258,6 @@
             "type": "object"
           },
           "reason": {
-            "default": "",
             "maxLength": 2000,
             "title": "Reason",
             "type": "string"
@@ -510,17 +1279,62 @@
           "decision_id",
           "action",
           "checkpoint",
-          "expected_version"
+          "expected_version",
+          "reason"
         ],
         "title": "ReviewRequest",
         "type": "object"
       },
-      "Role": {
-        "enum": [
-          "investigator",
-          "reviewer"
+      "ReviewResult": {
+        "additionalProperties": false,
+        "description": "Kết quả áp dụng một quyết định review.",
+        "properties": {
+          "invalidated": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Invalidated",
+            "type": "array"
+          },
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "message": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Message",
+            "type": "string"
+          },
+          "review_status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "run_status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "version",
+          "run_status",
+          "review_status"
         ],
-        "title": "Role",
+        "title": "ReviewResult",
+        "type": "object"
+      },
+      "ReviewStatus": {
+        "enum": [
+          "pending",
+          "approved",
+          "rejected",
+          "changes_requested"
+        ],
+        "title": "ReviewStatus",
         "type": "string"
       },
       "RunStatus": {
@@ -536,6 +1350,129 @@
         ],
         "title": "RunStatus",
         "type": "string"
+      },
+      "SourceDocument": {
+        "additionalProperties": false,
+        "description": "Tài liệu gốc do adapter nguồn (Người 1) trả về và được lưu bất biến.",
+        "properties": {
+          "doc_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Doc Id",
+            "type": "string"
+          },
+          "hash": {
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Hash",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "pubmed",
+              "dailymed",
+              "faers"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "source_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_url": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Source Url",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 200000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Title",
+            "type": "string"
+          },
+          "version": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "doc_id",
+          "source",
+          "source_id",
+          "text",
+          "hash"
+        ],
+        "title": "SourceDocument",
+        "type": "object"
+      },
+      "TraceResponse": {
+        "additionalProperties": false,
+        "description": "Vết suy luận, các bước chạy LLM và tình trạng ngân sách.",
+        "properties": {
+          "budget": {
+            "additionalProperties": true,
+            "title": "Budget",
+            "type": "object"
+          },
+          "counters": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counters",
+            "type": "object"
+          },
+          "investigation_id": {
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "step_index": {
+            "minimum": 0.0,
+            "title": "Step Index",
+            "type": "integer"
+          },
+          "traces": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Traces",
+            "type": "array"
+          }
+        },
+        "required": [
+          "investigation_id",
+          "run_status",
+          "step_index",
+          "budget"
+        ],
+        "title": "TraceResponse",
+        "type": "object"
       },
       "ValidationError": {
         "properties": {
@@ -576,6 +1513,35 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "ValidationReport": {
+        "additionalProperties": false,
+        "description": "Báo cáo kiểm tra tính hợp lệ của hồ sơ trước khi cho phép export.",
+        "properties": {
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "title": "ValidationReport",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -588,15 +1554,104 @@
     }
   },
   "info": {
-    "description": "Nghiên cứu đối chiếu thuốc trên dữ liệu mô phỏng",
-    "title": "MedReview VMEC-03",
+    "description": "Điều tra nhận định an toàn thuốc trên PubMed, DailyMed và openFDA FAERS, có bằng chứng và có người duyệt.",
+    "title": "VigiLens",
     "version": "0.1.0"
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/audit": {
+      "get": {
+        "description": "Nhật ký append-only, lọc được theo ca và theo người.\n\n``format=jsonl`` trả mỗi bản ghi một dòng — dạng dùng để đối chiếu ngoài hệ thống.",
+        "operationId": "read_audit_api_v1_admin_audit_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "investigation_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Investigation Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Actor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 2000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "json",
+              "pattern": "^(json|jsonl)$",
+              "title": "Format",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Read Audit Api V1 Admin Audit Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Audit",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
-        "description": "Đăng nhập bằng token hoặc username/role và cấp cookie session HttpOnly.",
+        "description": "Đăng nhập nội bộ bằng email + mật khẩu; cấp cookie phiên HttpOnly.\n\nAUTH-01: trước đây chỉ cần khai ``role`` là có phiên. Nay phải có credential hợp lệ, và\n``session_id`` **không** còn nằm trong thân phản hồi.",
         "operationId": "login_api_v1_auth_login_post",
         "requestBody": {
           "content": {
@@ -642,7 +1697,7 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "description": "Đăng xuất, xóa session khỏi store và hủy cookie.",
+        "description": "Thu hồi phiên của chính mình và huỷ cookie.",
         "operationId": "logout_api_v1_auth_logout_post",
         "parameters": [
           {
@@ -696,7 +1751,7 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "description": "Trả thông tin người dùng và vai trò của phiên hiện tại.",
+        "description": "Thông tin danh tính và vai trò của phiên hiện tại.",
         "operationId": "me_api_v1_auth_me_get",
         "responses": {
           "200": {
@@ -1500,7 +2555,7 @@
     },
     "/api/v1/investigations": {
       "get": {
-        "description": "Danh sách cuộc điều tra đã lưu (mới nhất trước). Hỗ trợ lọc theo mine_only.",
+        "description": "Danh sách cuộc điều tra (mới nhất trước).\n\nAUTH-02: vai chỉ có quyền ``:own`` **luôn** bị giới hạn vào ca của mình, và bộ lọc nằm trong\ncâu truy vấn (trước ``LIMIT``) nên không còn chuyện ca cũ biến mất khỏi danh sách. Trả thêm\n``total``/``has_more`` để giao diện phân trang mà không đếm bằng độ dài trang đầu.",
         "operationId": "list_investigations_api_v1_investigations_get",
         "parameters": [
           {
@@ -1512,6 +2567,17 @@
               "maximum": 200,
               "minimum": 1,
               "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
               "type": "integer"
             }
           },
@@ -1530,7 +2596,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/InvestigationListResponse"
+                }
               }
             },
             "description": "Successful Response"
@@ -1592,9 +2660,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Investigation Api V1 Investigations Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/CreateInvestigationResponse"
                 }
               }
             },
@@ -1642,9 +2708,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Investigation Api V1 Investigations  Investigation Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/InvestigationDetailResponse"
                 }
               }
             },
@@ -1674,7 +2738,7 @@
     },
     "/api/v1/investigations/{investigation_id}/cancel": {
       "post": {
-        "description": "Hủy cuộc điều tra đang chạy, đang chờ hoặc chờ reviewer.\n\nChỉ người tạo cuộc điều tra hoặc reviewer mới có quyền hủy.",
+        "description": "Hủy cuộc điều tra đang chạy, đang chờ hoặc chờ reviewer.\n\nChỉ người có quyền chạy ca (``investigation:run:own``/``:any``) mới hủy được.",
         "operationId": "cancel_investigation_api_v1_investigations__investigation_id__cancel_post",
         "parameters": [
           {
@@ -1722,7 +2786,7 @@
     },
     "/api/v1/investigations/{investigation_id}/continue": {
       "post": {
-        "description": "Chạy tiếp sau checkpoint review (giữ nguyên ngân sách đã dùng).\n\nDouble-click được chặn bằng ``Idempotency-Key``: cùng key + cùng version ⇒ không chạy thêm lần nữa.",
+        "description": "Chạy tiếp sau checkpoint review (giữ nguyên ngân sách đã dùng).\n\nRV-06: ``expected_version`` là bắt buộc — thiếu thì 422, sai thì 409. Double-click vẫn được\nchặn thêm bằng ``Idempotency-Key``.",
         "operationId": "continue_investigation_api_v1_investigations__investigation_id__continue_post",
         "parameters": [
           {
@@ -1755,27 +2819,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/ContinueRequest"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "title": "Payload"
+                "$ref": "#/components/schemas/ContinueRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "202": {
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Continue Investigation Api V1 Investigations  Investigation Id  Continue Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ContinueResponse"
                 }
               }
             },
@@ -1832,9 +2887,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Document Api V1 Investigations  Investigation Id  Documents  Doc Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DocumentResponse"
                 }
               }
             },
@@ -1882,9 +2935,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Dossier Api V1 Investigations  Investigation Id  Dossier Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DossierResponse"
                 }
               }
             },
@@ -1955,9 +3006,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Events Api V1 Investigations  Investigation Id  Events Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/EventListResponse"
                 }
               }
             },
@@ -2005,9 +3054,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Evidence Api V1 Investigations  Investigation Id  Evidence Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/EvidenceListResponse"
                 }
               }
             },
@@ -2085,7 +3132,7 @@
     },
     "/api/v1/investigations/{investigation_id}/reviews": {
       "post": {
-        "description": "Gửi quyết định của reviewer; danh tính lấy từ token ở server.",
+        "description": "Gửi quyết định của reviewer; danh tính lấy từ phiên ở server.",
         "operationId": "submit_review_api_v1_investigations__investigation_id__reviews_post",
         "parameters": [
           {
@@ -2113,9 +3160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Submit Review Api V1 Investigations  Investigation Id  Reviews Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewResult"
                 }
               }
             },
@@ -2163,9 +3208,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Investigation Trace Api V1 Investigations  Investigation Id  Trace Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/TraceResponse"
                 }
               }
             },

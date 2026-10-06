@@ -1,10 +1,26 @@
 import ipaddress
+import os
 import socket
 from unittest.mock import AsyncMock
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+
+#: Biến môi trường ghim chế độ danh tính cho **mọi** bài kiểm thử (B1.6).
+#: ``auth_provider=auto`` chọn Supabase khi thấy ``SUPABASE_URL``, mà ``.env`` của máy phát triển
+#: có sẵn khoá đó — không ghim thì kết quả kiểm thử phụ thuộc ``.env`` từng máy và bài kiểm thử
+#: sẽ gọi mạng. Chế độ ``local`` là mặc định khi chạy pytest theo đúng thiết kế B1.6.
+#: ``SUPABASE_URL`` ghim rỗng (chứ không chỉ xoá khỏi ``os.environ``) vì pydantic-settings đọc
+#: thẳng tệp ``.env``: xoá biến môi trường là chưa đủ để chặn giá trị trong tệp.
+TEST_AUTH_ENV = {
+    "AUTH_PROVIDER": "local",
+    "APP_ENV": "test",
+    "VIGILENS_TEST_AUTH": "1",
+    "SUPABASE_URL": "",
+}
+#: Khoá Supabase bị bỏ khỏi môi trường kiểm thử để không nhà cung cấp nào chạm tới mạng.
+SUPABASE_ENV_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY")
 
 
 def _loopback_address(host):
@@ -20,6 +36,11 @@ def _loopback_address(host):
 
 def pytest_configure(config):
     """Block external network before test collection; allow local test servers."""
+    for key, value in TEST_AUTH_ENV.items():
+        os.environ[key] = value
+    for key in SUPABASE_ENV_KEYS:
+        os.environ.pop(key, None)
+
     guard = pytest.MonkeyPatch()
     connect = socket.socket.connect
     connect_ex = socket.socket.connect_ex
