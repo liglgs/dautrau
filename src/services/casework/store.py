@@ -384,9 +384,11 @@ def _latest_response_reviews(session: Session, response_ids: list[str]) -> dict[
         session.execute(
             select(ReviewRef)
             .where(ReviewRef.entity == "response", ReviewRef.entity_id.in_(response_ids))
-            # ``entity_version`` tăng đơn điệu theo từng quyết định, nên nó là thứ tự thật khi hai
-            # quyết định trùng dấu thời gian. Chỉ sắp theo ``review_id`` là sai: mã đó ngẫu nhiên,
-            # không phản ánh thứ tự ghi, nên "quyết định cuối" có thể hoá thành quyết định cũ.
+            # ``entity_version`` là số phiên bản của đối tượng bị duyệt tại lúc ra quyết định, và mỗi
+            # quyết định đều tăng số đó lên một (``_apply_response_review`` ghi ``expected + 1``), nên
+            # trong một phiếu nó tăng đúng theo thứ tự ghi. Đó mới là thứ tự thật khi hai quyết định
+            # trùng dấu thời gian; ``review_id`` chỉ là chốt cuối cho trường hợp hoà, vì mã đó ngẫu
+            # nhiên và không phản ánh thứ tự ghi.
             .order_by(ReviewRef.decided_at, ReviewRef.entity_version, ReviewRef.review_id)
         )
         .scalars()
@@ -1240,9 +1242,11 @@ class CaseWorkStore:
                 session.execute(
                     select(ReviewRef)
                     .where(ReviewRef.entity == entity, ReviewRef.entity_id == entity_id)
-                    # ``entity_version`` tăng đơn điệu theo từng quyết định, nên nó là thứ tự thật khi hai
-            # quyết định trùng dấu thời gian. Chỉ sắp theo ``review_id`` là sai: mã đó ngẫu nhiên,
-            # không phản ánh thứ tự ghi, nên "quyết định cuối" có thể hoá thành quyết định cũ.
+                    # ``entity_version`` là số phiên bản của đối tượng bị duyệt tại lúc ra quyết định, và mỗi
+            # quyết định đều tăng số đó lên một (``_apply_response_review`` ghi ``expected + 1``), nên
+            # trong một phiếu nó tăng đúng theo thứ tự ghi. Đó mới là thứ tự thật khi hai quyết định
+            # trùng dấu thời gian; ``review_id`` chỉ là chốt cuối cho trường hợp hoà, vì mã đó ngẫu
+            # nhiên và không phản ánh thứ tự ghi.
             .order_by(ReviewRef.decided_at, ReviewRef.entity_version, ReviewRef.review_id)
                 )
                 .scalars()
