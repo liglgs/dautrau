@@ -37,4 +37,4 @@ CLI chỉ kiểm provenance/count/split/review/bundle; exit 2 khi còn blocker, 
 4. Model recordings gắn request hash, agent hook dùng cùng BM25/replay adapter, protocol trước human review, usage/trace. CandidateQuoteProvider và demo adapter không thay benchmark retrieval/RAG công bằng.
 5. Chạy browser xanh và nhận session/ownership/cancel/typed APIs; sau đó mới nghiệm thu UI, reviewer effort và demo cuối.
 
-Hướng dẫn backend hiện tại: [Person 3](person3/README.md), [runbook](runbook.md). [Test report](../vigilens/TEST_REPORT.md) phân biệt main, các PR và lượt kiểm tra lịch sử.
+Hướng dẫn backend hiện tại: [Person 3](person3/README.md), [runbook](runbook.md). [Test report](../frontend/TEST_REPORT.md) phân biệt main, các PR và lượt kiểm tra lịch sử.

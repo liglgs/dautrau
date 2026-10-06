@@ -56,7 +56,8 @@ $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = "api"
 $env:VIGILENS_API_BASE = "http://127.0.0.1:8000"
 $env:VIGILENS_INVESTIGATOR_TOKEN = "person3-investigator-demo"
 $env:VIGILENS_REVIEWER_TOKEN = "person3-reviewer-demo"
-npm.cmd --prefix vigilens run dev -- --hostname 127.0.0.1
+cd frontend
+npm.cmd run dev -- --hostname 127.0.0.1
 ```
 
 Mở `http://127.0.0.1:3100/app/investigations`, chọn **Điều tra mới**:

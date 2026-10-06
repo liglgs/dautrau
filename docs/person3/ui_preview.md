@@ -1,6 +1,6 @@
 # Thử UI VigiLens bằng dữ liệu mẫu
 
-**Cập nhật:** nhánh đã merge main, runner Người 3 có chế độ thử qua graph/API. Dùng [hướng dẫn backend/UI](backend_demo.md) để chạy `vigilens/` ở mode `api`. Phần bên dưới lưu cách thử UI mock trước khi merge.
+**Cập nhật:** nhánh đã merge main, runner Người 3 có chế độ thử qua graph/API. Dùng [hướng dẫn backend/UI](backend_demo.md) để chạy `frontend/` ở mode `api`. Phần bên dưới lưu cách thử UI mock trước khi merge.
 
 UI lấy nguyên bản `vigilens/` từ main `7c559e4`, đặt trong `.local-preview/vigilens/` để chưa cần merge Git. Thư mục preview được Git bỏ qua. Đây là giao diện đúng đề tài điều tra an toàn thuốc, gồm claim, investigation timeline, evidence, dossier và reviewer.
 

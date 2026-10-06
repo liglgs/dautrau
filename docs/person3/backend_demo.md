@@ -37,15 +37,16 @@ python -m pip install -r requirements-person3-demo.txt
 Trong terminal thứ hai, cũng tại thư mục gốc repository:
 
 ```powershell
-npm.cmd --prefix vigilens ci --no-audit --no-fund
+cd frontend
+npm.cmd ci --no-audit --no-fund
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = "api"
 $env:VIGILENS_API_BASE = "http://127.0.0.1:8000"
 $env:VIGILENS_INVESTIGATOR_TOKEN = "person3-investigator-demo"
 $env:VIGILENS_REVIEWER_TOKEN = "person3-reviewer-demo"
-npm.cmd --prefix vigilens run dev -- --hostname 127.0.0.1
+npm.cmd run dev -- --hostname 127.0.0.1
 ```
 
-Đợi `Ready`, mở `http://localhost:3100/app/investigations/new`. Không dùng `.local-preview/vigilens` nữa; `vigilens/` là code đã merge.
+Đợi `Ready`, mở `http://localhost:3100/app/investigations/new`. Không dùng `.local-preview/vigilens` nữa; `frontend/` là code đã merge.
 
 Lần thử npm trong chat bị lỗi quyền `EACCES` khi tải gói từ npm registry. UI chưa được xác nhận trong trình duyệt; các lệnh trên cần chạy trong terminal người dùng để tải dependencies.
 

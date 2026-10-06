@@ -1,10 +1,10 @@
 # Nhật ký tiến độ thực thi — vòng hai
 
-Cập nhật ngày **05/10/2026**. Mẫu ghi theo mục 18.3 của [báo cáo chính](NGHIEN_CUU_CHUYEN_SAU_VA_GIAI_PHAP_E2E_CANH_GIAC_DUOC.md).
+Cập nhật lần cuối **06/10/2026**. Mẫu ghi theo mục 18.3 của [báo cáo chính](NGHIEN_CUU_CHUYEN_SAU_VA_GIAI_PHAP_E2E_CANH_GIAC_DUOC.md).
 
 `Task ID | Owner | Trạng thái | Artifact/SHA | Đã kiểm gì, bằng data nào | Thiếu đầu vào gì | Ai giao/ai nhận | Việc có thể làm tiếp | Người review/kết quả`
 
-Trạng thái dùng đúng bốn mức của kế hoạch: `TODO` / `DOING` / `WAITING` / `DEV_DONE` / `INTEGRATED` / `PILOT_ACCEPTED`.
+Trạng thái dùng đúng sáu mức của kế hoạch: `TODO` / `DOING` / `WAITING` / `DEV_DONE` / `INTEGRATED` / `PILOT_ACCEPTED`.
 
 > **Nguyên tắc ghi:** chỉ đánh `DEV_DONE` khi có artifact và lệnh kiểm chứng chạy được trên máy này.
 > Việc còn thiếu đầu vào bên ngoài (dữ liệu bệnh viện, dược sĩ duyệt, chuẩn vàng) ghi `WAITING`, không ghi "xong".
@@ -66,7 +66,7 @@ Commit: `6c5d56c` (gộp mã trùng lặp, tái lập máy mới) và `16956fd` 
 | # | Chỗ sai | Cách sửa |
 | --- | --- | --- |
 | 1 | `docs/runbook.md` và `docs/PERSON4_TIENDAT_INTEGRATION.md` hướng dẫn `cd vigilens` — thư mục này không tồn tại (tên đúng là `frontend`) | đổi thành `cd frontend` |
-| 2 | `docs/mvp-deployment.md` mô tả CI như đang chạy, nhưng `.github/workflows` đã bị xoá ở commit `db5c20f` | thêm ghi chú trạng thái: nội dung chỉ là bản mẫu để khôi phục, không phải bằng chứng CI xanh |
+| 2 | `docs/mvp-deployment.md` mô tả CI như đang chạy, nhưng `.github/workflows` đã bị xoá ở commit `db5c20f` | cập nhật ghi chú trạng thái: CI đã được dựng lại ở commit `1f654cf` (`.github/workflows/ci.yml`, 3 job trên `ubuntu-latest`) nhưng **chưa chạy trên GitHub**; phần self-hosted bên dưới chỉ còn là bản mẫu, không phải bằng chứng CI xanh |
 | 3 | `docs/research/2026-10-05/verify_packet.py` đọc cứng đường dẫn Windows `C:/Users/Admin/.codex/...` nên chết ngay trên máy mới | nhận `--fragment` tuỳ chọn, bỏ qua phần fragment/health khi thiếu, chạy được trên Linux/macOS |
 | 4 | Bảng biến môi trường trong README lệch với mã: ghi `VIGILENS_BACKEND_URL` (tên thật `VIGILENS_API_BASE`), thiếu `NEXT_PUBLIC_VIGILENS_DATA_MODE`, thiếu toàn bộ biến ELT/RAG | cập nhật bảng theo đúng tên biến trong mã, thêm mục cấu hình kho ELT/RAG |
 

@@ -13,7 +13,7 @@ Seed còn hai heldout fixture riêng; manifest/snapshots/labels/recordings ở c
 
 ## Demo thao tác và nghiệm thu
 
-Chạy local theo [runbook](runbook.md) và [frontend README](../vigilens/README.md). Ghi rõ mock, API synthetic hay nguồn live ở từng bước. Nhánh frontend vẫn Draft vì browser regression lỗi: không coi các bước create/poll/review/export tự động đã nghiệm thu.
+Chạy local theo [runbook](runbook.md) và [frontend README](../frontend/README.md). Ghi rõ mock, API synthetic hay nguồn live ở từng bước. Nhánh frontend vẫn Draft vì browser regression lỗi: không coi các bước create/poll/review/export tự động đã nghiệm thu.
 
 Khi browser ổn định: tạo claim → theo dõi timeline/gaps → mở evidence/quote/version → so sánh scope → review theo version/409 → approve dossier/export → sửa evidence và kiểm approval invalidation. Role demo không phải phiên đăng nhập server. Không export nháp hoặc dùng điểm fixture làm thành tích sản phẩm.
 

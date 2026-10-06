@@ -48,7 +48,7 @@ data/mvp-candidates-50-2026-10-02/
      ```powershell
      python -m scripts.import_pubmed --input data/mvp-candidates-50-2026-10-02/raw/...
      ```
-   - Đảm bảo runner có thể đọc tài liệu khi chạy `MVP_SOURCE_MODE=live` + `MVP_PUBMED_MODE=local` mà không phụ thuộc vào kết nối mạng bên ngoài.
+   - Đảm bảo runner đọc được tài liệu PubMed local khi chạy `MVP_SOURCE_MODE=live` + `MVP_PUBMED_MODE=local` mà không cần mạng; DailyMed/FAERS vẫn gọi HTTP nên hai nguồn đó cần mạng.
 
 2. **Người 2 (Core Backend & Agent Orchestration):**
    - Chạy kiểm thử Agent Runner trên dữ liệu thật với `MVP_SOURCE_MODE=live` kết hợp `MVP_EVIDENCE_MODE=person3`.
