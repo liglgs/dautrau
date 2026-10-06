@@ -28,6 +28,7 @@ from uuid import uuid4
 from sqlalchemy import func, inspect, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from src.services.casework.models import (
     EvidenceBundle,
@@ -369,7 +370,32 @@ def _bundle_document(row: EvidenceBundle) -> dict[str, Any]:
     }
 
 
-def _response_document(row: ProfessionalResponse) -> dict[str, Any]:
+def _latest_response_reviews(session: Session, response_ids: list[str]) -> dict[str, dict[str, Any]]:
+    """Quyết định duyệt **mới nhất** của từng phiếu, đọc từ ``review_refs``.
+
+    ``review_refs`` là sổ append-only và là nguồn sự thật; ``ProfessionalResponse.review_json`` chỉ
+    được ghi ``None`` lúc tạo và **không** nơi nào cập nhật. Trả về ``review_json`` trần thì mọi phiếu
+    đã duyệt vẫn đọc ra ``review: null`` — giao diện đọc lớp bọc sẽ nói "chưa duyệt" về một phiếu đã
+    duyệt, tức là nói sai về thực tế.
+    """
+    if not response_ids:
+        return {}
+    rows = (
+        session.execute(
+            select(ReviewRef)
+            .where(ReviewRef.entity == "response", ReviewRef.entity_id.in_(response_ids))
+            .order_by(ReviewRef.decided_at, ReviewRef.review_id)
+        )
+        .scalars()
+        .all()
+    )
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        latest[row.entity_id] = _review_document(row)
+    return latest
+
+
+def _response_document(row: ProfessionalResponse, review: dict[str, Any] | None = None) -> dict[str, Any]:
     return {
         "response_id": row.response_id,
         "work_item_id": row.work_item_id,
@@ -380,7 +406,7 @@ def _response_document(row: ProfessionalResponse) -> dict[str, Any]:
         "assessment_status": row.assessment_status,
         "coverage": row.coverage_json or {},
         "drafted_by": row.drafted_by_json,
-        "review": row.review_json,
+        "review": review,
         "approval": row.approval_json,
         "supersedes": row.supersedes,
         "created_at": _iso(row.created_at),
@@ -1044,7 +1070,8 @@ class CaseWorkStore:
     def get_response(self, response_id: str) -> dict[str, Any]:
         response_id = _text(response_id, "response_id")
         with session_scope(self.engine) as session:
-            return _response_document(_ensure_row(session, ProfessionalResponse, response_id, "phiếu trả lời"))
+            row = _ensure_row(session, ProfessionalResponse, response_id, "phiếu trả lời")
+            return _response_document(row, _latest_response_reviews(session, [response_id]).get(response_id))
 
     def list_responses(self, work_item_id: str, *, include_superseded: bool = True) -> list[dict[str, Any]]:
         work_item_id = _text(work_item_id, "work_item_id")
@@ -1053,7 +1080,8 @@ class CaseWorkStore:
             if not include_superseded:
                 query = query.where(ProfessionalResponse.status != "superseded")
             rows = session.execute(query.order_by(ProfessionalResponse.version)).scalars().all()
-            return [_response_document(row) for row in rows]
+            reviews = _latest_response_reviews(session, [row.response_id for row in rows])
+            return [_response_document(row, reviews.get(row.response_id)) for row in rows]
 
     # --------------------------------------------------------------- duyệt
 
@@ -1369,6 +1397,7 @@ class CaseWorkStore:
                 .scalars()
                 .all()
             )
+            response_reviews = _latest_response_reviews(session, [item.response_id for item in responses])
             follow_ups = (
                 session.execute(
                     select(FollowUp).where(FollowUp.work_item_id == work_item_id).order_by(FollowUp.created_at)
@@ -1387,7 +1416,9 @@ class CaseWorkStore:
                 ),
                 "investigation_links": [_link_document(item) for item in links],
                 "evidence_bundles": [_bundle_document(item) for item in bundles],
-                "responses": [_response_document(item) for item in responses],
+                "responses": [
+                    _response_document(item, response_reviews.get(item.response_id)) for item in responses
+                ],
                 "follow_ups": [_follow_up_document(item) for item in follow_ups],
             }
 

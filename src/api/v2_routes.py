@@ -219,7 +219,7 @@ class CoverageReport(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    documents_retrieved: int = Field(ge=0)
+    documents_retrieved: int = Field(ge=0, strict=True)
     sources_ok: list[str]
     sources_empty: list[str]
     sources_error: list[str]
@@ -239,7 +239,9 @@ class SourceSystem(BaseModel):
 
     name: str = Field(min_length=1, max_length=80)
     record_id: str | None = Field(default=None, max_length=120)
-    deidentified: bool
+    #: Chặt kiểu: ``"yes"`` không được âm thầm thành ``true``. Đây là lời khai đã tách thông tin nhận
+    #: dạng, nên nhận một giá trị gần đúng là nhận một lời khai khác hẳn ý người gửi.
+    deidentified: bool = Field(strict=True)
 
 
 class Attachment(BaseModel):
@@ -308,9 +310,9 @@ class RunSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    steps_used: int | None = Field(default=None, ge=0)
-    documents_used: int | None = Field(default=None, ge=0)
-    source_requests_used: int | None = Field(default=None, ge=0)
+    steps_used: int | None = Field(default=None, ge=0, strict=True)
+    documents_used: int | None = Field(default=None, ge=0, strict=True)
+    source_requests_used: int | None = Field(default=None, ge=0, strict=True)
     stop_reason: str | None = Field(default=None, max_length=60)
     assessment_status: str | None = Field(default=None, max_length=60)
 
@@ -679,8 +681,12 @@ def read_evidence_bundle(
             "Yêu cầu chưa có gói bằng chứng nào.",
             {"work_item_id": work_item_id, "remedy": "Liên kết một lần chạy điều tra trước."},
         )
-    _require_contract_shaped_bundles(work_item_id, bundles)
-    return bundles[-1]
+    # Chỉ soi gói **mình sắp trả**. Gói cũ hỏng không làm đường này đổ oan: mỗi tuyến chịu trách
+    # nhiệm cho đúng những tài liệu nó phát ra, và lớp bọc của ``GET /work-items/{id}`` mới là chỗ
+    # phát ra cả danh sách.
+    bundle = bundles[-1]
+    _require_contract_shaped_bundles(work_item_id, [bundle])
+    return bundle
 
 
 @router.post("/work-items/{work_item_id}/responses", status_code=201)

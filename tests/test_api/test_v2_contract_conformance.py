@@ -236,3 +236,159 @@ async def test_an_optional_field_is_absent_rather_than_null(client):
     assert "source_system" not in work_item["context"]
     for name in ("drug", "event"):
         assert set(work_item["scope"][name]) == {"value", "resolution"}, work_item["scope"][name]
+
+
+@pytest.mark.asyncio
+async def test_the_documents_inside_the_work_item_envelope_match_too(client):
+    """Lớp bọc của ``GET /work-items/{id}`` chở bốn loại tài liệu con — mỗi loại phải khớp lược đồ.
+
+    Bản trước của tệp này chỉ soi cấu trúc lớp bọc, nên một gói bằng chứng sai lược đồ vẫn đi ra
+    nguyên vẹn trong ``evidence_bundles[]`` mà không bài nào bắt. Đó là lý do bài này tồn tại: tài
+    liệu con là chỗ dễ lọt nhất vì chúng không đi qua một mô hình Pydantic nào.
+    """
+    client, store = client
+    investigator = _headers("investigator", "usr_envelope")
+
+    created = await client.post(
+        "/api/v2/work-items",
+        json={
+            "question": "Metformin có gây nhiễm toan lactic không?",
+            "context": {
+                "requester": {"id": "usr_envelope"},
+                "channel": "web",
+                "raw_text": "Câu hỏi nguyên văn.",
+                "language": "vi",
+            },
+        },
+        headers=investigator,
+    )
+    assert created.status_code == 201, created.text
+    work_item_id = created.json()["work_item_id"]
+
+    link = await client.post(
+        f"/api/v2/work-items/{work_item_id}/investigations",
+        json={"investigation_id": "INV-envelope", "purpose": "initial", "state": "running"},
+        headers=investigator,
+    )
+    assert link.status_code == 201, link.text
+
+    response = await client.post(
+        f"/api/v2/work-items/{work_item_id}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 0,
+                "sources_ok": [],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": False,
+            },
+        },
+        headers=investigator,
+    )
+    assert response.status_code == 201, response.text
+
+    follow_up = await client.post(
+        f"/api/v2/work-items/{work_item_id}/follow-ups",
+        json={"kind": "recheck_source", "note": "Chạy lại khi có bản mới."},
+        headers=investigator,
+    )
+    assert follow_up.status_code == 201, follow_up.text
+
+    store.add_evidence_bundle(
+        work_item_id,
+        investigation_id="INV-envelope",
+        items=[
+            {
+                "evidence_id": "EVI-envelope",
+                "doc_id": "PMID-2",
+                "source": "pubmed",
+                "stance": "uncertain",
+                "quote": "Trích đoạn.",
+                "locator": {"start": 0, "end": 10},
+                "retrieval": "abstract_only",
+            }
+        ],
+        gaps=[],
+        coverage={
+            "documents_retrieved": 1,
+            "sources_ok": ["pubmed"],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": True,
+        },
+        assessment_status="insufficient_evidence",
+    )
+
+    envelope = await client.get(f"/api/v2/work-items/{work_item_id}", headers=investigator)
+    assert envelope.status_code == 200, envelope.text
+    document = envelope.json()
+
+    _assert_matches("WorkItem", document["work_item"])
+    for name, child, schema in (
+        ("investigation_links", document["investigation_links"], "InvestigationLink"),
+        ("evidence_bundles", document["evidence_bundles"], "EvidenceBundle"),
+        ("responses", document["responses"], "ProfessionalResponse"),
+        ("follow_ups", document["follow_ups"], "FollowUp"),
+    ):
+        assert child, f"{name} phải có ít nhất một phần tử để phép kiểm có nghĩa"
+        for index, item in enumerate(child):
+            try:
+                _assert_matches(schema, item)
+            except AssertionError as error:
+                raise AssertionError(f"{name}[{index}] sai lược đồ:\n{error}") from error
+
+
+@pytest.mark.asyncio
+async def test_a_review_inside_the_envelope_matches_too(client):
+    """Phiếu trả lời trong lớp bọc chở thêm ``review`` — chính là dấu duyệt, phải khớp ``ReviewRef``."""
+    client, _ = client
+    investigator = _headers("investigator", "usr_envelope_rev2")
+    reviewer = _headers("reviewer", "usr_envelope_rev3")
+
+    created = await client.post(
+        "/api/v2/work-items",
+        json={
+            "question": "Câu hỏi để duyệt?",
+            "context": {
+                "requester": {"id": "usr_envelope_rev2"},
+                "channel": "web",
+                "raw_text": "Câu hỏi.",
+                "language": "vi",
+            },
+        },
+        headers=investigator,
+    )
+    work_item_id = created.json()["work_item_id"]
+    response = await client.post(
+        f"/api/v2/work-items/{work_item_id}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 0,
+                "sources_ok": [],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": False,
+            },
+        },
+        headers=investigator,
+    )
+    assert response.status_code == 201, response.text
+    document = response.json()
+
+    reviewed = await client.post(
+        f"/api/v2/responses/{document['response_id']}/review",
+        json={"action": "approve", "reason": "Khớp phạm vi.", "expected_version": document["version"]},
+        headers=reviewer,
+    )
+    assert reviewed.status_code == 200, reviewed.text
+
+    envelope = await client.get(f"/api/v2/work-items/{work_item_id}", headers=investigator)
+    assert envelope.status_code == 200, envelope.text
+    stored = envelope.json()["responses"][0]
+    _assert_matches("ProfessionalResponse", stored)
+    assert stored["review"] is not None, "quyết định duyệt phải nằm trong lớp bọc"
+    _assert_matches("ReviewRef", stored["review"])
