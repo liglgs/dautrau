@@ -252,6 +252,18 @@ def _require(value: Any, allowed: Iterable[str], field: str) -> None:
         raise invalid_request(f"Giá trị không hợp lệ cho {field}: {value!r}.", {"allowed": sorted(allowed)})
 
 
+def visible_to_expression(user_id: str):
+    """Biểu thức phạm vi của một người: chủ sở hữu nếu đã gán, ngược lại người gửi yêu cầu.
+
+    Cùng quy tắc với ``_is_owner`` ở tầng API, nhưng viết bằng SQL để lọc được **trước** khi
+    phân trang. ``as_string()`` sinh cú pháp JSON phù hợp với từng hệ quản trị (``json_extract``
+    trên SQLite, ``->>`` trên PostgreSQL).
+    """
+    owner_id = WorkItem.owner_json["id"].as_string()
+    requester_id = WorkItem.context_json["requester"]["id"].as_string()
+    return func.coalesce(owner_id, requester_id) == user_id
+
+
 def ensure_casework_schema(engine: Engine) -> list[str]:
     """Tạo các bảng còn thiếu của lát cắt DI (chỉ thêm, không sửa bảng cũ)."""
     existing = set(inspect(engine).get_table_names())
@@ -616,6 +628,34 @@ class CaseWorkStore:
             )
         return document
 
+    def count_work_items(
+        self,
+        *,
+        work_status: str | None = None,
+        run_status: str | None = None,
+        visible_to: str | None = None,
+    ) -> int:
+        """Tổng số yêu cầu khớp bộ lọc, **trước** khi cắt trang.
+
+        Cần hàm này vì ``total`` lấy bằng ``len(trang)`` là số của một trang, không phải số của hàng
+        đợi: giao diện đọc nó để vẽ "còn bao nhiêu ca" sẽ báo thiếu. Và khi đã biết tổng thì con trỏ
+        trang sau suy được từ ``offset + len(trang) < total``, không phải lấy dư một dòng — chỗ đó
+        vỡ đúng ở ``limit`` bằng trần (``limit + 1`` bị kẹp về trần nên không bao giờ thấy dòng dư).
+        """
+        if work_status is not None:
+            _require(work_status, WORK_STATUSES, "work_status")
+        if run_status is not None:
+            _require(run_status, RUN_STATUSES, "run_status")
+        query = select(func.count()).select_from(WorkItem)
+        if work_status:
+            query = query.where(WorkItem.work_status == work_status)
+        if run_status:
+            query = query.where(WorkItem.run_status == run_status)
+        if visible_to:
+            query = query.where(visible_to_expression(visible_to))
+        with session_scope(self.engine) as session:
+            return int(session.execute(query).scalar_one())
+
     def get_work_item(self, work_item_id: str) -> dict[str, Any]:
         work_item_id = _text(work_item_id, "work_item_id")
         with session_scope(self.engine) as session:
@@ -629,7 +669,14 @@ class CaseWorkStore:
         run_status: str | None = None,
         limit: int = 50,
         offset: int = 0,
+        visible_to: str | None = None,
     ) -> list[dict[str, Any]]:
+        """Hàng đợi theo thứ tự mới nhất trước.
+
+        ``visible_to`` lọc phạm vi **trong câu truy vấn**, trước ``LIMIT``/``OFFSET``. Cắt trang
+        trước rồi mới lọc trong Python sẽ chôn mất ca của chính người gọi khi hàng đợi có nhiều ca
+        của người khác nằm trên, và không trang nào chạm tới chúng nữa.
+        """
         limit = max(1, min(_as_int(limit, "limit"), 200))
         offset = max(0, _as_int(offset, "offset"))
         if work_status is not None:
@@ -642,6 +689,8 @@ class CaseWorkStore:
                 query = query.where(WorkItem.work_status == work_status)
             if run_status:
                 query = query.where(WorkItem.run_status == run_status)
+            if visible_to:
+                query = query.where(visible_to_expression(visible_to))
             rows = session.execute(query.limit(limit).offset(offset)).scalars().all()
             return [work_item_document(row) for row in rows]
 

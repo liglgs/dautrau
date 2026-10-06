@@ -16,6 +16,22 @@ Bốn quy tắc chi phối toàn bộ tệp:
 * **Phiếu trả lời luôn sinh ra ở dạng nháp.** ``POST /responses`` không có tham số nào để tạo bản
   đã duyệt; chỉ ``POST /responses/{id}/review`` với quyền ``review:decide`` mới đổi được trạng thái.
   "Xuất" và "gửi" cũng là hai việc khác nhau — tệp này không gửi đi đâu cả.
+* **Danh tính lấy từ phiên đăng nhập, không lấy từ thân yêu cầu.** Ai duyệt, ai soạn phiếu đều do
+  máy chủ điền từ danh tính đã xác thực. Không có trường nào trong thân yêu cầu ghi đè được, vì
+  như vậy bất kỳ ai cũng ký được quyết định dưới tên đồng nghiệp. Người ta **chỉ** được nêu tên
+  người khác khi giao việc (``owner``, ``assignee``) và phải có quyền ``queue:assign``.
+
+Chỗ tệp này cố ý khác hợp đồng ``docs/spec/hospital-v2`` (ghi ra để người đọc không tưởng là sót):
+
+* Thân yêu cầu của ``POST /work-items`` **không** nhận ``WorkItem`` nguyên bản. Hợp đồng mô tả thân
+  đó bằng chính ``WorkItem``, tức là đòi cả ``work_item_id``/``version``/``created_at`` — những
+  trường máy chủ sinh. Tệp này nhận một tập con và tự sinh phần còn lại.
+* Yêu cầu mới **luôn** ở ``draft``; không có đường nào tạo thẳng một yêu cầu đã duyệt hay đã huỷ.
+* ``GET /work-items/{id}`` trả cả gói (yêu cầu + liên kết + gói bằng chứng + phiếu + việc theo dõi)
+  trong một lần đọc, thay vì chỉ ``WorkItem``.
+* ``ETag`` trả ở dạng ``W/"..."``; các tuyến đọc không gửi ``ETag``.
+* Chưa đọc ``If-Match`` và ``Idempotency-Key`` mà hợp đồng có khai báo; khoá lạc quan đi qua
+  ``expected_version`` trong thân yêu cầu.
 
 Các hàm xử lý cố ý viết dạng ``def`` (không ``async``) vì chúng gọi SQLAlchemy đồng bộ; FastAPI chạy
 chúng trong threadpool nên một truy vấn chậm không chặn vòng lặp sự kiện.
@@ -23,11 +39,11 @@ chúng trong threadpool nên một truy vấn chậm không chặn vòng lặp s
 
 from __future__ import annotations
 
-import logging
+from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
 
@@ -38,8 +54,6 @@ from src.services.errors import MvpError, forbidden, invalid_request, not_found
 from src.services.identity import Permission
 from src.services.request_context import current_request_id
 from src.services.warehouse import db as wh_db
-
-_log = logging.getLogger(__name__)
 
 router = APIRouter(tags=["v2"])
 
@@ -74,13 +88,15 @@ StoreDep = Annotated[CaseWorkStore, Depends(get_casework_store)]
 # Mô hình vào/ra (khớp ``docs/spec/hospital-v2/schemas.json``)
 # --------------------------------------------------------------------------------------
 
+ProfessionalRole = Literal["doctor", "pharmacist", "nurse", "reviewer", "admin", "service"]
+Resolution = Literal["confirmed", "candidate", "unknown"]
+ScopeSource = Literal["requester", "dictionary", "agent", "reviewer", "unknown"]
 WorkStatus = Literal[
     "draft", "accepted", "in_progress", "awaiting_information", "awaiting_review", "completed", "cancelled"
 ]
 RunStatusRef = Literal[
     "not_started", "queued", "running", "waiting_for_review", "completed", "cancelled", "interrupted", "failed"
 ]
-ReviewStatusRef = Literal["not_required", "pending", "approved", "rejected", "changes_requested"]
 AssessmentStatus = Literal[
     "supported_for_scope",
     "contradicted_for_scope",
@@ -103,8 +119,53 @@ class Actor(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str = Field(min_length=1, max_length=120)
-    display_name: str | None = Field(default=None, max_length=200)
-    role: str | None = Field(default=None, max_length=60)
+    role: ProfessionalRole | None = None
+    unit: str | None = Field(default=None, max_length=120)
+
+
+class ScopeField(BaseModel):
+    """Một trường phạm vi theo ``ScopeField`` của hợp đồng.
+
+    ``resolution="unknown"`` là giá trị **hợp lệ**, không phải chỗ trống: câu hỏi chưa nêu rõ thì
+    ghi là chưa rõ, không tự suy diễn thành một giá trị cụ thể.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    value: str | None = Field(default=None, max_length=300)
+    resolution: Resolution
+    source: ScopeSource | None = None
+    evidence_ref: str | None = Field(default=None, max_length=200)
+
+
+class Scope(BaseModel):
+    """Phạm vi của yêu cầu. Hợp đồng đòi **cả hai** khóa ``drug`` và ``event``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    drug: ScopeField
+    event: ScopeField
+
+
+def _unknown_scope() -> Scope:
+    return Scope(drug=ScopeField(resolution="unknown"), event=ScopeField(resolution="unknown"))
+
+
+class CoverageReport(BaseModel):
+    """``CoverageReport`` của hợp đồng: bằng chứng đã chạm tới đâu.
+
+    ``sources_error`` khác ``sources_empty``: lỗi truy hồi không phải bằng chứng vắng mặt.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    documents_retrieved: int = Field(ge=0)
+    sources_ok: list[str]
+    sources_empty: list[str]
+    sources_error: list[str]
+    abstract_only: bool
+    full_text_sources: list[str] | None = None
+    note: str | None = None
 
 
 class RequestContext(BaseModel):
@@ -133,12 +194,13 @@ class WorkItemCreate(BaseModel):
 
     question: str = Field(min_length=1, max_length=4000)
     context: RequestContext
-    scope: dict[str, Any] = Field(default_factory=dict)
+    #: Không gửi thì mặc định là "chưa rõ" ở cả hai trường — vẫn là một phạm vi hợp lệ, không phải
+    #: một phạm vi rỗng mà hợp đồng không cho phép.
+    scope: Scope = Field(default_factory=_unknown_scope)
     unknowns: list[UnknownField] = Field(default_factory=list)
     priority: Priority = "routine"
     owner: Actor | None = None
     labels: dict[str, Any] = Field(default_factory=dict)
-    work_status: WorkStatus | None = None
     revision_of: str | None = Field(default=None, max_length=120)
     revision_reason: str | None = Field(default=None, max_length=500)
 
@@ -148,7 +210,7 @@ class WorkItemPatch(BaseModel):
 
     expected_version: int = Field(ge=1)
     question: str | None = Field(default=None, min_length=1, max_length=4000)
-    scope: dict[str, Any] | None = None
+    scope: Scope | None = None
     unknowns: list[UnknownField] | None = None
     priority: Priority | None = None
     owner: Actor | None = None
@@ -171,7 +233,8 @@ class ResponseSectionIn(BaseModel):
 
     key: Literal["summary", "evidence", "limits", "recommendation", "follow_up"]
     title: str = Field(min_length=1, max_length=200)
-    text: str = Field(min_length=1, max_length=20000)
+    #: Trần 8000 theo hợp đồng ``ResponseSection``, không phải 20000.
+    text: str = Field(min_length=1, max_length=8000)
     citations: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -180,15 +243,15 @@ class ResponseCreate(BaseModel):
 
     sections: list[ResponseSectionIn] = Field(min_length=1)
     assessment_status: AssessmentStatus
-    coverage: dict[str, Any] | None = None
-    drafted_by: Actor | None = None
+    #: Bắt buộc theo hợp đồng: một phiếu nói "đã đối chiếu bằng chứng" mà không nói đã truy hồi được
+    #: bao nhiêu tài liệu thì người đọc không kiểm được mức bao phủ.
+    coverage: CoverageReport
 
 
 class ReviewCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     action: ReviewAction
-    reviewer: Actor | None = None
     reason: str | None = Field(default=None, max_length=2000)
     #: Bắt buộc: duyệt một bản mà không nói rõ đang duyệt phiên bản nào là duyệt mù.
     expected_version: int = Field(ge=1)
@@ -198,8 +261,9 @@ class FollowUpCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: FollowUpKind
-    note: str = Field(min_length=1, max_length=4000)
+    note: str = Field(min_length=1, max_length=1000)
     due_at: str | None = None
+    #: Giao cho người khác là việc của hàng đợi: nêu tên người khác đòi quyền ``queue:assign``.
     assignee: Actor | None = None
 
 
@@ -220,14 +284,39 @@ _PROFESSIONAL_ROLE = {
 
 
 def _actor_of(principal: Principal) -> dict[str, Any]:
-    """Danh tính cho hợp đồng: mã người, tên hiển thị, và vai chuyên môn khi biết chắc."""
+    """Danh tính cho hợp đồng: mã người, và vai chuyên môn khi biết chắc.
+
+    Không kèm ``display_name``: ``Actor`` của hợp đồng đặt ``additionalProperties: false`` và không
+    có trường đó, nên gửi thêm là làm hỏng chính tài liệu mình trả về.
+    """
     actor: dict[str, Any] = {"id": principal.user_id}
-    if principal.display_name:
-        actor["display_name"] = principal.display_name
     role = _PROFESSIONAL_ROLE.get(str(principal.role))
     if role:
         actor["role"] = role
     return actor
+
+
+def _require_assign_permission(principal: Principal, target: dict[str, Any] | None) -> None:
+    """Nêu tên **người khác** trong ``owner``/``assignee`` thì phải có quyền giao việc.
+
+    Không có phép kiểm này, một người điều tra tự gán ca cho người khác (rồi mất quyền đọc chính ca
+    đó) hoặc đẩy việc sang hàng đợi của người không liên quan, mà nhật ký vẫn ghi như một thao tác
+    bình thường. Tự nhận việc cho mình thì không cần quyền gì thêm.
+    """
+    if not target or target.get("id") == principal.user_id:
+        return
+    if not principal.has(Permission.QUEUE_ASSIGN):
+        raise forbidden(f"Vai {principal.role} không có quyền queue:assign để giao việc cho người khác.")
+
+
+def _etag_header(document: dict[str, Any]) -> str:
+    """``ETag`` đúng cú pháp HTTP: giá trị phải nằm trong dấu ngoặc kép.
+
+    Kho trả một chuỗi hex trần; gửi nguyên như vậy thì ``If-Match`` của khách hàng chuẩn không bao
+    giờ khớp, vì thẻ yếu phải viết ``W/"..."``.
+    """
+    value = str(document.get("etag") or "")
+    return f'W/"{value}"' if value else ""
 
 
 def _is_owner(document: dict[str, Any], principal: Principal) -> bool:
@@ -256,14 +345,13 @@ def _read_work_item(store: CaseWorkStore, work_item_id: str, principal: Principa
     return _require_visible(store.get_work_item(work_item_id), principal)
 
 
-def _require_writable(document: dict[str, Any], principal: Principal) -> dict[str, Any]:
+def _require_writable(document: dict[str, Any], principal: Principal) -> None:
     """Sửa được khi là chủ ca, hoặc khi có quyền chạy mọi ca."""
     if principal.has(Permission.INVESTIGATION_RUN_ANY):
-        return document
+        return
     identifier = str(document.get("work_item_id") or "")
     if not _is_owner(document, principal) or not principal.has(Permission.INVESTIGATION_RUN_OWN):
         raise not_found("yêu cầu", identifier)
-    return document
 
 
 # --------------------------------------------------------------------------------------
@@ -274,41 +362,34 @@ def _require_writable(document: dict[str, Any], principal: Principal) -> dict[st
 @router.post("/work-items", status_code=201)
 def create_work_item(
     payload: WorkItemCreate,
-    request: Request,
     response: Response,
     store: StoreDep,
     principal: Annotated[Principal, Depends(require_permission(Permission.INVESTIGATION_CREATE))],
 ) -> dict[str, Any]:
     """Tiếp nhận một yêu cầu mới.
 
-    ``work_status`` mặc định là ``draft``: tiếp nhận **không** đồng nghĩa với bắt đầu điều tra.
-    ``request_id`` và ``received_at`` do máy chủ sinh — người gọi không được tự đặt, vì nhật ký
-    truy vết dựa vào chúng.
+    Yêu cầu mới **luôn** ở ``draft``: tiếp nhận không đồng nghĩa với bắt đầu điều tra, và cũng
+    không có đường tắt tạo thẳng một ca "đã duyệt" hay "đã huỷ". ``request_id`` và ``received_at``
+    do máy chủ sinh — người gọi không được tự đặt, vì nhật ký truy vết dựa vào chúng.
     """
     context = payload.context.model_dump()
-    context["request_id"] = _request_id(request)
+    context["request_id"] = _request_id()
     context["received_at"] = _now_iso()
+    actor = _actor_of(principal)
+    _require_assign_permission(principal, payload.owner.model_dump() if payload.owner else None)
     document = store.create_work_item(
         question=payload.question,
         context=context,
-        scope=payload.scope,
+        scope=payload.scope.model_dump(),
         unknowns=[item.model_dump() for item in payload.unknowns],
         priority=payload.priority,
-        owner=payload.owner.model_dump() if payload.owner else _actor_of(principal),
+        owner=payload.owner.model_dump() if payload.owner else actor,
         labels=payload.labels,
-        actor=_actor_of(principal),
+        actor=actor,
         revision_of=payload.revision_of,
         revision_reason=payload.revision_reason,
     )
-    if payload.work_status is not None and payload.work_status != "draft":
-        document = store.update_work_item(
-            document["work_item_id"],
-            changes={"work_status": payload.work_status},
-            expected_version=document["version"],
-            actor=_actor_of(principal),
-            reason="Trạng thái ban đầu do người gửi đặt.",
-        )
-    response.headers["ETag"] = str(document.get("etag") or "")
+    response.headers["ETag"] = _etag_header(document)
     return document
 
 
@@ -325,16 +406,23 @@ def list_work_items(
 
     Người chỉ có quyền đọc ca của mình **không** thấy ca người khác trong danh sách; lọc theo phạm vi
     nằm trong câu truy vấn chứ không cắt sau ``LIMIT``, nên số trang không bị hụt.
+
+    ``total`` là **tổng số ca khớp bộ lọc**, không phải số dòng của trang này — giao diện đọc nó để
+    vẽ "còn bao nhiêu ca", nên trả số của một trang là báo thiếu. Con trỏ trang sau suy từ chính
+    tổng đó, nhờ vậy trang cuối vẫn đi hết được kể cả khi ``limit`` chạm trần.
     """
     offset = _offset_from_cursor(cursor)
-    # Lấy dư một dòng để biết còn trang sau hay không, thay vì đoán theo ``limit``.
-    rows = store.list_work_items(
-        work_status=work_status, run_status=run_status, limit=limit + 1, offset=offset
+    visible_to = None if principal.has(Permission.INVESTIGATION_READ_ANY) else principal.user_id
+    page = store.list_work_items(
+        work_status=work_status,
+        run_status=run_status,
+        limit=limit,
+        offset=offset,
+        visible_to=visible_to,
     )
-    visible = [row for row in rows if principal.has(Permission.INVESTIGATION_READ_ANY) or _is_owner(row, principal)]
-    page = visible[:limit]
-    next_cursor = str(offset + len(page)) if len(visible) > limit else None
-    return {"items": page, "next_cursor": next_cursor, "total": len(page)}
+    total = store.count_work_items(work_status=work_status, run_status=run_status, visible_to=visible_to)
+    next_offset = offset + len(page)
+    return {"items": page, "next_cursor": str(next_offset) if next_offset < total else None, "total": total}
 
 
 @router.get("/work-items/{work_item_id}")
@@ -361,22 +449,29 @@ def update_work_item(
     Gán chủ sở hữu là việc của hàng đợi, không phải của người điều tra: đổi ``owner`` đòi quyền
     ``queue:assign``. Khoá lạc quan nằm ở ``expected_version``; thiếu thì nhận 422 chứ không được
     hiểu ngầm là "ghi đè bản mới nhất".
+
+    Hai phép kiểm chạy **độc lập**: đổi chủ sở hữu cần ``queue:assign``, còn sửa bất kỳ nội dung nào
+    (kể cả khi đi kèm đổi chủ) vẫn cần quyền sửa ca. Gộp chúng thành "hoặc" sẽ cho người phân công
+    viết được nội dung của ca mà chính họ không được sửa.
     """
     current = _read_work_item(store, work_item_id, principal)
     changes: dict[str, Any] = {}
-    for field in ("question", "scope", "priority", "labels", "work_status"):
+    for field in ("question", "priority", "labels", "work_status"):
         value = getattr(payload, field)
         if value is not None:
             changes[field] = value
+    if payload.scope is not None:
+        changes["scope"] = payload.scope.model_dump()
     if payload.unknowns is not None:
         changes["unknowns"] = [item.model_dump() for item in payload.unknowns]
-    if payload.owner is not None:
-        if not principal.has(Permission.QUEUE_ASSIGN):
-            raise forbidden(f"Vai {principal.role} không có quyền queue:assign.")
-        changes["owner"] = payload.owner.model_dump()
+    if "owner" in payload.model_fields_set:
+        # ``owner: null`` là xoá chủ sở hữu (ca quay về cho người gửi), khác hẳn với không gửi gì.
+        target = payload.owner.model_dump() if payload.owner else None
+        _require_assign_permission(principal, target)
+        changes["owner"] = target
     if not changes:
         raise invalid_request("Không có trường nào để sửa.")
-    if "owner" not in changes:
+    if any(field != "owner" for field in changes):
         _require_writable(current, principal)
     document = store.update_work_item(
         work_item_id,
@@ -427,7 +522,6 @@ def read_evidence_bundle(
     _read_work_item(store, work_item_id, principal)
     bundles = store.list_evidence_bundles(work_item_id)
     if not bundles:
-        # 404 chứ không trả gói rỗng: gói rỗng trông y hệt "đã tìm mà không thấy gì".
         raise MvpError(
             404,
             ErrorCode.NOT_FOUND,
@@ -457,11 +551,11 @@ def create_response(
         sections=[section.model_dump() for section in payload.sections],
         status="draft",
         assessment_status=payload.assessment_status,
-        coverage=payload.coverage,
-        drafted_by=payload.drafted_by.model_dump() if payload.drafted_by else _actor_of(principal),
+        coverage=payload.coverage.model_dump(),
+        drafted_by=_actor_of(principal),
         actor=_actor_of(principal),
     )
-    response.headers["ETag"] = str(document.get("etag") or "")
+    response.headers["ETag"] = _etag_header(document)
     return document
 
 
@@ -477,18 +571,22 @@ def review_response(
 
     Quyết định lưu **trước**, trạng thái phiếu đổi **sau**, trong cùng giao dịch — nên không có cửa
     sổ nào để một phiếu vừa "đã duyệt" vừa không có vết quyết định.
+
+    Người duyệt **luôn** là người đang gọi: không có trường nào trong thân yêu cầu ghi đè được, nên
+    không ai ký được quyết định dưới tên đồng nghiệp. Quyết định vừa ghi được trả kèm trong ``review``
+    để giao diện vẽ được dấu duyệt ngay, khỏi phải gọi thêm một vòng.
     """
-    store.get_response(response_id)  # 404 nếu không có
-    store.add_review(
+    review = store.add_review(
         entity="response",
         entity_id=response_id,
         action=payload.action,
-        reviewer=payload.reviewer.model_dump() if payload.reviewer else _actor_of(principal),
+        reviewer=_actor_of(principal),
         reason=payload.reason,
         expected_version=payload.expected_version,
     )
     document = store.get_response(response_id)
-    response.headers["ETag"] = str(document.get("etag") or "")
+    document["review"] = review
+    response.headers["ETag"] = _etag_header(document)
     return document
 
 
@@ -502,10 +600,11 @@ def create_follow_up(
     """Tạo việc theo dõi/chuyển giao.
 
     ``due_at`` chỉ được đặt khi người gọi nêu tường minh. Không suy ra hạn luật định từ loại việc:
-    hệ thống không biết hạn nào áp dụng cho cơ sở nào.
+    hệ thống không biết hạn nào áp dụng cho cơ sở nào. Giao cho người khác đòi quyền ``queue:assign``.
     """
     current = _read_work_item(store, work_item_id, principal)
     _require_writable(current, principal)
+    _require_assign_permission(principal, payload.assignee.model_dump() if payload.assignee else None)
     return store.add_follow_up(
         work_item_id=work_item_id,
         kind=payload.kind,
@@ -521,29 +620,22 @@ def create_follow_up(
 # --------------------------------------------------------------------------------------
 
 
-def _request_id(request: Request) -> str:
+def _request_id() -> str:
     """Mã yêu cầu **dùng chung** với envelope lỗi và nhật ký kiểm toán.
 
     Đọc từ ``ContextVar`` mà middleware đã đặt, không tự sinh mã mới: một mã riêng ở đây sẽ làm
     ``context.request_id`` không tra ngược được sang sự kiện kiểm toán nào.
     """
-    value = current_request_id()
-    if value:
-        return str(value)
-    return str(request.headers.get("X-Request-Id") or "").strip()[:128]
+    return current_request_id() or ""
 
 
 def _now_iso() -> str:
-    from datetime import UTC, datetime
-
     return datetime.now(UTC).isoformat()
 
 
-def _parse_due_at(value: str | None):
+def _parse_due_at(value: str | None) -> datetime | None:
     if value is None:
         return None
-    from datetime import datetime
-
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:

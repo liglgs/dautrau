@@ -16,6 +16,7 @@ from typing import Any
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 
 from src.api.v2_routes import get_casework_store
 from src.main import app
@@ -37,11 +38,22 @@ async def v2_client(tmp_path):
     app.dependency_overrides.pop(get_casework_store, None)
 
 
+@pytest_asyncio.fixture
+async def v2_client_with_store(tmp_path):
+    """Như ``v2_client`` nhưng trả thêm kho, cho bài cần chỉnh dữ liệu nền."""
+    engine = get_warehouse_engine(f"sqlite:///{tmp_path / 'v2b.db'}")
+    store = CaseWorkStore(engine)
+    app.dependency_overrides[get_casework_store] = lambda: store
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client, store
+    app.dependency_overrides.pop(get_casework_store, None)
+
+
 def _body(**overrides: Any) -> dict[str, Any]:
     values: dict[str, Any] = {
         "question": "Metformin có gây nhiễm toan lactic ở người suy thận giai đoạn 3b không?",
         "context": {
-            "requester": {"id": "usr_investigator", "display_name": "Điều tra viên A"},
+            "requester": {"id": "usr_investigator"},
             "channel": "api",
             "raw_text": "Metformin có gây nhiễm toan lactic ở người suy thận giai đoạn 3b không?",
             "language": "vi",
@@ -99,6 +111,35 @@ async def test_list_shows_only_your_own_items(v2_client):
 
     everything = await v2_client.get("/api/v2/work-items", headers=_headers("reviewer"))
     assert len(everything.json()["items"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_the_queue_does_not_hide_your_item_behind_other_peoples(v2_client_with_store):
+    """Lọc phạm vi phải nằm **trong câu truy vấn**, không cắt trang trước rồi lọc sau.
+
+    Hàng đợi sắp theo thời điểm toàn kho. Cắt trang trước thì ca của chính người gọi bị chôn dưới
+    ca của người khác và không trang nào chạm tới nữa (đã tái hiện trên PostgreSQL: ``items: []``
+    kèm ``next_cursor: null``). Bài này khoá lại thứ tự bằng cách đẩy ca của người khác lên tương
+    lai, để kết quả không phụ thuộc độ phân giải đồng hồ.
+    """
+    client, store = v2_client_with_store
+    mine = await _create(client, "investigator", owner={"id": "usr_investigator"})
+    for index in range(3):
+        await _create(client, "reviewer", owner={"id": f"usr_khac_{index}"})
+    with store.engine.begin() as connection:
+        connection.execute(
+            text("UPDATE work_items SET created_at = '2099-01-01 00:00:00' WHERE work_item_id != :mine"),
+            {"mine": mine["work_item_id"]},
+        )
+
+    page = await client.get(
+        "/api/v2/work-items?limit=1", headers=_headers("investigator", "usr_investigator")
+    )
+    assert page.status_code == 200, page.text
+    assert [item["work_item_id"] for item in page.json()["items"]] == [mine["work_item_id"]], page.text
+
+    # Và không được lộ ca của người khác qua danh sách.
+    assert all(item["owner"]["id"] == "usr_investigator" for item in page.json()["items"])
 
 
 @pytest.mark.asyncio
@@ -255,6 +296,13 @@ async def _make_response(client: AsyncClient, created: dict[str, Any]) -> dict[s
         json={
             "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Chưa đủ bằng chứng.", "citations": []}],
             "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 1,
+                "sources_ok": ["pubmed"],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": True,
+            },
         },
         headers=_headers("investigator"),
     )
@@ -377,7 +425,21 @@ async def test_every_endpoint_rejects_an_unauthenticated_call(v2_client):
         ("patch", "/api/v2/work-items/WI-1", {"expected_version": 1, "priority": "urgent"}),
         ("post", "/api/v2/work-items/WI-1/investigations", {"investigation_id": "INV-1"}),
         ("get", "/api/v2/work-items/WI-1/evidence-bundle", None),
-        ("post", "/api/v2/work-items/WI-1/responses", {"sections": [], "assessment_status": "insufficient_evidence"}),
+        (
+            "post",
+            "/api/v2/work-items/WI-1/responses",
+            {
+                "sections": [],
+                "assessment_status": "insufficient_evidence",
+                "coverage": {
+                    "documents_retrieved": 0,
+                    "sources_ok": [],
+                    "sources_empty": [],
+                    "sources_error": [],
+                    "abstract_only": False,
+                },
+            },
+        ),
         ("post", "/api/v2/responses/RSP-1/review", {"action": "approve", "expected_version": 1}),
         ("post", "/api/v2/work-items/WI-1/follow-ups", {"kind": "close", "note": "x"}),
     ]
@@ -386,3 +448,341 @@ async def test_every_endpoint_rejects_an_unauthenticated_call(v2_client):
             v2_client, method
         )(path)
         assert response.status_code == 401, f"{method.upper()} {path} → {response.status_code}"
+
+
+# --------------------------------------------------------------------------------------
+# Vòng rà soát `e917b7b`: bốn phát hiện được sửa, mỗi phát hiện có bài khoá lại
+# --------------------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_paging_reaches_items_past_the_page_cap(v2_client_with_store):
+    """``limit`` chạm trần vẫn phải còn con trỏ sang trang sau.
+
+    Bản trước lấy dư một dòng (``limit + 1``) để đoán còn trang hay không, nhưng kho kẹp ``limit``
+    về trần nên ở ``limit`` bằng trần thì dòng dư biến mất và ``next_cursor`` luôn là ``null`` —
+    các ca từ 201 trở đi không đường nào tới được, kể cả với người có ``read:any``.
+    """
+    client, store = v2_client_with_store
+    for index in range(205):
+        store.create_work_item(question=f"Câu hỏi {index}", owner={"id": "usr_reviewer"})
+
+    first = await client.get("/api/v2/work-items?limit=200", headers=_headers("reviewer"))
+    assert first.status_code == 200, first.text
+    body = first.json()
+    assert len(body["items"]) == 200
+    assert body["total"] == 205
+    assert body["next_cursor"] == "200", body
+
+    second = await client.get(f"/api/v2/work-items?limit=200&cursor={body['next_cursor']}", headers=_headers("reviewer"))
+    assert second.status_code == 200, second.text
+    assert len(second.json()["items"]) == 5
+    assert second.json()["next_cursor"] is None
+
+
+@pytest.mark.asyncio
+async def test_total_counts_the_whole_queue_not_the_page(v2_client):
+    """``total`` là số ca khớp bộ lọc, không phải số dòng của trang này."""
+    client = v2_client
+    for _ in range(4):
+        await _create(client)
+
+    page = await client.get("/api/v2/work-items?limit=2", headers=_headers("investigator"))
+    assert page.status_code == 200, page.text
+    assert len(page.json()["items"]) == 2
+    assert page.json()["total"] == 4
+    assert page.json()["next_cursor"] == "2"
+
+
+@pytest.mark.asyncio
+async def test_the_reviewer_is_the_caller_not_a_name_in_the_body(v2_client_with_store):
+    """Không ai ký được quyết định duyệt dưới tên người khác.
+
+    Bản trước nhận ``reviewer`` từ thân yêu cầu, nên một yêu cầu xác thực bằng tài khoản A vẫn ghi
+    được quyết định dưới mã người B — phá đúng thứ mà dấu duyệt dùng để làm bằng chứng.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client, "investigator")
+    document = await _make_response(client, created)
+
+    forged = await client.post(
+        f"/api/v2/responses/{document['response_id']}/review",
+        json={
+            "action": "approve",
+            "expected_version": document["version"],
+            "reviewer": {"id": "usr_nguoi_khac"},
+        },
+        headers=_headers("reviewer", "usr_nguoi_duyet_that"),
+    )
+    assert forged.status_code == 422, forged.text
+
+    allowed = await client.post(
+        f"/api/v2/responses/{document['response_id']}/review",
+        json={"action": "approve", "expected_version": document["version"]},
+        headers=_headers("reviewer", "usr_nguoi_duyet_that"),
+    )
+    assert allowed.status_code == 200, allowed.text
+    assert allowed.json()["review"]["reviewer"]["id"] == "usr_nguoi_duyet_that"
+    reviews = store.list_reviews(entity="response", entity_id=document["response_id"])
+    assert [row["reviewer"]["id"] for row in reviews] == ["usr_nguoi_duyet_that"]
+
+
+@pytest.mark.asyncio
+async def test_the_drafter_is_the_caller_not_a_name_in_the_body(v2_client):
+    """Người soạn phiếu cũng do máy chủ điền, không nhận từ thân yêu cầu."""
+    client = v2_client
+    created = await _create(client, "investigator")
+    response = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "drafted_by": {"id": "usr_nguoi_khac"},
+            "coverage": {
+                "documents_retrieved": 1,
+                "sources_ok": ["pubmed"],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": True,
+            },
+        },
+        headers=_headers("investigator", "usr_nguoi_soan_that"),
+    )
+    assert response.status_code == 422, response.text
+
+
+@pytest.mark.asyncio
+async def test_creating_a_case_for_someone_else_needs_queue_assign(v2_client):
+    """Giao ca cho người khác là việc của hàng đợi, không phải của người điều tra.
+
+    Không chặn thì người điều tra tự đẩy ca của mình sang người khác rồi **mất luôn quyền đọc**
+    chính ca đó (không có ``read:any``), mà nhật ký vẫn ghi như một thao tác bình thường.
+    """
+    client = v2_client
+
+    async def post(role: str, **overrides: Any):
+        return await client.post("/api/v2/work-items", json=_body(**overrides), headers=_headers(role))
+
+    denied = await post("investigator", owner={"id": "usr_nguoi_khac"})
+    assert denied.status_code == 403, denied.text
+    assert "queue:assign" in denied.text
+
+    allowed = await post("reviewer", owner={"id": "usr_nguoi_khac"})
+    assert allowed.status_code == 201, allowed.text
+
+    mine = await post("investigator", owner={"id": "usr_investigator"})
+    assert mine.status_code == 201, mine.text
+
+
+@pytest.mark.asyncio
+async def test_handing_a_follow_up_to_someone_else_needs_queue_assign(v2_client):
+    """Cùng luật với ``owner``: nêu tên người khác trong ``assignee`` đòi ``queue:assign``."""
+    client = v2_client
+    created = await _create(client, "investigator")
+    denied = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/follow-ups",
+        json={"kind": "handover", "note": "Chuyển ca.", "assignee": {"id": "usr_nguoi_khac"}},
+        headers=_headers("investigator"),
+    )
+    assert denied.status_code == 403, denied.text
+
+    own = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/follow-ups",
+        json={"kind": "handover", "note": "Tự nhận.", "assignee": {"id": "usr_investigator"}},
+        headers=_headers("investigator"),
+    )
+    assert own.status_code == 201, own.text
+
+
+@pytest.mark.asyncio
+async def test_a_new_case_cannot_be_opened_already_closed(v2_client):
+    """Yêu cầu mới luôn ở ``draft``; không có đường tắt tạo thẳng ca đã duyệt hay đã huỷ."""
+    client = v2_client
+    for state in ("completed", "cancelled", "in_review"):
+        response = await client.post(
+            "/api/v2/work-items", json=_body(work_status=state), headers=_headers("investigator")
+        )
+        assert response.status_code == 422, f"{state}: {response.text}"
+
+    draft = await _create(client, "investigator")
+    assert draft["work_status"] == "draft"
+
+
+@pytest.mark.asyncio
+async def test_an_owner_can_be_cleared_back_to_the_requester(v2_client):
+    """``owner: null`` là xoá chủ sở hữu, khác hẳn với không gửi trường đó."""
+    client = v2_client
+    created = await _create(client, "reviewer", owner={"id": "usr_nguoi_khac"})
+    assert created["owner"]["id"] == "usr_nguoi_khac"
+
+    cleared = await client.patch(
+        f"/api/v2/work-items/{created['work_item_id']}",
+        json={"expected_version": created["version"], "owner": None},
+        headers=_headers("reviewer"),
+    )
+    assert cleared.status_code == 200, cleared.text
+    assert not cleared.json()["owner"]
+
+    omitted = await client.patch(
+        f"/api/v2/work-items/{created['work_item_id']}",
+        json={"expected_version": cleared.json()["version"], "priority": "urgent"},
+        headers=_headers("reviewer"),
+    )
+    assert omitted.status_code == 200, omitted.text
+    assert not omitted.json()["owner"]
+
+
+@pytest.mark.asyncio
+async def test_linking_a_run_leaves_the_work_status_alone(v2_client):
+    """Ba trạng thái không suy ra nhau: liên kết một lần chạy không đổi trạng thái nghiệp vụ."""
+    client = v2_client
+    created = await _create(client, "investigator")
+    linked = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/investigations",
+        json={"investigation_id": "INV-1", "purpose": "initial", "state": "running"},
+        headers=_headers("investigator"),
+    )
+    assert linked.status_code == 201, linked.text
+
+    read = await client.get(f"/api/v2/work-items/{created['work_item_id']}", headers=_headers("investigator"))
+    assert read.json()["work_item"]["work_status"] == "draft"
+    assert read.json()["investigation_links"][0]["state"] == "running"
+
+
+@pytest.mark.asyncio
+async def test_the_etag_is_a_quoted_entity_tag(v2_client):
+    """``ETag`` gửi đi phải đúng cú pháp HTTP, nếu không ``If-Match`` của khách hàng chuẩn không khớp."""
+    client = v2_client
+    response = await client.post("/api/v2/work-items", json=_body(), headers=_headers("investigator"))
+    assert response.status_code == 201, response.text
+    etag = response.headers["ETag"]
+    assert etag.startswith('W/"') and etag.endswith('"'), etag
+    assert response.json()["etag"] in etag
+
+
+@pytest.mark.asyncio
+async def test_the_approval_decision_comes_back_with_the_response(v2_client):
+    """Duyệt xong phải thấy được dấu duyệt ngay, khỏi gọi thêm một vòng đọc."""
+    client = v2_client
+    created = await _create(client, "investigator")
+    document = await _make_response(client, created)
+    reviewed = await client.post(
+        f"/api/v2/responses/{document['response_id']}/review",
+        json={"action": "approve", "expected_version": document["version"]},
+        headers=_headers("reviewer", "usr_nguoi_duyet"),
+    )
+    assert reviewed.status_code == 200, reviewed.text
+    review = reviewed.json()["review"]
+    assert review["action"] == "approve"
+    assert review["reviewer"]["id"] == "usr_nguoi_duyet"
+    assert review["previous_status"] == "draft"
+    assert review["new_status"] == "approved"
+
+
+@pytest.mark.asyncio
+async def test_the_scope_is_a_valid_contract_object_even_when_the_caller_says_nothing(v2_client):
+    """Không gửi phạm vi thì phạm vi vẫn hợp lệ: cả hai trường là "chưa rõ", không phải rỗng.
+
+    Hợp đồng đòi ``scope`` có đủ ``drug`` và ``event``; ``resolution="unknown"`` là cách nói "chưa
+    biết", khác hẳn với một đối tượng rỗng mà hợp đồng không cho phép.
+    """
+    client = v2_client
+    document = await _create(client)
+    assert document["scope"]["drug"]["resolution"] == "unknown"
+    assert document["scope"]["event"]["resolution"] == "unknown"
+    assert document["scope"]["drug"]["value"] is None
+
+
+@pytest.mark.asyncio
+async def test_the_scope_carries_what_the_caller_did_say(v2_client):
+    """Nêu rõ phạm vi thì đi đúng vào tài liệu, kèm mức độ chắc chắn."""
+    client = v2_client
+    document = await _create(
+        client,
+        scope={
+            "drug": {"value": "metformin", "resolution": "confirmed", "source": "requester"},
+            "event": {"value": "nhiễm toan lactic", "resolution": "candidate"},
+        },
+    )
+    assert document["scope"]["drug"] == {
+        "value": "metformin",
+        "resolution": "confirmed",
+        "source": "requester",
+        "evidence_ref": None,
+    }
+    assert document["scope"]["event"]["resolution"] == "candidate"
+
+
+@pytest.mark.asyncio
+async def test_a_made_up_scope_resolution_is_rejected(v2_client):
+    """Mức độ chắc chắn là một tập đóng; không nhận giá trị tự nghĩ ra."""
+    client = v2_client
+    response = await client.post(
+        "/api/v2/work-items",
+        json=_body(scope={"drug": {"value": "x", "resolution": "chac_chan"}, "event": {"resolution": "unknown"}}),
+        headers=_headers("investigator"),
+    )
+    assert response.status_code == 422, response.text
+
+
+@pytest.mark.asyncio
+async def test_the_requester_is_an_actor_without_extra_fields(v2_client):
+    """``Actor`` của hợp đồng không có ``display_name``; nhận thêm là làm hỏng tài liệu trả về."""
+    client = v2_client
+    forged = _body()
+    forged["context"]["requester"] = {"id": "usr_investigator", "display_name": "Tên tự đặt"}
+    response = await client.post("/api/v2/work-items", json=forged, headers=_headers("investigator"))
+    assert response.status_code == 422, response.text
+
+    invented_role = _body()
+    invented_role["context"]["requester"] = {"id": "usr_investigator", "role": "trưởng khoa"}
+    rejected = await client.post("/api/v2/work-items", json=invented_role, headers=_headers("investigator"))
+    assert rejected.status_code == 422, rejected.text
+
+
+@pytest.mark.asyncio
+async def test_a_response_must_say_how_much_evidence_it_retrieved(v2_client):
+    """Thiếu ``coverage`` là 422: phiếu nói "đã đối chiếu" mà không nói đối chiếu được bao nhiêu."""
+    client = v2_client
+    created = await _create(client, "investigator")
+    response = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+        },
+        headers=_headers("investigator"),
+    )
+    assert response.status_code == 422, response.text
+    assert "coverage" in response.text
+
+
+@pytest.mark.asyncio
+async def test_lengths_follow_the_contract_not_the_router(v2_client):
+    """Trần độ dài lấy từ hợp đồng: đoạn 8000 ký tự, ghi chú việc theo dõi 1000."""
+    client = v2_client
+    created = await _create(client, "investigator")
+
+    long_section = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "x" * 8001, "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 0,
+                "sources_ok": [],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": False,
+            },
+        },
+        headers=_headers("investigator"),
+    )
+    assert long_section.status_code == 422, long_section.text
+
+    long_note = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/follow-ups",
+        json={"kind": "recheck_source", "note": "x" * 1001},
+        headers=_headers("investigator"),
+    )
+    assert long_note.status_code == 422, long_note.text

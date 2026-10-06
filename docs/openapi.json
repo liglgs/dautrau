@@ -4,18 +4,6 @@
       "Actor": {
         "additionalProperties": false,
         "properties": {
-          "display_name": {
-            "anyOf": [
-              {
-                "maxLength": 200,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Display Name"
-          },
           "id": {
             "maxLength": 120,
             "minLength": 1,
@@ -25,7 +13,14 @@
           "role": {
             "anyOf": [
               {
-                "maxLength": 60,
+                "enum": [
+                  "doctor",
+                  "pharmacist",
+                  "nurse",
+                  "reviewer",
+                  "admin",
+                  "service"
+                ],
                 "type": "string"
               },
               {
@@ -33,6 +28,18 @@
               }
             ],
             "title": "Role"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
           }
         },
         "required": [
@@ -280,6 +287,76 @@
           "resumed"
         ],
         "title": "ContinueResponse",
+        "type": "object"
+      },
+      "CoverageReport": {
+        "additionalProperties": false,
+        "description": "``CoverageReport`` của hợp đồng: bằng chứng đã chạm tới đâu.\n\n``sources_error`` khác ``sources_empty``: lỗi truy hồi không phải bằng chứng vắng mặt.",
+        "properties": {
+          "abstract_only": {
+            "title": "Abstract Only",
+            "type": "boolean"
+          },
+          "documents_retrieved": {
+            "minimum": 0.0,
+            "title": "Documents Retrieved",
+            "type": "integer"
+          },
+          "full_text_sources": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Text Sources"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "sources_empty": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources Empty",
+            "type": "array"
+          },
+          "sources_error": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources Error",
+            "type": "array"
+          },
+          "sources_ok": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources Ok",
+            "type": "array"
+          }
+        },
+        "required": [
+          "documents_retrieved",
+          "sources_ok",
+          "sources_empty",
+          "sources_error",
+          "abstract_only"
+        ],
+        "title": "CoverageReport",
         "type": "object"
       },
       "CreateInvestigationResponse": {
@@ -751,7 +828,7 @@
             "type": "string"
           },
           "note": {
-            "maxLength": 4000,
+            "maxLength": 1000,
             "minLength": 1,
             "title": "Note",
             "type": "string"
@@ -1455,26 +1532,7 @@
             "type": "string"
           },
           "coverage": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Coverage"
-          },
-          "drafted_by": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Actor"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/CoverageReport"
           },
           "sections": {
             "items": {
@@ -1487,7 +1545,8 @@
         },
         "required": [
           "sections",
-          "assessment_status"
+          "assessment_status",
+          "coverage"
         ],
         "title": "ResponseCreate",
         "type": "object"
@@ -1515,7 +1574,7 @@
             "type": "string"
           },
           "text": {
-            "maxLength": 20000,
+            "maxLength": 8000,
             "minLength": 1,
             "title": "Text",
             "type": "string"
@@ -1579,16 +1638,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "reviewer": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Actor"
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         },
         "required": [
@@ -1717,6 +1766,86 @@
         ],
         "title": "RunStatus",
         "type": "string"
+      },
+      "Scope": {
+        "additionalProperties": false,
+        "description": "Phạm vi của yêu cầu. Hợp đồng đòi **cả hai** khóa ``drug`` và ``event``.",
+        "properties": {
+          "drug": {
+            "$ref": "#/components/schemas/ScopeField"
+          },
+          "event": {
+            "$ref": "#/components/schemas/ScopeField"
+          }
+        },
+        "required": [
+          "drug",
+          "event"
+        ],
+        "title": "Scope",
+        "type": "object"
+      },
+      "ScopeField": {
+        "additionalProperties": false,
+        "description": "Một trường phạm vi theo ``ScopeField`` của hợp đồng.\n\n``resolution=\"unknown\"`` là giá trị **hợp lệ**, không phải chỗ trống: câu hỏi chưa nêu rõ thì\nghi là chưa rõ, không tự suy diễn thành một giá trị cụ thể.",
+        "properties": {
+          "evidence_ref": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ref"
+          },
+          "resolution": {
+            "enum": [
+              "confirmed",
+              "candidate",
+              "unknown"
+            ],
+            "title": "Resolution",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "requester",
+                  "dictionary",
+                  "agent",
+                  "reviewer",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "resolution"
+        ],
+        "title": "ScopeField",
+        "type": "object"
       },
       "SourceDocument": {
         "additionalProperties": false,
@@ -2000,9 +2129,7 @@
             "title": "Revision Reason"
           },
           "scope": {
-            "additionalProperties": true,
-            "title": "Scope",
-            "type": "object"
+            "$ref": "#/components/schemas/Scope"
           },
           "unknowns": {
             "items": {
@@ -2010,26 +2137,6 @@
             },
             "title": "Unknowns",
             "type": "array"
-          },
-          "work_status": {
-            "anyOf": [
-              {
-                "enum": [
-                  "draft",
-                  "accepted",
-                  "in_progress",
-                  "awaiting_information",
-                  "awaiting_review",
-                  "completed",
-                  "cancelled"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Work Status"
           }
         },
         "required": [
@@ -2113,14 +2220,12 @@
           "scope": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/Scope"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Scope"
+            ]
           },
           "unknowns": {
             "anyOf": [
@@ -4665,7 +4770,7 @@
     },
     "/api/v2/responses/{response_id}/review": {
       "post": {
-        "description": "Duyệt phiếu trả lời. Chỉ vai có ``review:decide`` gọi được.\n\nQuyết định lưu **trước**, trạng thái phiếu đổi **sau**, trong cùng giao dịch — nên không có cửa\nsổ nào để một phiếu vừa \"đã duyệt\" vừa không có vết quyết định.",
+        "description": "Duyệt phiếu trả lời. Chỉ vai có ``review:decide`` gọi được.\n\nQuyết định lưu **trước**, trạng thái phiếu đổi **sau**, trong cùng giao dịch — nên không có cửa\nsổ nào để một phiếu vừa \"đã duyệt\" vừa không có vết quyết định.\n\nNgười duyệt **luôn** là người đang gọi: không có trường nào trong thân yêu cầu ghi đè được, nên\nkhông ai ký được quyết định dưới tên đồng nghiệp. Quyết định vừa ghi được trả kèm trong ``review``\nđể giao diện vẽ được dấu duyệt ngay, khỏi phải gọi thêm một vòng.",
         "operationId": "review_response_api_v2_responses__response_id__review_post",
         "parameters": [
           {
@@ -4720,7 +4825,7 @@
     },
     "/api/v2/work-items": {
       "get": {
-        "description": "Hàng chờ yêu cầu, mới nhất trước.\n\nNgười chỉ có quyền đọc ca của mình **không** thấy ca người khác trong danh sách; lọc theo phạm vi\nnằm trong câu truy vấn chứ không cắt sau ``LIMIT``, nên số trang không bị hụt.",
+        "description": "Hàng chờ yêu cầu, mới nhất trước.\n\nNgười chỉ có quyền đọc ca của mình **không** thấy ca người khác trong danh sách; lọc theo phạm vi\nnằm trong câu truy vấn chứ không cắt sau ``LIMIT``, nên số trang không bị hụt.\n\n``total`` là **tổng số ca khớp bộ lọc**, không phải số dòng của trang này — giao diện đọc nó để\nvẽ \"còn bao nhiêu ca\", nên trả số của một trang là báo thiếu. Con trỏ trang sau suy từ chính\ntổng đó, nhờ vậy trang cuối vẫn đi hết được kể cả khi ``limit`` chạm trần.",
         "operationId": "list_work_items_api_v2_work_items_get",
         "parameters": [
           {
@@ -4833,7 +4938,7 @@
         ]
       },
       "post": {
-        "description": "Tiếp nhận một yêu cầu mới.\n\n``work_status`` mặc định là ``draft``: tiếp nhận **không** đồng nghĩa với bắt đầu điều tra.\n``request_id`` và ``received_at`` do máy chủ sinh — người gọi không được tự đặt, vì nhật ký\ntruy vết dựa vào chúng.",
+        "description": "Tiếp nhận một yêu cầu mới.\n\nYêu cầu mới **luôn** ở ``draft``: tiếp nhận không đồng nghĩa với bắt đầu điều tra, và cũng\nkhông có đường tắt tạo thẳng một ca \"đã duyệt\" hay \"đã huỷ\". ``request_id`` và ``received_at``\ndo máy chủ sinh — người gọi không được tự đặt, vì nhật ký truy vết dựa vào chúng.",
         "operationId": "create_work_item_api_v2_work_items_post",
         "requestBody": {
           "content": {
@@ -4920,7 +5025,7 @@
         ]
       },
       "patch": {
-        "description": "Sửa câu hỏi/phạm vi hoặc gán chủ sở hữu.\n\nGán chủ sở hữu là việc của hàng đợi, không phải của người điều tra: đổi ``owner`` đòi quyền\n``queue:assign``. Khoá lạc quan nằm ở ``expected_version``; thiếu thì nhận 422 chứ không được\nhiểu ngầm là \"ghi đè bản mới nhất\".",
+        "description": "Sửa câu hỏi/phạm vi hoặc gán chủ sở hữu.\n\nGán chủ sở hữu là việc của hàng đợi, không phải của người điều tra: đổi ``owner`` đòi quyền\n``queue:assign``. Khoá lạc quan nằm ở ``expected_version``; thiếu thì nhận 422 chứ không được\nhiểu ngầm là \"ghi đè bản mới nhất\".\n\nHai phép kiểm chạy **độc lập**: đổi chủ sở hữu cần ``queue:assign``, còn sửa bất kỳ nội dung nào\n(kể cả khi đi kèm đổi chủ) vẫn cần quyền sửa ca. Gộp chúng thành \"hoặc\" sẽ cho người phân công\nviết được nội dung của ca mà chính họ không được sửa.",
         "operationId": "update_work_item_api_v2_work_items__work_item_id__patch",
         "parameters": [
           {
@@ -5020,7 +5125,7 @@
     },
     "/api/v2/work-items/{work_item_id}/follow-ups": {
       "post": {
-        "description": "Tạo việc theo dõi/chuyển giao.\n\n``due_at`` chỉ được đặt khi người gọi nêu tường minh. Không suy ra hạn luật định từ loại việc:\nhệ thống không biết hạn nào áp dụng cho cơ sở nào.",
+        "description": "Tạo việc theo dõi/chuyển giao.\n\n``due_at`` chỉ được đặt khi người gọi nêu tường minh. Không suy ra hạn luật định từ loại việc:\nhệ thống không biết hạn nào áp dụng cho cơ sở nào. Giao cho người khác đòi quyền ``queue:assign``.",
         "operationId": "create_follow_up_api_v2_work_items__work_item_id__follow_ups_post",
         "parameters": [
           {
