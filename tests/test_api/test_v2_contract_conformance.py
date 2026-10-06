@@ -392,3 +392,103 @@ async def test_a_review_inside_the_envelope_matches_too(client):
     _assert_matches("ProfessionalResponse", stored)
     assert stored["review"] is not None, "quyết định duyệt phải nằm trong lớp bọc"
     _assert_matches("ReviewRef", stored["review"])
+
+
+@pytest.mark.asyncio
+async def test_every_error_the_v2_router_returns_matches_the_contract(client):
+    """**Mọi** phản hồi lỗi của ``/api/v2`` phải khớp ``$defs/ApiError``, không chỉ các ca đẹp.
+
+    Trước đây bài này không tồn tại, nên envelope dùng chung thêm khoá ``retryable`` và lặp khoá
+    phẳng ở cấp gốc mà không ai thấy: hợp đồng khai ``additionalProperties: false`` nên **mọi**
+    phản hồi 4xx/5xx của tầng mới đều trượt kiểm, kể cả 409/422 mà hợp đồng khai báo tường minh.
+    Một bộ kiểm chỉ chạy trên đường thành công thì không phải bộ kiểm.
+    """
+    http, store = client
+    created = await http.post(
+        "/api/v2/work-items",
+        json={
+            "question": "Metformin có gây nhiễm toan lactic ở người suy thận giai đoạn 3b không?",
+            "context": {
+                "requester": {"id": "usr_investigator"},
+                "channel": "api",
+                "raw_text": "Metformin có gây nhiễm toan lactic ở người suy thận giai đoạn 3b không?",
+                "language": "vi",
+            },
+        },
+        headers=_headers("investigator"),
+    )
+    assert created.status_code == 201, created.text
+    work_item_id = created.json()["work_item_id"]
+
+    cases: list[tuple[str, Any, dict[str, str], int]] = [
+        # (tên ca, thân yêu cầu, header, mã HTTP mong đợi)
+        ("404 ca không tồn tại", None, _headers("investigator"), 404),
+        # 403 thật phải là ca nhìn thấy được nhưng không đủ quyền: người điều tra tự đổi chủ sở hữu
+        # ca của chính mình. Ca ngoài phạm vi trả 404 chứ không trả 403 — đó là chủ ý, không phải ca này.
+        ("403 thiếu quyền queue:assign", {"expected_version": 1, "owner": {"id": "usr_khac"}}, _headers("investigator"), 403),
+        ("422 thiếu expected_version", {"question": "Câu hỏi khác?"}, _headers("investigator"), 422),
+        ("409 phiên bản cũ", {"expected_version": 99, "priority": "urgent"}, _headers("investigator"), 409),
+        ("401 thiếu danh tính", None, {}, 401),
+    ]
+    checked = 0
+    for name, body, headers, expected_status in cases:
+        if body is None:
+            response = await http.get("/api/v2/work-items/wi_khong_ton_tai", headers=headers)
+        else:
+            response = await http.patch(f"/api/v2/work-items/{work_item_id}", json=body, headers=headers)
+        assert response.status_code == expected_status, f"{name}: {response.status_code} {response.text}"
+        _assert_matches("ApiError", response.json())
+        # Envelope hợp đồng không được lặp khoá ở cấp gốc — đó là thứ chỉ khách VMEC cũ cần.
+        assert set(response.json()) == {"error"}, name
+        checked += 1
+
+    # Lỗi không đi qua ``MvpError`` cũng phải đúng: 405 do sai phương thức, và 404 của định tuyến.
+    method_not_allowed = await http.put(f"/api/v2/work-items/{work_item_id}", headers=_headers("investigator"))
+    assert method_not_allowed.status_code == 405, method_not_allowed.text
+    _assert_matches("ApiError", method_not_allowed.json())
+    checked += 1
+
+    assert checked == 6
+
+
+@pytest.mark.asyncio
+async def test_a_client_cannot_smuggle_a_bad_request_id_into_the_contract(client):
+    """``request_id`` nằm trong envelope lỗi, nên mã khách gửi vào không được làm hỏng hợp đồng.
+
+    ``$defs/Identifier`` chỉ nhận ``^[A-Za-z0-9][A-Za-z0-9._:-]*$`` và tối đa 120 ký tự. Trước đây
+    middleware cắt ``X-Request-Id`` còn 128 ký tự rồi dùng nguyên, nên một mã dài hay chứa ký tự
+    lạ khiến chính phản hồi lỗi của tầng mới trượt kiểm hợp đồng — khách tự phá hợp đồng của mình.
+    """
+    http, _ = client
+    for bad in ("!!!khong-hop-le!!!", "x" * 200, "  "):
+        response = await http.get(
+            "/api/v2/work-items/wi_khong_ton_tai",
+            headers={**_headers("investigator"), "X-Request-Id": bad},
+        )
+        assert response.status_code == 404, response.text
+        _assert_matches("ApiError", response.json())
+        returned = response.json()["error"]["request_id"]
+        assert returned != bad.strip(), "mã không hợp lệ phải bị thay bằng mã tự sinh"
+
+    # Mã hợp lệ thì phải giữ nguyên, nếu không thì tra vết xuyên tầng mất tác dụng.
+    response = await http.get(
+        "/api/v2/work-items/wi_khong_ton_tai",
+        headers={**_headers("investigator"), "X-Request-Id": "bridge-01.abc:xyz"},
+    )
+    assert response.json()["error"]["request_id"] == "bridge-01.abc:xyz"
+    assert response.headers["X-Request-Id"] == "bridge-01.abc:xyz"
+
+
+@pytest.mark.asyncio
+async def test_the_old_api_keeps_its_wide_envelope(client):
+    """``/api/v1`` phải giữ nguyên envelope cũ: khách VMEC đọc trực tiếp khoá phẳng ở cấp gốc.
+
+    Bài này khoá lại rằng việc tách envelope cho tầng mới không lặng lẽ bỏ khoá phẳng của tầng cũ.
+    """
+    http, _ = client
+    response = await http.get("/api/v1/khong-ton-tai", headers=_headers("investigator"))
+    body = response.json()
+    assert response.status_code in (401, 403, 404), response.text
+    assert "error" in body
+    assert "retryable" in body["error"], "tầng cũ vẫn phải giữ khoá retryable"
+    assert "code" in body and "message" in body, "tầng cũ vẫn phải giữ khoá phẳng ở cấp gốc"
