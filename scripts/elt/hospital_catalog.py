@@ -11,6 +11,7 @@ import csv
 import re
 import unicodedata
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 REQUIRED_COLUMNS = (
@@ -25,6 +26,10 @@ REQUIRED_COLUMNS = (
 )
 SYNTHETIC_FILE_MARKER = "# synthetic: true"
 SYNTHETIC_RECORD_MARKER = "SYNTHETIC"
+_STRENGTH = re.compile(
+    r"^([+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+))\s*([a-zµμ%][a-z0-9µμ%]*(?:\s*/\s*[a-zµμ%][a-z0-9µμ%]*)*)$",
+    re.IGNORECASE,
+)
 
 
 class CatalogValidationError(ValueError):
@@ -83,6 +88,32 @@ def _normalise(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", text)
 
 
+def _normalise_strength(value: str) -> str:
+    """Canonicalise a decimal quantity and unit without losing decimal punctuation.
+
+    The generic token normaliser intentionally removes punctuation for names/forms,
+    but would make ``1.5 mg`` indistinguishable from ``15 mg``.  Strengths therefore
+    use Decimal plus a normalised unit; unsupported compound text preserves its
+    punctuation rather than silently merging distinct values.
+    """
+
+    text = unicodedata.normalize("NFKD", _value(value)).casefold()
+    text = "".join(character for character in text if not unicodedata.combining(character))
+    match = _STRENGTH.fullmatch(text)
+    if match:
+        try:
+            quantity = Decimal(match.group(1).replace(",", "."))
+        except InvalidOperation:  # defensive: the regex only permits Decimal syntax
+            pass
+        else:
+            canonical_quantity = format(quantity.normalize(), "f")
+            if canonical_quantity == "-0":
+                canonical_quantity = "0"
+            unit = re.sub(r"\s+", "", match.group(2)).replace("μ", "µ")
+            return f"{canonical_quantity}:{unit}"
+    return re.sub(r"(?<=\d),(?=\d)", ".", re.sub(r"\s+", "", text)).replace("μ", "µ")
+
+
 def _read_rows(path: Path) -> tuple[bool, list[dict[str, str]]]:
     lines = path.read_text(encoding="utf-8-sig").splitlines()
     if not lines:
@@ -92,8 +123,7 @@ def _read_rows(path: Path) -> tuple[bool, list[dict[str, str]]]:
     reader = csv.DictReader(csv_lines)
     if reader.fieldnames is None:
         raise CatalogValidationError("CSV thiếu hàng tiêu đề")
-    actual = tuple(field.strip() for field in reader.fieldnames)
-    if actual != REQUIRED_COLUMNS:
+    if tuple(reader.fieldnames) != REQUIRED_COLUMNS:
         raise CatalogValidationError(f"Cột CSV phải đúng thứ tự: {', '.join(REQUIRED_COLUMNS)}")
     return synthetic_file, list(reader)
 
@@ -109,6 +139,13 @@ def import_hospital_catalog(path: str | Path) -> list[HospitalDrugRecord]:
     records: list[HospitalDrugRecord] = []
     seen_codes: set[str] = set()
     for number, row in enumerate(rows, start=2 + int(synthetic_file)):
+        if None in row:
+            raise CatalogValidationError(f"Dòng {number} có nhiều cột hơn header")
+        raw_label = row["synthetic_label"]
+        if synthetic_file and raw_label != SYNTHETIC_RECORD_MARKER:
+            raise CatalogValidationError(f"Dòng {number} synthetic phải có synthetic_label=SYNTHETIC")
+        if not synthetic_file and raw_label:
+            raise CatalogValidationError("Tệp không synthetic phải có synthetic_label rỗng")
         record = HospitalDrugRecord(**{column: _value(row.get(column, "")) for column in REQUIRED_COLUMNS})
         missing = [column for column in REQUIRED_COLUMNS[:-1] if not getattr(record, column)]
         if missing:
@@ -116,10 +153,6 @@ def import_hospital_catalog(path: str | Path) -> list[HospitalDrugRecord]:
         if record.hospital_code in seen_codes:
             raise CatalogValidationError(f"Dòng {number} trùng hospital_code: {record.hospital_code}")
         seen_codes.add(record.hospital_code)
-        if synthetic_file and not record.is_synthetic:
-            raise CatalogValidationError(f"Dòng {number} synthetic phải có synthetic_label=SYNTHETIC")
-        if not synthetic_file and record.is_synthetic:
-            raise CatalogValidationError("Bản ghi SYNTHETIC yêu cầu tệp có dòng '# synthetic: true'")
         records.append(record)
     return records
 
@@ -134,7 +167,7 @@ def map_dailymed(record: HospitalDrugRecord, products: list[DailyMedProduct]) ->
 
     expected = {
         "active_ingredient": _normalise(record.active_ingredient),
-        "strength": _normalise(record.strength),
+        "strength": _normalise_strength(record.strength),
         "dosage_form": _normalise(record.dosage_form),
         "route": _normalise(record.route),
     }
@@ -142,7 +175,7 @@ def map_dailymed(record: HospitalDrugRecord, products: list[DailyMedProduct]) ->
     for product in products:
         actual = {
             "active_ingredient": _normalise(product.active_ingredient),
-            "strength": _normalise(product.strength),
+            "strength": _normalise_strength(product.strength),
             "dosage_form": _normalise(product.dosage_form),
             "route": _normalise(product.route),
         }
@@ -183,7 +216,7 @@ def map_dailymed(record: HospitalDrugRecord, products: list[DailyMedProduct]) ->
                 mismatch_fields=tuple(
                     field for field, value in {
                         "active_ingredient": _normalise(product.active_ingredient),
-                        "strength": _normalise(product.strength),
+                        "strength": _normalise_strength(product.strength),
                         "dosage_form": _normalise(product.dosage_form),
                         "route": _normalise(product.route),
                     }.items() if expected[field] != value

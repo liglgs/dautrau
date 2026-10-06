@@ -12,7 +12,9 @@
           "role": "suspected",
           "route": "oral",
           "dose_text": "10 mg mỗi ngày",
-          "unknowns": []
+          "unknowns": [],
+          "strength": "10 mg",
+          "dosage_form": "tablet"
         },
         {
           "medication_id": "med-002",
@@ -30,8 +32,20 @@
               "field": "medications.med-002.dose_text",
               "reason": "Bản ghi synthetic không có liều; không tự suy diễn.",
               "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-002.strength",
+              "reason": "Bản ghi synthetic không có hàm lượng; không tự suy diễn.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-002.dosage_form",
+              "reason": "Bản ghi synthetic không có dạng bào chế; không tự suy diễn.",
+              "needs_confirmation": true
             }
-          ]
+          ],
+          "strength": null,
+          "dosage_form": null
         }
       ],
       "administrations": [
@@ -71,7 +85,7 @@
             "resolution": "known_date",
             "date": "2026-09-13",
             "time": null,
-            "timezone": "+07:00"
+            "timezone": null
           },
           "source": "synthetic case narrative"
         },
@@ -99,9 +113,10 @@
             "resolution": "known_date",
             "date": "2026-09-14",
             "time": null,
-            "timezone": "+07:00"
+            "timezone": null
           },
-          "source": "synthetic laboratory result"
+          "source": "synthetic laboratory result",
+          "unit_resolution": "confirmed"
         }
       ],
       "observations": [
@@ -175,7 +190,31 @@
           "reason": "Chưa đủ dữ kiện để đánh giá nhân quả.",
           "needs_confirmation": true
         }
-      ]
+      ],
+      "case_version": 2,
+      "supersedes_version": 1,
+      "record_kind": "follow_up",
+      "duplicate_candidate_of": null,
+      "dechallenge": {
+        "status": "unknown",
+        "source": null,
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      },
+      "rechallenge": {
+        "status": "not_done",
+        "source": "synthetic case narrative",
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      }
     }
   ]
 }

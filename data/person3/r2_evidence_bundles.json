@@ -31,10 +31,6 @@
           "status": "unknown",
           "reason": "systemic; specific route not reported in the abstract"
         },
-        "comparators": [
-          "trimethoprim with or without sulfamethoxazole (TMP)",
-          "cephalosporins (CPHs)"
-        ],
         "outcome": "aortic aneurysm or dissection occurrence",
         "time_window": "60 days after exposure; AA and AD separately as secondary outcomes",
         "estimates": [
@@ -48,7 +44,8 @@
             ],
             "absolute_rate_difference": 0.21,
             "absolute_rate_difference_unit": "per 1000 person-year",
-            "unit": "hazard ratio"
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid39975698-findings"
           },
           {
             "comparison": "FQ versus CPH",
@@ -60,7 +57,8 @@
             ],
             "absolute_rate_difference": 0.11,
             "absolute_rate_difference_unit": "per 1000 person-year",
-            "unit": "hazard ratio"
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid39975698-findings"
           }
         ],
         "limitations": [
@@ -90,7 +88,8 @@
           "field": "outcome_time_estimates",
           "xml_tag": "AbstractText",
           "xml_label": "FINDINGS",
-          "text": "For the 60-day follow-up there was no difference in risk of AA/AD between FQ and TMP (absolute rate difference [ARD], 0.21 per 1000 person-year; calibrated HR, 0.91 [95% CI 0.73-1.10]). There was no significant difference in risk for FQ versus CPH (ARD, 0.11 per 1000 person-year; calibrated HR, 1.01 [95% CI 0.82-1.25])."
+          "text": "For the 60-day follow-up there was no difference in risk of AA/AD between FQ and TMP (absolute rate difference [ARD], 0.21 per 1000 person-year; calibrated HR, 0.91 [95% CI 0.73-1.10]). There was no significant difference in risk for FQ versus CPH (ARD, 0.11 per 1000 person-year; calibrated HR, 1.01 [95% CI 0.82-1.25]).",
+          "id": "pmid39975698-findings"
         },
         {
           "field": "limitations",
@@ -122,47 +121,86 @@
           "status": "unknown",
           "reason": "not reported in the abstract"
         },
-        "comparators": [
-          "macrolides",
-          "tetracyclines",
-          "extended-spectrum penicillins",
-          "penicillin and beta-lactamase inhibitor combinations",
-          "second- and third-generation cephalosporins",
-          "sulfonamide and trimethoprim combinations",
-          "lincosamides"
-        ],
         "outcome": "incident inpatient aortic aneurysm or dissection",
         "time_window": "60-day risk window; 90-day sensitivity window",
         "estimates": [
           {
             "comparison": "FQ versus macrolides",
+            "exposure": "FQ",
+            "comparator": "macrolides",
             "measure": "adjusted hazard ratio",
             "estimate": 1.52,
             "ci_95": [
               1.33,
               1.74
             ],
-            "unit": "hazard ratio"
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid40285433-results-all-extracted-estimates"
           },
           {
             "comparison": "moxifloxacin versus macrolides",
+            "exposure": "moxifloxacin",
+            "comparator": "macrolides",
             "measure": "adjusted hazard ratio",
             "estimate": 2.13,
             "ci_95": [
               1.64,
               2.77
             ],
-            "unit": "hazard ratio"
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid40285433-results-all-extracted-estimates"
           },
           {
             "comparison": "FQ versus tetracyclines",
+            "exposure": "FQ",
+            "comparator": "tetracyclines",
             "measure": "adjusted hazard ratio",
             "estimate": 1.86,
             "ci_95": [
               1.54,
               2.24
             ],
-            "unit": "hazard ratio"
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid40285433-results-all-extracted-estimates"
+          },
+          {
+            "comparison": "FQ versus penicillins with extended spectrum",
+            "exposure": "FQ",
+            "comparator": "penicillins with extended spectrum",
+            "measure": "adjusted hazard ratio",
+            "estimate": 1.45,
+            "ci_95": [
+              1.28,
+              1.65
+            ],
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid40285433-results-all-extracted-estimates"
+          },
+          {
+            "comparison": "FQ versus cephalosporins",
+            "exposure": "FQ",
+            "comparator": "cephalosporins",
+            "measure": "adjusted hazard ratio",
+            "estimate": 1.23,
+            "ci_95": [
+              1.1,
+              1.37
+            ],
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid40285433-results-all-extracted-estimates"
+          },
+          {
+            "comparison": "FQ versus lincosamides",
+            "exposure": "FQ",
+            "comparator": "lincosamides",
+            "measure": "adjusted hazard ratio",
+            "estimate": 1.73,
+            "ci_95": [
+              1.43,
+              2.11
+            ],
+            "unit": "hazard ratio",
+            "source_quote_id": "pmid40285433-results-all-extracted-estimates"
           }
         ],
         "limitations": [
@@ -178,7 +216,17 @@
           "second- and third-generation cephalosporins",
           "sulfonamide and trimethoprim combinations",
           "lincosamides"
-        ]
+        ],
+        "estimate_extraction_coverage": {
+          "coverage": "all_results_estimates_for_this_study_extracted_from_abstract",
+          "extracted_estimate_count": 6,
+          "source_quote_id": "pmid40285433-results-all-extracted-estimates",
+          "listed_comparators_without_reported_result_estimate": [
+            "penicillins and beta-lactamase inhibitor combinations",
+            "sulfonamide and trimethoprim combinations"
+          ],
+          "not_extracted_external_estimate": "Garg et al. aHR 1.34 [1.17; 1.54] is cited as an external study result, not a result estimated by this cohort."
+        }
       },
       "quotes": [
         {
@@ -206,10 +254,11 @@
           "text": "Incident inpatient aortic aneurysm or dissection was observed within a 60-day risk window. In sensitivity analyses, an extended risk window of 90 days was applied, and specific FQ agents, dosages, and diagnoses were stratified."
         },
         {
-          "field": "estimate_comparator",
+          "field": "estimates_all_extracted",
           "xml_tag": "AbstractText",
           "xml_label": "RESULTS",
-          "text": "FQ episodes were associated with an increased risk for aortic aneurysm or dissection compared to macrolides (aHR = 1.52 [1.33; 1.74]), which replicates the risk estimate of Garg et al. (aHR = 1.34 [1.17; 1.54])."
+          "text": "FQ episodes were associated with an increased risk for aortic aneurysm or dissection compared to macrolides (aHR = 1.52 [1.33; 1.74]), which replicates the risk estimate of Garg et al. (aHR = 1.34 [1.17; 1.54]). This association was robust in a 90-day risk window and for ciprofloxacin, levofloxacin, and moxifloxacin. Moxifloxacin comprised the greatest risk of aortic aneurysm or dissection compared to macrolides (aHR = 2.13 [1.64; 2.77]). Moreover, we observed similar associations when comparing FQ to tetracyclines, penicillins with extended spectrum, cephalosporins, and lincosamides (aHR = 1.86 [1.54; 2.24], aHR = 1.45 [1.28; 1.65], aHR = 1.23 [1.10; 1.37], and aHR = 1.73 [1.43; 2.11]), respectively.",
+          "id": "pmid40285433-results-all-extracted-estimates"
         },
         {
           "field": "limitation",

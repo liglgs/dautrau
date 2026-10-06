@@ -63,6 +63,11 @@ def _hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _normalised_content(text: str) -> str:
+    """Collapse formatting-only whitespace before deciding whether human review is needed."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def _validate(document: VersionedDocument) -> None:
     if not document.source or not document.source_id:
         raise ValueError("source và source_id là bắt buộc")
@@ -97,7 +102,7 @@ def diff_versions(old: VersionedDocument, new: VersionedDocument) -> ChangeSet:
         "new": _provenance(new),
         "compared_at": datetime.now(UTC).isoformat(),
     }
-    if old.text_sha256 == new.text_sha256:
+    if old.text_sha256 == new.text_sha256 or _normalised_content(old.text) == _normalised_content(new.text):
         return ChangeSet(
             source=old.source,
             source_id=old.source_id,
@@ -108,7 +113,7 @@ def diff_versions(old: VersionedDocument, new: VersionedDocument) -> ChangeSet:
             changed=False,
             requires_review=False,
             review_key=None,
-            reason="content_unchanged",
+            reason="content_unchanged" if old.text_sha256 == new.text_sha256 else "content_normalized_unchanged",
             provenance=provenance,
         )
 

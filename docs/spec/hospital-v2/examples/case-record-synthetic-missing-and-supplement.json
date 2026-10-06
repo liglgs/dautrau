@@ -17,8 +17,20 @@
               "field": "medications.med-101.role",
               "reason": "Không có đủ dữ kiện để gán vai trò thuốc.",
               "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-101.strength",
+              "reason": "Không có hàm lượng trong dữ kiện synthetic.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-101.dosage_form",
+              "reason": "Không có dạng bào chế trong dữ kiện synthetic.",
+              "needs_confirmation": true
             }
-          ]
+          ],
+          "strength": null,
+          "dosage_form": null
         }
       ],
       "administrations": [],
@@ -36,7 +48,23 @@
           "source": "synthetic incomplete note"
         }
       ],
-      "labs": [],
+      "labs": [
+        {
+          "lab_id": "lab-101",
+          "test_name": "Xét nghiệm synthetic thiếu đơn vị",
+          "value_text": "7",
+          "unit": null,
+          "unit_resolution": "unknown",
+          "reference_range": null,
+          "collected_at": {
+            "resolution": "known_date",
+            "date": "2026-09-20",
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic incomplete laboratory result"
+        }
+      ],
       "observations": [
         {
           "observation_id": "obs-101",
@@ -45,7 +73,7 @@
             "resolution": "known_date",
             "date": "2026-09-20",
             "time": null,
-            "timezone": "+07:00"
+            "timezone": null
           },
           "source": "synthetic reporter note"
         }
@@ -62,7 +90,7 @@
             "resolution": "known_date",
             "date": "2026-09-20",
             "time": null,
-            "timezone": "+07:00"
+            "timezone": null
           },
           "assessed_by": null
         }
@@ -103,8 +131,37 @@
           "field": "timeline.event-101.occurred_at",
           "reason": "Không có ngày/giờ cho diễn biến được ghi nhận.",
           "needs_confirmation": true
+        },
+        {
+          "field": "labs.lab-101.unit",
+          "reason": "Kết quả synthetic có giá trị nhưng nguồn không ghi đơn vị; không tự điền đơn vị.",
+          "needs_confirmation": true
         }
-      ]
+      ],
+      "case_version": 1,
+      "supersedes_version": null,
+      "record_kind": "initial",
+      "duplicate_candidate_of": null,
+      "dechallenge": {
+        "status": "unknown",
+        "source": null,
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      },
+      "rechallenge": {
+        "status": "unknown",
+        "source": null,
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      }
     }
   ]
 }

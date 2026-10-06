@@ -43,12 +43,30 @@ def test_evidence_bundles_are_traceable_to_committed_xml_and_keep_study_fields()
         assert source["snapshot_sha256"] == manifest_entry["sha256"] == sha256(snapshot)
         study = bundle["study"]
         assert all(study[field] for field in ("design", "population", "setting", "comparator", "outcome", "time_window", "estimates", "limitations"))
+        assert "comparators" not in study
         assert study["route"]["status"] == "unknown" and study["route"]["value"] is None
         assert all("ci_95" in estimate and estimate["unit"] for estimate in study["estimates"])
         sections = abstract_sections(snapshot)
+        quotes_by_id = {quote["id"]: quote for quote in bundle["quotes"] if "id" in quote}
         for quote in bundle["quotes"]:
             assert quote["xml_tag"] == "AbstractText"
             assert quote["text"] in sections[quote["xml_label"]]
+        assert all(estimate["source_quote_id"] in quotes_by_id for estimate in study["estimates"])
+
+        if source["pmid"] == "40285433":
+            expected = {
+                "macrolides": (1.52, [1.33, 1.74]),
+                "tetracyclines": (1.86, [1.54, 2.24]),
+                "penicillins with extended spectrum": (1.45, [1.28, 1.65]),
+                "cephalosporins": (1.23, [1.10, 1.37]),
+                "lincosamides": (1.73, [1.43, 2.11]),
+            }
+            extracted = {estimate["comparator"]: (estimate["estimate"], estimate["ci_95"])
+                         for estimate in study["estimates"] if estimate["exposure"] == "FQ"}
+            assert extracted == expected
+            coverage = study["estimate_extraction_coverage"]
+            assert coverage["extracted_estimate_count"] == len(study["estimates"]) == 6
+            assert coverage["source_quote_id"] in quotes_by_id
 
 
 def test_glossary_separates_intake_from_conclusion_and_preserves_unknown():
@@ -74,7 +92,7 @@ def test_case_scenarios_keep_missing_data_duplicates_and_versions_explicit():
     duplicate = next(row for row in rows if row["scenario_id"] == "duplicate-candidate")
     follow_up = next(row for row in rows if row["scenario_id"] == "follow-up-same-case-versioned")
     assert initial["outcome"]["seriousness"] == "not_assessed"
-    assert initial["dechallenge"] == "unknown" and initial["rechallenge"] == "not_done"
+    assert initial["dechallenge"] == "unknown" and initial["rechallenge"] == "unknown"
     assert duplicate["duplicate_candidate_of"] == initial["case_id"]
     assert duplicate["deduplication_status"] == "requires_pharmacist_review"
     assert follow_up["case_id"] == initial["case_id"]
@@ -96,17 +114,27 @@ def test_separate_pair_and_document_partitions_keep_candidate_state_and_block_ev
     assert all(pair["review"]["status"] == "candidate_not_gold" for pair in pairs)
     assert partition["development"]["pair_count"] == 200
     assert partition["evaluation"]["pair_count"] == 100
-    assert partition["overlapping_drug_families"] == []
+    assert partition["overlapping_ingredients"] == []
     assert documents["source_audit"]["sha256"] == sha256(audit_path)
     assert documents["source_audit"]["bundle_sha256"] == audit["bundle_sha256"]
-    assert documents["development"]["families"] == ["metformin", "atorvastatin"]
-    assert documents["evaluation"]["families"] == ["ibuprofen", "lisinopril", "amoxicillin"]
+    assert documents["development"]["ingredients"] == ["metformin", "ibuprofen", "amoxicillin"]
+    assert documents["evaluation"]["ingredients"] == ["atorvastatin", "lisinopril"]
     development_docs = {entry["doc_id"] for entry in documents["development"]["entries"]}
     evaluation_docs = {entry["doc_id"] for entry in documents["evaluation"]["entries"]}
-    assert len(development_docs) == documents["development"]["document_count"] == 20
-    assert len(evaluation_docs) == documents["evaluation"]["document_count"] == 30
+    development_ingredients = {entry["ingredient_id"] for entry in documents["development"]["entries"]}
+    evaluation_ingredients = {entry["ingredient_id"] for entry in documents["evaluation"]["entries"]}
+    pair_development_ingredients = {pair["drug"] for pair in pairs if pair["split"] == "development"}
+    pair_evaluation_ingredients = {pair["drug"] for pair in pairs if pair["split"] == "test"}
+    assert len(development_docs) == documents["development"]["document_count"] == 30
+    assert len(evaluation_docs) == documents["evaluation"]["document_count"] == 20
     assert not development_docs & evaluation_docs
     assert development_docs | evaluation_docs == {doc_id for values in audit["families"].values() for doc_id in values}
+    assert development_ingredients == set(audit["families"]) & pair_development_ingredients
+    assert not evaluation_ingredients & pair_development_ingredients
+    assert evaluation_ingredients & pair_evaluation_ingredients == {"atorvastatin"}
+    assert evaluation_ingredients - (pair_development_ingredients | pair_evaluation_ingredients) == {"lisinopril"}
+    assert documents["overlapping_ingredients"] == []
+    assert "exact-ingredient split only" in documents["residual_drug_class_overlap_limitation"]
     assert all(entry["review_status"] == "candidate_not_gold" and entry["gold_label"] is None
                for group in ("development", "evaluation") for entry in documents[group]["entries"])
     assert index["labels"]["gold_label"] is None and not index["labels"]["clinical_gold"]
@@ -124,8 +152,8 @@ def test_annotation_ledger_requires_independent_identity_date_and_disagreement_a
     assert STATUS in guide
     assert ledger["status"] == STATUS
     assert ledger["record_status"] == "blank_independent_annotation_not_gold"
-    assert ledger["gold_label"] is None and ledger["ai_generated"] is False
+    assert ledger["gold_label"] is None and ledger["ai_generated"] is None
     for field in ("annotator_id", "annotator_role", "annotation_date", "independent_label"):
         assert field in ledger
-    assert ledger["disagreement"]["status"] == "none"
+    assert ledger["disagreement"]["status"] == "not_compared"
     assert "Không xem ledger còn lại hay model prediction" in guide

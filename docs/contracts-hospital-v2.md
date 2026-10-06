@@ -199,10 +199,12 @@ nhân hoặc dữ liệu bệnh viện thật. Các phần chính là:
 
 | Phần | Quy ước đề xuất |
 |---|---|
+| Phiên bản và trùng ca | `case_version`, `supersedes_version`, `record_kind` (`initial`, `follow_up`, `correction`, `duplicate_candidate`) và `duplicate_candidate_of` giữ đúng lịch sử. `duplicate_candidate` chỉ chờ dược sĩ rà soát, không tự gộp/xóa ca. |
 | `medications`, `administrations` | Một ca có nhiều thuốc; mỗi lần dùng trỏ `medication_id`. Vai trò, liều và đường dùng chưa rõ giữ `null` + `unknowns`, không đoán thuốc nghi ngờ. |
-| `timeline`, `PartialDateTime` | `resolution` tách `known_date_and_time`, `known_date`, `unknown`; `unknown` buộc `date`, `time`, `timezone` là `null`, nên không có giờ giả. |
-| `labs`, `observations` | Lab bắt buộc có `unit` ghi nhận; quan sát luôn có nguồn và không tự trở thành kết luận nhân quả. |
-| `assessments` | Là đánh giá **ca**, tách riêng literature stance của `EvidenceBundle`. Khi thiếu dữ kiện dùng `framework: none`, `status: unknown`; không tự sinh Naranjo hoặc WHO-UMC. |
+| `timeline`, `PartialDateTime` | `resolution` tách `known_date_and_time`, `known_date`, `unknown`; `unknown` buộc `date`, `time`, `timezone` là `null`, còn `known_date` buộc `time` và `timezone` là `null`. Vì vậy timezone không xuất hiện khi không có giờ và không có giờ giả. |
+| `labs`, `observations` | Lab có đơn vị đã biết dùng `unit_resolution: confirmed`; khi nguồn thiếu đơn vị bắt buộc dùng `unit: null` + `unit_resolution: unknown`, không bịa/qui đổi đơn vị. Quan sát luôn có nguồn và không tự trở thành kết luận nhân quả. |
+| `dechallenge`, `rechallenge` | Tách `observed`, `not_observed`, `not_done`, `unknown`, cùng nguồn và thời điểm. `unknown` không phải `not_observed`; không yêu cầu rechallenge. |
+| `assessments` | Là đánh giá **ca**, tách riêng literature stance của `EvidenceBundle`. Khi thiếu dữ kiện dùng `framework: none`, `status: unknown`; Naranjo/WHO-UMC hoặc assessment không-unknown phải có `assessed_by` khác `null`, không tự sinh score/category. |
 | `report_revisions` | Mỗi bản có `case_id`, phiên bản và trạng thái; mọi trạng thái lâm sàng mặc định là `proposed_needs_pharmacist_confirmation` cho đến khi dược sĩ xác nhận. |
 | `supplements` | Bổ sung bắt buộc mang cùng `case_id` với ca đang có; không tạo bệnh nhân hoặc ca mới. Kiểm thử ngoại tuyến kiểm quan hệ này. |
 
@@ -212,7 +214,17 @@ Hai fixture mới là `case-record-synthetic-multidrug.json` và
 nhiều thuốc, ngày/giờ unknown, lab có đơn vị, bổ sung cùng ca và trường thiếu. Chúng không phải
 dữ liệu bệnh nhân thật và không được dùng làm kết luận chuyên môn.
 
-Ràng buộc liên trường như `supplement.case_id == case.case_id`, mọi report revision cùng ca,
-và cấm Naranjo/WHO-UMC ở assessment `unknown` được kiểm trong test Python vì JSON Schema chuẩn
-không biểu diễn phép so sánh giá trị giữa hai nhánh của instance. Việc chọn rubric, xác nhận
-ngữ nghĩa và mở API chỉ thực hiện sau khi có SOP/dữ liệu được phép và dược sĩ xác nhận.
+`SyntheticCaseRecord` cấm `confirmed_by_pharmacist` ở record, assessment và report revision:
+fixture chỉ kiểm kỹ thuật, không thay xác nhận chuyên môn. Ràng buộc liên trường như
+`supplement.case_id == case.case_id`, mọi report revision cùng ca, và
+`case_version == supersedes_version + 1` được kiểm trong test Python vì JSON Schema chuẩn không
+biểu diễn phép so sánh giá trị giữa hai nhánh của instance.
+
+R2-3-06 giữ các scenario nhỏ riêng tại `data/person3/r2_case_scenarios.json` để mô tả intake,
+trùng ca và follow-up; chúng không phải payload `CaseRecord` và không tham chiếu schema này trực
+tiếp. Các tên trường chung (`case_id`, `case_version`, `supersedes_version`, `record_kind`,
+`duplicate_candidate_of`, `dechallenge`, `rechallenge`) dùng cùng ngữ nghĩa theo bảng trên.
+`CaseRecord` fixtures trong thư mục này là bộ kiểm schema đầy đủ và chỉ synthetic.
+
+Việc chọn rubric, xác nhận ngữ nghĩa và mở API chỉ thực hiện sau khi có SOP/dữ liệu được phép và
+dược sĩ xác nhận.

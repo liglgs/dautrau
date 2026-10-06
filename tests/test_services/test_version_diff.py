@@ -32,6 +32,18 @@ def test_unchanged_content_does_not_create_duplicate_review_work() -> None:
     assert changes.provenance["old"]["sha256"] == changes.provenance["new"]["sha256"]
 
 
+def test_whitespace_only_change_does_not_create_review_work() -> None:
+    changes = diff_versions(
+        _document(1, "Title\n\nTake with food."),
+        _document(2, "  Title\n\n\nTake   with food.  \n"),
+    )
+
+    assert changes.changed is False
+    assert changes.requires_review is False
+    assert changes.review_key is None
+    assert changes.reason == "content_normalized_unchanged"
+
+
 def test_changed_content_has_paragraph_diff_and_provenance() -> None:
     changes = diff_versions(
         _document(1, "Title\n\nWarnings\nTake with food."),

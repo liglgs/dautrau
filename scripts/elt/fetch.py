@@ -112,6 +112,9 @@ class Fetcher:
             try:
                 response = self._client.get(url, params=params, headers=headers)
             except httpx.HTTPError as exc:
+                # This final attempt received no HTTP response.  Do not report a
+                # stale status from an earlier retry as if it were this outcome.
+                last_status = None
                 last_error = f"network: {exc.__class__.__name__}: {exc}"
                 time.sleep(0.8 * (attempt + 1))
                 continue

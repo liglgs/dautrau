@@ -10,7 +10,7 @@
       "source_status": "candidate_not_gold",
       "source_machine_labels": "not copied or consumed by this index"
     },
-    "unit": "drug family",
+    "unit": "ingredient",
     "development": {
       "source_split": "development",
       "pair_count": 200,
@@ -21,7 +21,7 @@
       "pair_count": 100,
       "drug_count": 10
     },
-    "overlapping_drug_families": []
+    "overlapping_ingredients": []
   },
   "document_package_50": {
     "status": "đề xuất, chờ dược sĩ xác nhận",
@@ -33,328 +33,329 @@
       "document_count": 50,
       "physical_bundle": "mvp-candidates-50-2026-10-02.zip is not tracked; this index references committed metadata only"
     },
-    "unit": "family",
+    "unit": "ingredient",
     "development": {
-      "families": [
+      "ingredients": [
         "metformin",
-        "atorvastatin"
-      ],
-      "document_count": 20,
-      "entries": [
-        {
-          "family_id": "metformin",
-          "doc_id": "pubmed:27987248:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "pubmed:26780750:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "pubmed:37414069:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "pubmed:34907435:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "pubmed:36187122:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "faers:10004629:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "faers:10005223:3",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "metformin",
-          "doc_id": "faers:10005995:2",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "pubmed:27616593:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "pubmed:36049498:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "pubmed:40529509:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "pubmed:35175631:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "pubmed:27039291:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "dailymed:7c58bf4a-4a92-4db8-89bc-4de1b5831efc:18",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "dailymed:d57720ab-9f83-4da9-a57f-0d55e00a605c:23",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "faers:10004497:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "faers:10004825:2",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "atorvastatin",
-          "doc_id": "faers:10006639:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        }
-      ]
-    },
-    "evaluation": {
-      "families": [
         "ibuprofen",
-        "lisinopril",
         "amoxicillin"
       ],
       "document_count": 30,
       "entries": [
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "metformin",
+          "doc_id": "pubmed:27987248:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "pubmed:26780750:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "pubmed:37414069:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "pubmed:34907435:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "pubmed:36187122:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "dailymed:e087ce3b-8d7f-43a3-8d20-54513da7617d:9",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "dailymed:0ef9de1a-b786-4b6c-a250-3f5ac532b16a:5",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "faers:10004629:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "faers:10005223:3",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "metformin",
+          "doc_id": "faers:10005995:2",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "ibuprofen",
           "doc_id": "pubmed:39466269:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "pubmed:34376069:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "pubmed:40915652:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "pubmed:23137151:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "pubmed:35585779:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "dailymed:1662a495-4f6a-4515-a405-557681e1a496:5",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "dailymed:3b9773c6-42a0-4834-bef4-4fd60556af48:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "faers:10006463:4",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "faers:10016136:4",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "ibuprofen",
+          "ingredient_id": "ibuprofen",
           "doc_id": "faers:10025167:5",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "lisinopril",
-          "doc_id": "pubmed:37417783:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "pubmed:9089428:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "pubmed:9055135:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "pubmed:7619667:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "pubmed:10344043:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "dailymed:f2e09150-22f2-4028-b214-917d686200ad:2",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "dailymed:764d51bf-731f-4a37-8e30-e79328cf5a12:9",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "faers:10005720:1",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "faers:10007368:3",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "lisinopril",
-          "doc_id": "faers:10008690:3",
-          "review_status": "candidate_not_gold",
-          "gold_label": null
-        },
-        {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "pubmed:38055983:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "pubmed:36756024:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "pubmed:35872212:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "pubmed:38690250:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "pubmed:10718859:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "dailymed:26c3694b-d7ef-4068-95d3-4f7a9210e117:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "dailymed:b07b5ac4-253e-4c83-91c3-3fdc46e91a0f:3",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "faers:26940768:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "faers:26943176:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         },
         {
-          "family_id": "amoxicillin",
+          "ingredient_id": "amoxicillin",
           "doc_id": "faers:26943602:1",
           "review_status": "candidate_not_gold",
           "gold_label": null
         }
       ]
     },
-    "overlapping_families": [],
-    "overlapping_doc_ids": []
+    "evaluation": {
+      "ingredients": [
+        "atorvastatin",
+        "lisinopril"
+      ],
+      "document_count": 20,
+      "entries": [
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "pubmed:27616593:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "pubmed:36049498:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "pubmed:40529509:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "pubmed:35175631:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "pubmed:27039291:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "dailymed:7c58bf4a-4a92-4db8-89bc-4de1b5831efc:18",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "dailymed:d57720ab-9f83-4da9-a57f-0d55e00a605c:23",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "faers:10004497:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "faers:10004825:2",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "atorvastatin",
+          "doc_id": "faers:10006639:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "pubmed:37417783:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "pubmed:9089428:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "pubmed:9055135:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "pubmed:7619667:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "pubmed:10344043:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "dailymed:f2e09150-22f2-4028-b214-917d686200ad:2",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "dailymed:764d51bf-731f-4a37-8e30-e79328cf5a12:9",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "faers:10005720:1",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "faers:10007368:3",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        },
+        {
+          "ingredient_id": "lisinopril",
+          "doc_id": "faers:10008690:3",
+          "review_status": "candidate_not_gold",
+          "gold_label": null
+        }
+      ]
+    },
+    "overlapping_ingredients": [],
+    "overlapping_doc_ids": [],
+    "residual_drug_class_overlap_limitation": "This is an exact-ingredient split only. It does not establish drug-class disjointness across either partition."
   },
   "labels": {
     "gold_label": null,

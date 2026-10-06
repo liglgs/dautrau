@@ -4,9 +4,10 @@
 
 ## Phân vùng và chống lộ
 
-- **Partition 300 cặp:** nguồn giữ nguyên tại `data/gold/drug-event-pairs.jsonl`; index additive chỉ tham chiếu `pair_id`, không sao chép nhãn máy. `development` là 200 cặp của split nguồn `development`; `evaluation` là 100 cặp của split nguồn `test`. Tách theo họ thuốc, không chỉ theo dòng; cấm trùng họ thuốc giữa hai phần.
-- **Partition 50 tài liệu:** đây là split riêng của metadata committed trong `eval/person3/corpus/audit.json`, không phải 50 dòng được chọn từ bộ 300 cặp. Gói vật lý `mvp-candidates-50-2026-10-02.zip` không tracked; index chỉ lưu family/doc ID, checksum audit và bundle hash.
-- Split tài liệu là **đề xuất, chờ dược sĩ xác nhận**: development gồm `metformin` + `atorvastatin` (20 tài liệu); evaluation gồm `ibuprofen` + `lisinopril` + `amoxicillin` (30 tài liệu). Mỗi family gồm 10 doc IDs; không family hoặc doc ID nào được chồng giữa hai phần.
+- **Partition 300 cặp:** nguồn giữ nguyên tại `data/gold/drug-event-pairs.jsonl`; index additive chỉ tham chiếu `pair_id`, không sao chép nhãn máy. `development` là 200 cặp của split nguồn `development`; `evaluation` là 100 cặp của split nguồn `test`. Tách theo hoạt chất, không chỉ theo dòng; cấm trùng hoạt chất giữa hai phần.
+- **Partition 50 tài liệu:** đây là split riêng của metadata committed trong `eval/person3/corpus/audit.json`, không phải 50 dòng được chọn từ bộ 300 cặp. Gói vật lý `mvp-candidates-50-2026-10-02.zip` không tracked; index chỉ lưu ingredient/doc ID, checksum audit và bundle hash.
+- Split tài liệu là **đề xuất, chờ dược sĩ xác nhận**: development gồm đúng các hoạt chất đang có trong pair-development của audit này: `metformin` + `ibuprofen` + `amoxicillin` (30 tài liệu). Evaluation gồm `atorvastatin` (có trong pair-evaluation) + `lisinopril` (không có trong 300 cặp) = 20 tài liệu. Mỗi hoạt chất gồm 10 doc IDs; không hoạt chất hoặc doc ID nào được chồng giữa hai phần.
+- Giới hạn còn lại: đây chỉ là tách theo **hoạt chất chính xác**, không chứng minh các partition không chồng theo lớp thuốc/dược lý. Không được diễn giải split này là class-disjoint nếu chưa có danh mục/lý do lâm sàng được dược sĩ xác nhận.
 - Prompt/tuning chỉ được nhận pair IDs/document IDs development. Không đưa pair IDs evaluation, doc IDs evaluation, expected labels, machine label, nhãn reviewer hoặc tổng hợp bất đồng vào prompt. Trước chạy, kiểm `prompt_access` trong index và test offline.
 
 ## Quy trình hai nhãn độc lập

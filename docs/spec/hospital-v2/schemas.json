@@ -1286,7 +1286,7 @@
     "PartialDateTime": {
       "type": "object",
       "title": "PartialDateTime",
-      "description": "Mốc thời gian ca có thể chỉ biết ngày hoặc chưa biết cả ngày/giờ. Không được bịa giờ để đủ dữ liệu.",
+      "description": "Mốc thời gian ca có thể chỉ biết ngày hoặc chưa biết cả ngày/giờ. Không được bịa giờ để đủ dữ liệu; timezone chỉ được ghi khi có time.",
       "required": [
         "resolution",
         "date",
@@ -1362,6 +1362,9 @@
               },
               "time": {
                 "type": "null"
+              },
+              "timezone": {
+                "type": "null"
               }
             }
           }
@@ -1398,6 +1401,8 @@
         "medication_id",
         "recorded_name",
         "role",
+        "strength",
+        "dosage_form",
         "route",
         "dose_text",
         "unknowns"
@@ -1438,6 +1443,22 @@
           "items": {
             "$ref": "#/$defs/UnknownField"
           }
+        },
+        "strength": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160,
+          "description": "Hàm lượng ghi nhận; null phải được giải thích trong unknowns, không suy diễn."
+        },
+        "dosage_form": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 120,
+          "description": "Dạng bào chế ghi nhận; null phải được giải thích trong unknowns, không suy diễn."
         }
       }
     },
@@ -1528,12 +1549,13 @@
     "LabResult": {
       "type": "object",
       "title": "LabResult",
-      "description": "Kết quả xét nghiệm phải mang đơn vị ghi nhận; không quy đổi hoặc suy diễn đơn vị khi thiếu.",
+      "description": "Kết quả xét nghiệm giữ đơn vị ghi nhận. Khi đơn vị chưa có, dùng unit=null + unit_resolution=unknown; không quy đổi hoặc bịa đơn vị.",
       "required": [
         "lab_id",
         "test_name",
         "value_text",
         "unit",
+        "unit_resolution",
         "collected_at",
         "source"
       ],
@@ -1555,8 +1577,10 @@
           "maxLength": 160
         },
         "unit": {
-          "type": "string",
-          "minLength": 1,
+          "type": [
+            "string",
+            "null"
+          ],
           "maxLength": 80
         },
         "reference_range": {
@@ -1573,8 +1597,57 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 160
+        },
+        "unit_resolution": {
+          "enum": [
+            "confirmed",
+            "unknown"
+          ],
+          "description": "unknown buộc unit là null; confirmed buộc unit là chuỗi không rỗng."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "unit_resolution"
+            ],
+            "properties": {
+              "unit_resolution": {
+                "const": "confirmed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "unit_resolution"
+            ],
+            "properties": {
+              "unit_resolution": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     },
     "CaseObservation": {
       "type": "object",
@@ -1609,7 +1682,7 @@
     "CaseAssessment": {
       "type": "object",
       "title": "CaseAssessment",
-      "description": "Đánh giá riêng của ca, tách với literature stance. Chỉ ghi Naranjo/WHO-UMC khi chuyên viên chọn và dữ kiện đủ; thiếu dữ kiện dùng framework none/unknown.",
+      "description": "Đánh giá riêng của ca, tách với literature stance. Chỉ ghi Naranjo/WHO-UMC khi người đánh giá được định danh và dữ kiện đủ; thiếu dữ kiện dùng framework none/unknown.",
       "required": [
         "assessment_id",
         "axis",
@@ -1680,6 +1753,9 @@
       "allOf": [
         {
           "if": {
+            "required": [
+              "status"
+            ],
             "properties": {
               "status": {
                 "const": "unknown"
@@ -1693,6 +1769,56 @@
               },
               "value": {
                 "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "proposed_needs_pharmacist_confirmation",
+                  "confirmed_by_pharmacist"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "assessed_by"
+            ],
+            "properties": {
+              "assessed_by": {
+                "$ref": "#/$defs/Actor"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "framework"
+            ],
+            "properties": {
+              "framework": {
+                "enum": [
+                  "naranjo",
+                  "who_umc"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "assessed_by"
+            ],
+            "properties": {
+              "assessed_by": {
+                "$ref": "#/$defs/Actor"
               }
             }
           }
@@ -1797,12 +1923,18 @@
       "description": "Lát B đề xuất cho một ca đã khử định danh. Hợp đồng lâm sàng chỉ là đề xuất, chờ dược sĩ xác nhận; không phải API và không tự suy ra Naranjo/WHO-UMC.",
       "required": [
         "case_id",
+        "case_version",
+        "supersedes_version",
+        "record_kind",
+        "duplicate_candidate_of",
         "record_status",
         "medications",
         "administrations",
         "timeline",
         "labs",
         "observations",
+        "dechallenge",
+        "rechallenge",
         "assessments",
         "report_revisions",
         "supplements",
@@ -1879,8 +2011,112 @@
           "items": {
             "$ref": "#/$defs/UnknownField"
           }
+        },
+        "case_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supersedes_version": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "record_kind": {
+          "enum": [
+            "initial",
+            "follow_up",
+            "correction",
+            "duplicate_candidate"
+          ]
+        },
+        "duplicate_candidate_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "dechallenge": {
+          "$ref": "#/$defs/CaseCourse"
+        },
+        "rechallenge": {
+          "$ref": "#/$defs/CaseCourse"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "record_kind"
+            ],
+            "properties": {
+              "record_kind": {
+                "const": "initial"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "supersedes_version": {
+                "type": "null"
+              },
+              "duplicate_candidate_of": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "record_kind"
+            ],
+            "properties": {
+              "record_kind": {
+                "enum": [
+                  "follow_up",
+                  "correction"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "supersedes_version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "duplicate_candidate_of": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "record_kind"
+            ],
+            "properties": {
+              "record_kind": {
+                "const": "duplicate_candidate"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "duplicate_candidate_of": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            }
+          }
+        }
+      ]
     },
     "SyntheticCaseRecord": {
       "allOf": [
@@ -1894,6 +2130,44 @@
           "properties": {
             "synthetic": {
               "const": true
+            }
+          }
+        },
+        {
+          "properties": {
+            "record_status": {
+              "enum": [
+                "draft",
+                "proposed_needs_pharmacist_confirmation"
+              ]
+            },
+            "assessments": {
+              "items": {
+                "not": {
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "confirmed_by_pharmacist"
+                    }
+                  }
+                }
+              }
+            },
+            "report_revisions": {
+              "items": {
+                "not": {
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "confirmed_by_pharmacist"
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -1920,6 +2194,69 @@
           }
         }
       }
+    },
+    "CaseCourse": {
+      "type": "object",
+      "title": "CaseCourse",
+      "description": "Diễn biến dechallenge/rechallenge. unknown khác not_observed và not_done; không yêu cầu rechallenge.",
+      "required": [
+        "status",
+        "source",
+        "observed_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "observed",
+            "not_observed",
+            "not_done",
+            "unknown"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160
+        },
+        "observed_at": {
+          "$ref": "#/$defs/PartialDateTime"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "source": {
+                "type": "null"
+              },
+              "observed_at": {
+                "type": "object",
+                "required": [
+                  "resolution"
+                ],
+                "properties": {
+                  "resolution": {
+                    "const": "unknown"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import pytest
+
 from src.models.schemas import SourceDocument, SourceSearchResult, SourceStatus
 from src.services.sources.result import source_result_from_fetch, source_result_from_search
 
@@ -23,7 +25,7 @@ def _document(*, warnings: list[str] | None = None) -> SourceDocument:
     )
 
 
-def test_source_result_keeps_abstract_only_document_and_partial_coverage() -> None:
+def test_source_result_keeps_abstract_only_coverage_when_document_is_truncated() -> None:
     result = SourceSearchResult(
         source="pubmed", query="drug event", fingerprint="query", status=SourceStatus.OK,
         documents=[_document(warnings=["truncated_document"])], requests_used=1,
@@ -32,9 +34,18 @@ def test_source_result_keeps_abstract_only_document_and_partial_coverage() -> No
     normalized = source_result_from_search(result)
 
     assert normalized.outcome == "partial"
-    assert normalized.coverage == "partial"
+    assert normalized.coverage == "abstract_only"
     assert normalized.documents[0].metadata["content_level"] == "abstract_only"
     assert normalized.retrieved_at == "2026-10-06T00:00:00+00:00"
+
+
+def test_skipped_and_ok_without_documents_are_non_results() -> None:
+    base = dict(source="faers", query="drug event", fingerprint="query", requests_used=0)
+    skipped = source_result_from_search(SourceSearchResult(status=SourceStatus.SKIPPED, **base))
+    no_documents = source_result_from_search(SourceSearchResult(status=SourceStatus.OK, **base))
+
+    assert (skipped.outcome, skipped.coverage, skipped.ok) == ("skipped", "not_requested", False)
+    assert (no_documents.outcome, no_documents.coverage, no_documents.ok) == ("empty", "empty", False)
 
 
 def test_source_result_distinguishes_timeout_rate_limit_and_empty() -> None:
@@ -51,12 +62,34 @@ def test_source_result_distinguishes_timeout_rate_limit_and_empty() -> None:
     assert (empty.outcome, empty.source_gap, empty.coverage) == ("empty", False, "empty")
 
 
+@pytest.mark.parametrize(
+    ("error", "outcome"),
+    [
+        ("parse_error: malformed XML", "parse_error"),
+        ("unavailable: upstream maintenance", "unavailable"),
+        ("budget_exhausted", "budget_exhausted"),
+        ("invalid_query: empty drug", "invalid_query"),
+        ("http_503", "http_error"),
+    ],
+)
+def test_source_result_preserves_non_http_failure_semantics(error: str, outcome: str) -> None:
+    result = source_result_from_search(SourceSearchResult(
+        source="dailymed", query="drug", fingerprint="query", status=SourceStatus.ERROR,
+        error=error, retryable=True,
+    ))
+
+    assert result.outcome == outcome
+    assert result.coverage == "unavailable"
+
+
 def test_fetch_404_is_source_gap_not_empty_and_metadata_is_preserved() -> None:
     class Fetch:
         source = "dailymed"
         status = 404
         error = "http_404"
-        body = b""
+        # Error responses can contain an HTML/JSON diagnostic body.  That is
+        # not source content and must not turn a source gap into full coverage.
+        body = b"<html>not found</html>"
         url = "https://dailymed.nlm.nih.gov/missing"
         params = {"setid": "missing"}
         sha256 = ""
@@ -74,6 +107,7 @@ def test_fetch_404_is_source_gap_not_empty_and_metadata_is_preserved() -> None:
     assert result.outcome == "http_error"
     assert result.source_gap is True
     assert result.http_status == 404
+    assert result.coverage == "unavailable"
     assert result.version == 9
     assert result.published_date == "2026-01-01"
     assert result.effective_time == "2025-11-01"

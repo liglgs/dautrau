@@ -19,9 +19,9 @@ DOCUMENT_AUDIT = ROOT / "eval/person3/corpus/audit.json"
 DEFAULT_OUTPUT = ROOT / "data/person3/r2_pair_evaluation_index.json"
 STATUS = "đề xuất, chờ dược sĩ xác nhận"
 PAIR_SOURCE_SPLITS = {"development": "development", "evaluation": "test"}
-DOCUMENT_FAMILIES = {
-    "development": ("metformin", "atorvastatin"),
-    "evaluation": ("ibuprofen", "lisinopril", "amoxicillin"),
+DOCUMENT_INGREDIENTS = {
+    "development": ("metformin", "ibuprofen", "amoxicillin"),
+    "evaluation": ("atorvastatin", "lisinopril"),
 }
 
 
@@ -43,24 +43,33 @@ def build_index(rows: list[dict], audit: dict, *, pair_sha256: str, audit_sha256
     }
     pair_drugs = {role: {row["drug"] for row in group} for role, group in pair_groups.items()}
     if pair_drugs["development"] & pair_drugs["evaluation"]:
-        raise ValueError("A drug family appears in both pair development and evaluation")
+        raise ValueError("An ingredient appears in both pair development and evaluation")
     if {role: len(group) for role, group in pair_groups.items()} != {"development": 200, "evaluation": 100}:
         raise ValueError("Expected committed pair split of 200 development and 100 evaluation")
 
-    families = audit.get("families", {})
+    audit_ingredients = audit.get("families", {})
     if audit.get("status") != "candidate_not_gold" or audit.get("documents") != 50 or audit.get("gold_labels") != 0:
         raise ValueError("Candidate document audit must be a 50-document candidate_not_gold corpus with no gold labels")
-    if set(families) != set().union(*DOCUMENT_FAMILIES.values()) or any(len(doc_ids) != 10 for doc_ids in families.values()):
-        raise ValueError("Expected five distinct document families with ten documents each")
+    if set(audit_ingredients) != set().union(*DOCUMENT_INGREDIENTS.values()) or any(len(doc_ids) != 10 for doc_ids in audit_ingredients.values()):
+        raise ValueError("Expected five distinct document ingredients with ten documents each")
     document_groups = {
-        role: [{"family_id": family, "doc_id": doc_id, "review_status": "candidate_not_gold", "gold_label": None}
-               for family in family_ids for doc_id in families[family]]
-        for role, family_ids in DOCUMENT_FAMILIES.items()
+        role: [{"ingredient_id": ingredient, "doc_id": doc_id, "review_status": "candidate_not_gold", "gold_label": None}
+               for ingredient in ingredient_ids for doc_id in audit_ingredients[ingredient]]
+        for role, ingredient_ids in DOCUMENT_INGREDIENTS.items()
     }
     development_doc_ids = {row["doc_id"] for row in document_groups["development"]}
     evaluation_doc_ids = {row["doc_id"] for row in document_groups["evaluation"]}
     if development_doc_ids & evaluation_doc_ids or len(development_doc_ids | evaluation_doc_ids) != 50:
         raise ValueError("Document IDs overlap across development and evaluation")
+    document_ingredients = {role: set(values) for role, values in DOCUMENT_INGREDIENTS.items()}
+    if document_ingredients["development"] != (set(audit_ingredients) & pair_drugs["development"]):
+        raise ValueError("Development document ingredients must exactly match their pair-development ingredients")
+    if document_ingredients["evaluation"] & pair_drugs["development"]:
+        raise ValueError("No evaluation document ingredient may appear in pair development")
+    if document_ingredients["evaluation"] & pair_drugs["evaluation"] != {"atorvastatin"}:
+        raise ValueError("Atorvastatin must be the only evaluation document ingredient present in pair evaluation")
+    if document_ingredients["evaluation"] - set().union(*pair_drugs.values()) != {"lisinopril"}:
+        raise ValueError("Lisinopril must be the only document ingredient absent from the 300-pair set")
 
     return {
         "artifact_version": "r2-3-07.2",
@@ -70,12 +79,12 @@ def build_index(rows: list[dict], audit: dict, *, pair_sha256: str, audit_sha256
             "source_dataset": {"path": "data/gold/drug-event-pairs.jsonl", "sha256": pair_sha256,
                                "pair_count": len(rows), "source_status": "candidate_not_gold",
                                "source_machine_labels": "not copied or consumed by this index"},
-            "unit": "drug family",
+            "unit": "ingredient",
             "development": {"source_split": "development", "pair_count": len(pair_groups["development"]),
                             "drug_count": len(pair_drugs["development"])},
             "evaluation": {"source_split": "test", "pair_count": len(pair_groups["evaluation"]),
                            "drug_count": len(pair_drugs["evaluation"])},
-            "overlapping_drug_families": [],
+            "overlapping_ingredients": [],
         },
         "document_package_50": {
             "status": STATUS,
@@ -83,13 +92,14 @@ def build_index(rows: list[dict], audit: dict, *, pair_sha256: str, audit_sha256
             "source_audit": {"path": "eval/person3/corpus/audit.json", "sha256": audit_sha256,
                              "bundle_sha256": audit["bundle_sha256"], "document_count": audit["documents"],
                              "physical_bundle": "mvp-candidates-50-2026-10-02.zip is not tracked; this index references committed metadata only"},
-            "unit": "family",
-            "development": {"families": list(DOCUMENT_FAMILIES["development"]), "document_count": len(document_groups["development"]),
+            "unit": "ingredient",
+            "development": {"ingredients": list(DOCUMENT_INGREDIENTS["development"]), "document_count": len(document_groups["development"]),
                             "entries": document_groups["development"]},
-            "evaluation": {"families": list(DOCUMENT_FAMILIES["evaluation"]), "document_count": len(document_groups["evaluation"]),
+            "evaluation": {"ingredients": list(DOCUMENT_INGREDIENTS["evaluation"]), "document_count": len(document_groups["evaluation"]),
                            "entries": document_groups["evaluation"]},
-            "overlapping_families": [],
+            "overlapping_ingredients": [],
             "overlapping_doc_ids": [],
+            "residual_drug_class_overlap_limitation": "This is an exact-ingredient split only. It does not establish drug-class disjointness across either partition.",
         },
         "labels": {"gold_label": None, "clinical_gold": False,
                    "rule": "AI output, source machine-proposed labels, and candidate status never become gold."},

@@ -13,7 +13,10 @@ from typing import Any, Literal
 
 from src.models.schemas import SourceSearchResult, SourceStatus
 
-Outcome = Literal["ok", "empty", "timeout", "http_error", "rate_limited", "partial"]
+Outcome = Literal[
+    "ok", "empty", "skipped", "timeout", "http_error", "rate_limited", "partial",
+    "parse_error", "unavailable", "budget_exhausted", "invalid_query",
+]
 
 
 @dataclass(frozen=True)
@@ -34,7 +37,8 @@ class SourceResult:
 
     @property
     def ok(self) -> bool:
-        return self.outcome in {"ok", "empty", "partial"}
+        """True only when this result includes source content, not merely a completed request."""
+        return self.outcome in {"ok", "partial"}
 
     def to_dict(self) -> dict[str, Any]:
         """Payload JSON-friendly while preserving the source adapter's document content."""
@@ -66,18 +70,40 @@ def _metadata(result: SourceSearchResult) -> dict[str, Any]:
 
 def _outcome_from_error(error: str | None) -> Outcome:
     code = (error or "").casefold()
+    if "invalid_query" in code:
+        return "invalid_query"
+    if "budget_exhausted" in code:
+        return "budget_exhausted"
+    if "parse_error" in code:
+        return "parse_error"
     if "timeout" in code:
         return "timeout"
     if "rate_limited" in code or "429" in code:
         return "rate_limited"
-    return "http_error"
+    if "unavailable" in code or code.startswith("network:"):
+        return "unavailable"
+    if code.startswith("http_") or code.startswith("http "):
+        return "http_error"
+    return "unavailable"
+
+
+def _coverage(documents: list[Any], *, partial: bool) -> str:
+    if not documents:
+        return "empty"
+    if all((document.metadata or {}).get("content_level") == "abstract_only" for document in documents):
+        return "abstract_only"
+    return "partial" if partial else "complete"
 
 
 def source_result_from_search(result: SourceSearchResult) -> SourceResult:
     """Ánh xạ contract runtime cũ sang payload mở rộng, giữ nguyên tài liệu và error cũ."""
 
     metadata = _metadata(result)
-    partial = any("truncated" in str(item) for doc in result.documents for item in doc.metadata.get("warnings", []))
+    partial = any(
+        "truncated" in str(item)
+        for document in result.documents
+        for item in (document.metadata or {}).get("warnings", [])
+    )
     if result.status is SourceStatus.ERROR:
         outcome = _outcome_from_error(result.error)
         return SourceResult(
@@ -87,9 +113,24 @@ def source_result_from_search(result: SourceSearchResult) -> SourceResult:
             error=result.error,
             retryable=result.retryable,
             coverage="unavailable",
+            source_gap=str(result.error or "").casefold().startswith("http_404"),
+            provenance={"query": result.query, "fingerprint": result.fingerprint, "requests_used": result.requests_used},
+        )
+    if result.status is SourceStatus.SKIPPED:
+        return SourceResult(
+            source=result.source,
+            outcome="skipped",
+            coverage="not_requested",
             provenance={"query": result.query, "fingerprint": result.fingerprint, "requests_used": result.requests_used},
         )
     if result.status is SourceStatus.EMPTY:
+        return SourceResult(
+            source=result.source,
+            outcome="empty",
+            coverage="empty",
+            provenance={"query": result.query, "fingerprint": result.fingerprint, "requests_used": result.requests_used},
+        )
+    if not result.documents:
         return SourceResult(
             source=result.source,
             outcome="empty",
@@ -100,7 +141,7 @@ def source_result_from_search(result: SourceSearchResult) -> SourceResult:
         source=result.source,
         outcome="partial" if partial else "ok",
         documents=tuple(result.documents),
-        coverage="partial" if partial else "complete",
+        coverage=_coverage(result.documents, partial=partial),
         version=metadata.get("version") or metadata.get("source_record_version") or result.documents[0].version,
         published_date=metadata.get("published_date"),
         effective_time=metadata.get("effective_time"),
@@ -133,7 +174,12 @@ def source_result_from_fetch(fetch_result: Any, *, partial: bool = False, metada
         source_gap=status == 404 or str(error or "").casefold().startswith("http_404"),
         error=error,
         http_status=status,
-        coverage="partial" if outcome == "partial" else ("empty" if outcome == "empty" else "unavailable" if not body else "complete"),
+        coverage=(
+            "partial" if outcome == "partial"
+            else "empty" if outcome == "empty"
+            else "complete" if outcome == "ok"
+            else "unavailable"
+        ),
         version=metadata.get("version"),
         published_date=metadata.get("published_date"),
         effective_time=metadata.get("effective_time"),
