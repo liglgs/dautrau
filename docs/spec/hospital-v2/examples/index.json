@@ -1,0 +1,52 @@
+[
+  {
+    "file": "work-item-draft-unknown.json",
+    "def": "WorkItem",
+    "note": "nháp, còn trường unknown, chưa có chủ sở hữu"
+  },
+  {
+    "file": "work-item-accepted.json",
+    "def": "WorkItem",
+    "note": "đã nhận, đang chạy, đã gán chủ sở hữu"
+  },
+  {
+    "file": "investigation-link.json",
+    "def": "InvestigationLink",
+    "note": "liên kết yêu cầu với lần chạy điều tra"
+  },
+  {
+    "file": "evidence-bundle-abstract-only.json",
+    "def": "EvidenceBundle",
+    "note": "có bằng chứng nhưng chỉ tóm tắt PubMed"
+  },
+  {
+    "file": "evidence-bundle-source-error.json",
+    "def": "EvidenceBundle",
+    "note": "lỗi nguồn, không có bằng chứng, không kết luận"
+  },
+  {
+    "file": "professional-response-draft.json",
+    "def": "ProfessionalResponse",
+    "note": "phiếu trả lời nháp, chưa duyệt"
+  },
+  {
+    "file": "review-decision.json",
+    "def": "ReviewRef",
+    "note": "quyết định duyệt phiếu trả lời"
+  },
+  {
+    "file": "professional-response-approved.json",
+    "def": "ProfessionalResponse",
+    "note": "phiếu trả lời đã duyệt kèm ReviewRef"
+  },
+  {
+    "file": "follow-up.json",
+    "def": "FollowUp",
+    "note": "việc theo dõi sau trả lời"
+  },
+  {
+    "file": "version-conflict-error.json",
+    "def": "ApiError",
+    "note": "lỗi xung đột phiên bản khi hai người cùng sửa"
+  }
+]

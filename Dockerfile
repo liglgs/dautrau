@@ -3,8 +3,10 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+# requirements-elt.txt mang chromadb/pypdf/gdown cho kho ELT + chỉ mục RAG.
+# Thiếu chromadb thì /rag/search lỗi trong container dù máy phát triển chạy được.
+COPY requirements.txt requirements-elt.txt ./
+RUN pip install --no-cache-dir --user -r requirements.txt -r requirements-elt.txt
 
 # ---- Stage 2: Production ----
 FROM python:3.11-slim

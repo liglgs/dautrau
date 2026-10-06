@@ -1,0 +1,16 @@
+{
+  "review_id": "review-2026-000481-2",
+  "entity": "response",
+  "entity_id": "resp-2026-000481-1",
+  "entity_version": 2,
+  "action": "approve",
+  "reviewer": {
+    "id": "user-3301",
+    "role": "reviewer",
+    "unit": "Hội đồng thuốc và điều trị"
+  },
+  "reason": "Đã đối chiếu câu trích với mục tác dụng không mong muốn của nhãn.",
+  "decided_at": "2026-10-06T09:41:00+07:00",
+  "previous_status": "in_review",
+  "new_status": "approved"
+}

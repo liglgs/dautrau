@@ -1,0 +1,67 @@
+{
+  "response_id": "resp-2026-000481-1",
+  "work_item_id": "wi-2026-000481",
+  "version": 1,
+  "etag": "W/\"resp-2026-000481-1-v1\"",
+  "status": "draft",
+  "sections": [
+    {
+      "key": "summary",
+      "title": "Tóm tắt",
+      "text": "Có bằng chứng nhãn và tóm tắt nghiên cứu quan sát về tiêu chảy khi dùng metformin.",
+      "citations": [
+        {
+          "evidence_id": "ev-2",
+          "note": null
+        }
+      ]
+    },
+    {
+      "key": "evidence",
+      "title": "Bằng chứng",
+      "text": "Nhãn DailyMed nêu tiêu chảy trong mục tác dụng không mong muốn; một nghiên cứu quan sát hỗ trợ.",
+      "citations": [
+        {
+          "evidence_id": "ev-1",
+          "note": "Chỉ có tóm tắt"
+        },
+        {
+          "evidence_id": "ev-2",
+          "note": null
+        }
+      ]
+    },
+    {
+      "key": "limits",
+      "title": "Giới hạn",
+      "text": "Không có bản toàn văn; FAERS không chứng minh nhân quả.",
+      "citations": []
+    }
+  ],
+  "assessment_status": "supported_for_scope",
+  "coverage": {
+    "documents_retrieved": 9,
+    "sources_ok": [
+      "pubmed",
+      "dailymed",
+      "warehouse_rag"
+    ],
+    "sources_empty": [
+      "faers"
+    ],
+    "sources_error": [],
+    "abstract_only": true,
+    "full_text_sources": [],
+    "note": "PubMed chỉ có tóm tắt; nhãn DailyMed đọc được toàn văn mục cảnh báo."
+  },
+  "drafted_by": {
+    "id": "user-2044",
+    "role": "pharmacist",
+    "unit": "Khoa Dược"
+  },
+  "review": null,
+  "approval": null,
+  "supersedes": null,
+  "created_at": "2026-10-06T09:41:00+07:00",
+  "updated_at": "2026-10-06T09:41:00+07:00"
+}

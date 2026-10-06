@@ -121,22 +121,22 @@ phép kiểm đạt**. Ảnh và bản ghi của ba vòng nằm trong `/code/.ge
 
 | Task | Trạng thái | Artifact | Đã kiểm gì | Thiếu đầu vào | Việc có thể làm tiếp |
 | --- | --- | --- | --- | --- | --- |
-| R2-1-01 gói dữ liệu + provenance | **DEV_DONE** | `scripts/elt/{manifest,fetch,parse}.py`; `data/elt/manifests/*.json`; `docs/data/nguon-du-lieu.md` | 18 URL ghi đủ tham số/mã HTTP/số byte/sha256/thời điểm; 30/30 băm văn bản khớp JSON đã phát hành; 44/44 mục gói khớp | dữ liệu nội bộ bệnh viện (SOP, mẫu DI/ADR) | bổ sung checklist xin dữ liệu BV; thêm nguồn danh mục lưu hành VN khi có |
+| R2-1-01 gói dữ liệu + provenance | **DEV_DONE** | `scripts/elt/{manifest,fetch,parse}.py`; `data/elt/manifests/*.json`; `docs/data/nguon-du-lieu.md`; **chuẩn vàng giai đoạn 1:** `data/gold/*`, `scripts/gold/build_gold_dataset.py`, `docs/data/chuan-vang-giai-doan-1.md` | 18 URL ghi đủ tham số/mã HTTP/số byte/sha256/thời điểm; 30/30 băm văn bản khớp JSON đã phát hành; 44/44 mục gói khớp; **300 cặp thuốc–biến cố (159 dương/141 âm, 0 lỗi), dựng lại `--offline` trùng khớp, 20 bài kiểm thử toàn vẹn đạt** | dữ liệu nội bộ bệnh viện (SOP, mẫu DI/ADR); dược sĩ duyệt nhãn | bổ sung checklist xin dữ liệu BV; khảo sát bộ dữ liệu 20+ nước (`docs/data/khao-sat-bo-du-lieu-canh-giac-duoc-2026-10.md`) |
 | R2-1-02 danh mục thuốc + chọn đúng nhãn | **DEV_DONE** (nhánh công khai) | `drugs`, `drug_event_pairs`; `GET /api/v1/drugs/lookup`; `dailymed_labels`; `docs/data/tien-xu-ly.md` §2 | nhãn đơn hoạt chất 13/13, đường uống 12/13; cổng cách ly nhãn nhiều hoạt chất; giữ cả `published_date` và `effectiveTime` | danh mục thuốc của bệnh viện | nạp CSV danh mục BV khi được cấp; thêm kiểm tra hàm lượng/dạng bào chế |
-| R2-1-03 lưu trữ WorkItem/Response/FollowUp | **TODO** (phần kho tài liệu đã có) | `src/services/warehouse/models.py` (14 bảng) | dựng lược đồ, nạp 66 tài liệu, chạy lại không nhân bản | contract `R2-2-01`; ràng buộc chuyên môn từ Người 3 | dựng bảng yêu cầu/phiếu trả lời/theo dõi trên nền storage hiện có |
+| R2-1-03 lưu trữ WorkItem/Response/FollowUp | **DOING** (hợp đồng đã chốt, bảng chưa dựng) | `src/services/warehouse/models.py` (14 bảng); hợp đồng `docs/spec/hospital-v2/schemas.json` | dựng lược đồ kho, nạp 66 tài liệu, chạy lại không nhân bản; hợp đồng 7 thực thể đã kiểm bằng máy (9 bài) | ràng buộc chuyên môn từ Người 3; ma trận quyền R2-2-07 | dựng bảng `work_items`/`investigation_links`/`evidence_bundles`/`professional_responses`/`follow_ups` theo lược đồ đã chốt |
 | R2-1-04 connector/snapshot có coverage và lỗi | **DEV_DONE** | `scripts/elt/fetch.py`; `elt_artifacts` | ghi cả trường hợp lỗi; `--offline` phát lại bản thô; chờ 0,35–0,6 giây/theo host; thử lại 429/5xx | — | bổ sung `SourceResult` theo contract của Người 2 |
 | R2-1-05 tài liệu nội bộ và dữ kiện ca | **WAITING** | — | — | cho phép và dữ liệu từ bệnh viện | chuẩn bị mẫu synthetic có nhãn để kiểm kỹ thuật |
 | R2-1-06 môi trường staging/pilot | **DEV_DONE** | `scripts/setup_elt.sh`, `docker-compose.elt.yml`, `scripts/db/README.md`, `.env.example`, `docs/data/cau-truc-kho.md` | chạy lại nhiều lần không lỗi; cổng 5433 tách khỏi cụm VMEC 5432; `.env.example` không chứa khoá thật | cập nhật `docs/runbook.md`; URL staging công khai | thêm mục Makefile `elt-setup/elt-run/elt-check/dev-*` |
-| R2-1-07 CI, smoke, backup/restore, phát hành | **DOING** | `scripts/elt/check_warehouse.py` | kiểm tra khớp hai kho, mã thoát 1 khi lệch; dựng lại kho từ bản thô bằng `--offline` | workflow CI (đã bị xoá ở HEAD `db5c20f`) | dựng lại CI tối thiểu: lint + test + smoke ELT |
+| R2-1-07 CI, smoke, backup/restore, phát hành | **DOING** (CI đã dựng lại) | `scripts/elt/check_warehouse.py`; `.github/workflows/ci.yml` (3 job); `Dockerfile` (thêm chromadb) | kiểm tra khớp hai kho, mã thoát 1 khi lệch; dựng lại kho từ bản thô bằng `--offline`; CI chạy lint + kiểm tra OpenAPI + toàn bộ kiểm thử ngoại tuyến + kiểm tra dữ liệu/hợp đồng + frontend trên runner GitHub; ảnh backend nay có chromadb nên truy vấn RAG chạy được trong container | chạy thử CI trên GitHub; backup/restore định kỳ | thêm job smoke ELT có dịch vụ PostgreSQL khi nhóm cho phép |
 | R2-1-08 nguồn cập nhật và diff version | **DEV_DONE** | `documents.version`; `load_pg.load_documents` | cùng `doc_id` khác nội dung → 409; phát hiện `content_changed`; `--reset-db`/`--reset-index` | — | thêm báo cáo diff giữa hai phiên bản tài liệu |
 
 ## 3. Người 2 — agent, workflow, API
 
 | Task | Trạng thái | Artifact | Đã kiểm gì | Thiếu đầu vào | Việc có thể làm tiếp |
 | --- | --- | --- | --- | --- | --- |
-| R2-2-01 chốt contract nhỏ lát cắt DI | **DOING** | `src/api/warehouse_routes.py` (7 điểm cuối, mô hình Pydantic, OpenAPI) | `/openapi.json` có đủ 7 đường dẫn; 401/403/404/409/422/503 đều có mã lỗi rõ | contract WorkItem/Response/FollowUp với Người 1 và 3 | phát hành schema + ví dụ cho 1/3/4 |
+| R2-2-01 chốt contract nhỏ lát cắt DI | **DEV_DONE** | `docs/contracts-hospital-v2.md`; `docs/spec/hospital-v2/{schemas.json,openapi.json,examples/}`; `docs/openapi.json` (đã sinh lại, khớp `--check`) | 7 thực thể + 10 ví dụ hợp lệ theo JSON Schema; 9 điểm cuối OpenAPI có `operationId` và ví dụ; enum dùng chung khớp `src/models/schemas.py`; 9 bài kiểm thử hợp đồng đạt | Người 3 xác nhận mục bắt buộc của phiếu trả lời; Người 4 xác nhận hành trình/form; Người 1 xác nhận ràng buộc lưu trữ | triển khai `/api/v2` (R2-2-02) và bảng lưu trữ (R2-1-03) theo hợp đồng |
 | R2-2-02 WorkItem service và API | **TODO** | API điều tra MVP hiện có (`/api/v1/investigations`) | luồng MVP cũ vẫn chạy sau khi thêm router mới | `R2-2-01` | nối form của Người 4 ngay khi endpoint chạy |
-| R2-2-03 planner/agent tìm theo quyết định | **TODO** | `src/services/rag/search.py` (dịch vụ tìm kiếm đã có) | truy vấn tiếng Việt khớp nhãn tiếng Anh (0,782) | rubric `R2-3-01`; planner mới | nối RAG vào `src/agents/graph.py` thay vì chỉ dùng từ điển |
+| R2-2-03 planner/agent tìm theo quyết định | **DOING** (RAG đã nối vào graph) | `src/services/sources/warehouse.py`; `src/services/runner.py`; `src/config.py`; `tests/test_services/test_warehouse_adapters.py` | chế độ `MVP_SOURCE_MODE=warehouse`: graph lấy bằng chứng từ kho + chỉ mục RAG thay vì gọi mạng; giữ provenance (chunk, điểm, cờ chất lượng, đoạn khớp); thiếu chỉ mục thì trả `SourceStatus.ERROR` thành gap, không bịa tài liệu; 7 bài kiểm thử đạt, gồm một bài chạy graph đầu-cuối | rubric `R2-3-01`; planner theo mục đích/chỉ định (ngoài cặp thuốc–biến cố) | mở planner sang mục đích, chỉ định, comparator, thời gian |
 | R2-2-04 checkpoint, resume, thiếu dữ liệu | **TODO** | luồng MVP hiện có | — | `R2-2-02` | giữ nguyên hành vi cũ, bổ sung gaps theo contract mới |
 | R2-2-05 phiếu phản hồi: draft/sửa/duyệt/xuất | **TODO** | — | — | template/validator từ Người 3 | — |
 | R2-2-06 theo dõi, chuyển giao, khép việc | **TODO** | — | — | `R2-2-05`, `R2-1-03` | — |
@@ -168,13 +168,13 @@ Toàn bộ 8 task `R2-3-01…08` giữ **TODO/WAITING**: cần dược sĩ và d
 
 ## 6. Việc còn thiếu và rủi ro (ghi rõ để không hiểu nhầm là đã xong)
 
-1. **Chưa có chuẩn vàng.** `review.jsonl` của gói 50 mẫu vẫn `pending`, `gold_label: null`; mọi cặp là `candidate_not_gold`.
-   Không có nghĩa "hệ thống đã chính xác".
+1. **Chưa có chuẩn vàng đã duyệt.** Gói 50 mẫu vẫn `pending`, `gold_label: null`. Bộ 300 cặp giai đoạn 1 (`data/gold/`) có nhãn máy đề xuất nhưng mọi dòng vẫn `candidate_not_gold`;
+   chưa có dược sĩ duyệt nên không có nghĩa "hệ thống đã chính xác".
 2. **FAERS không chứng minh nhân quả.** 14/15 báo cáo có nhiều thuốc, 157/182 dòng thiếu ngày bắt đầu,
    và mọi báo cáo gắn cờ `suspicion_not_causality`. Không dùng số báo cáo làm tỷ lệ mắc.
 3. **PubMed chỉ có tóm tắt**, chưa đánh giá chất lượng từng nghiên cứu.
 4. **DailyMed chưa đối chiếu danh mục lưu hành Việt Nam**; ngày đăng khác ngày hiệu lực.
-5. **Chưa nối RAG vào agent.** Dịch vụ tìm kiếm đã chạy nhưng `src/agents/graph.py` vẫn dùng từ điển tĩnh.
+5. **RAG đã nối vào agent** ở chế độ `MVP_SOURCE_MODE=warehouse` (`src/services/sources/warehouse.py`), nhưng planner vẫn xoay quanh cặp thuốc–biến cố; chưa mở sang mục đích/chỉ định/comparator.
 6. **Chưa có dữ liệu bệnh viện / dược sĩ duyệt** → không thể `PILOT_ACCEPTED` cho bất kỳ task nào thuộc nhóm B/C.
 7. **Chỉ mục vector phụ thuộc mô hình nhúng.** Đổi `gemini-embedding-001` phải dựng lại chỉ mục.
 8. **Cổng 8000 dùng chung** với cụm VMEC cũ — không chạy đồng thời hai backend.

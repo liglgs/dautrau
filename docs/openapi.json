@@ -196,6 +196,57 @@
         "title": "ContinueRequest",
         "type": "object"
       },
+      "DrugLookup": {
+        "additionalProperties": true,
+        "properties": {
+          "documents": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Documents",
+            "type": "object"
+          },
+          "drugs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Drugs",
+            "type": "array"
+          },
+          "matched": {
+            "title": "Matched",
+            "type": "boolean"
+          },
+          "origin": {
+            "enum": [
+              "warehouse",
+              "dictionary"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
+          "pairs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Pairs",
+            "type": "array"
+          },
+          "query": {
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query",
+          "matched",
+          "origin"
+        ],
+        "title": "DrugLookup",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -207,6 +258,59 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IngestRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "source": {
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_url": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Source Url",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 200000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Title",
+            "type": "string"
+          },
+          "version": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "source",
+          "source_id",
+          "text"
+        ],
+        "title": "IngestRequest",
         "type": "object"
       },
       "InvestigationConfig": {
@@ -286,6 +390,63 @@
           }
         },
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "RagSearchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "k": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "K"
+          },
+          "pair_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pair Id"
+          },
+          "query": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pubmed",
+                  "dailymed",
+                  "faers",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "RagSearchRequest",
         "type": "object"
       },
       "ReviewAction": {
@@ -1117,6 +1278,57 @@
         "summary": "Timeline"
       }
     },
+    "/api/v1/drugs/lookup": {
+      "get": {
+        "description": "Tra cứu thuốc trong kho ELT; hạ cấp sang từ điển tĩnh khi kho chưa sẵn sàng.",
+        "operationId": "drugs_lookup_api_v1_drugs_lookup_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DrugLookup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Drugs Lookup",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
+      }
+    },
     "/api/v1/handoffs": {
       "get": {
         "operationId": "handoffs_api_v1_handoffs_get",
@@ -1180,6 +1392,110 @@
           }
         },
         "summary": "Ack"
+      }
+    },
+    "/api/v1/ingestion/documents": {
+      "post": {
+        "description": "Nạp một tài liệu thủ công (chỉ reviewer). Tài liệu đạt cổng rút gọn sẽ vào kho và chỉ mục RAG.",
+        "operationId": "ingest_manual_document_api_v1_ingestion_documents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Ingest Manual Document Api V1 Ingestion Documents Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Ingest Manual Document",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
+      }
+    },
+    "/api/v1/ingestion/events": {
+      "get": {
+        "description": "Nhật ký nạp tài liệu gần nhất (chạy ELT và nạp thủ công).",
+        "operationId": "ingestion_events_api_v1_ingestion_events_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Ingestion Events Api V1 Ingestion Events Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Ingestion Events",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
       }
     },
     "/api/v1/investigations": {
@@ -2073,6 +2389,56 @@
         "summary": "Create Task"
       }
     },
+    "/api/v1/rag/search": {
+      "post": {
+        "description": "Truy vấn ngữ nghĩa trên chỉ mục ChromaDB đã dựng từ kho ELT.",
+        "operationId": "rag_search_api_v1_rag_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RagSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Rag Search Api V1 Rag Search Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Rag Search",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
+      }
+    },
     "/api/v1/reviews/{review_id}": {
       "get": {
         "operationId": "review_detail_api_v1_reviews__review_id__get",
@@ -2430,6 +2796,208 @@
           }
         },
         "summary": "Respond"
+      }
+    },
+    "/api/v1/warehouse/documents": {
+      "get": {
+        "description": "Danh sách tài liệu trong kho, lọc theo nguồn, cặp thuốc–biến cố hoặc trạng thái chất lượng.",
+        "operationId": "warehouse_documents_api_v1_warehouse_documents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 30,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pair_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pair Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "quality_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "keep",
+                    "quarantine",
+                    "reject"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Quality Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Warehouse Documents Api V1 Warehouse Documents Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Warehouse Documents",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/documents/{doc_id}": {
+      "get": {
+        "description": "Chi tiết một tài liệu, kèm trích đoạn đầu để kiểm tra nhanh.",
+        "operationId": "warehouse_document_api_v1_warehouse_documents__doc_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "doc_id",
+            "required": true,
+            "schema": {
+              "title": "Doc Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "preview_chars",
+            "required": false,
+            "schema": {
+              "default": 600,
+              "maximum": 4000,
+              "minimum": 0,
+              "title": "Preview Chars",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Warehouse Document Api V1 Warehouse Documents  Doc Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Warehouse Document",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/overview": {
+      "get": {
+        "description": "Số liệu kho ELT: tài liệu theo nguồn, trạng thái chất lượng, phát hiện và chỉ mục RAG.",
+        "operationId": "warehouse_overview_api_v1_warehouse_overview_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Warehouse Overview Api V1 Warehouse Overview Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "MvpApiToken": []
+          }
+        ],
+        "summary": "Warehouse Overview",
+        "tags": [
+          "mvp",
+          "warehouse"
+        ]
       }
     },
     "/health": {
