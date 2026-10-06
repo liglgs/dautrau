@@ -72,6 +72,7 @@ async def warehouse_client(monkeypatch, tmp_path: Path):
     get_warehouse_engine.cache_clear()
 
 
+@pytest.mark.needs_chroma
 @pytest.mark.asyncio
 async def test_warehouse_requires_token(warehouse_client) -> None:
     assert (await warehouse_client.get("/api/v1/warehouse/overview")).status_code == 401
@@ -80,6 +81,7 @@ async def test_warehouse_requires_token(warehouse_client) -> None:
     ).status_code == 401
 
 
+@pytest.mark.needs_chroma
 @pytest.mark.asyncio
 async def test_drug_lookup_from_warehouse(warehouse_client) -> None:
     response = await warehouse_client.get("/api/v1/drugs/lookup?name=IBUPROFEN", headers=INVESTIGATOR)
@@ -96,6 +98,7 @@ async def test_drug_lookup_from_warehouse(warehouse_client) -> None:
     assert missing.json()["matched"] is False
 
 
+@pytest.mark.needs_chroma
 @pytest.mark.asyncio
 async def test_overview_documents_and_detail(warehouse_client) -> None:
     overview = await warehouse_client.get("/api/v1/warehouse/overview", headers=INVESTIGATOR)
@@ -122,6 +125,7 @@ async def test_overview_documents_and_detail(warehouse_client) -> None:
     assert absent.status_code == 404
 
 
+@pytest.mark.needs_chroma
 @pytest.mark.asyncio
 async def test_rag_search_endpoint(warehouse_client) -> None:
     response = await warehouse_client.post(
@@ -139,6 +143,7 @@ async def test_rag_search_endpoint(warehouse_client) -> None:
     assert empty.status_code == 422
 
 
+@pytest.mark.needs_chroma
 @pytest.mark.asyncio
 async def test_ingestion_requires_reviewer_and_records_event(warehouse_client) -> None:
     body = {
@@ -216,6 +221,7 @@ async def test_drug_lookup_falls_back_to_static_dictionary(monkeypatch, tmp_path
     assert any(drug["name"] == "ibuprofen" for drug in payload["drugs"])
 
 
+@pytest.mark.needs_chroma
 @pytest.mark.asyncio
 async def test_rag_search_endpoint_does_not_block_the_event_loop(warehouse_client, monkeypatch) -> None:
     """`/rag/search` chạy trong threadpool: yêu cầu khác không phải chờ truy vấn chậm."""

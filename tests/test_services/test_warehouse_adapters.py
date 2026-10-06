@@ -112,6 +112,7 @@ def _decision(source: str, query: str) -> PlannerDecision:
     )
 
 
+@pytest.mark.needs_chroma
 def test_documents_by_ids_returns_full_text_in_input_order(warehouse) -> None:
     engine, _ = warehouse
 
@@ -124,6 +125,7 @@ def test_documents_by_ids_returns_full_text_in_input_order(warehouse) -> None:
     assert documents_by_ids(engine, []) == []
 
 
+@pytest.mark.needs_chroma
 def test_adapter_returns_full_documents_ranked_by_the_rag_index(warehouse) -> None:
     engine, settings = warehouse
     adapter = WarehouseAdapter(name="pubmed", engine=engine, settings=settings, drug="ibuprofen", event="haemorrhage")
@@ -146,6 +148,7 @@ def test_adapter_returns_full_documents_ranked_by_the_rag_index(warehouse) -> No
     assert document.metadata["in_warehouse"] is True
 
 
+@pytest.mark.needs_chroma
 def test_adapter_is_empty_when_the_source_has_no_documents(tmp_path: Path) -> None:
     settings = _settings_for(tmp_path)
     engine = get_warehouse_engine(settings.elt_database_url)
@@ -173,6 +176,7 @@ def test_missing_index_is_a_source_error_not_a_crash(tmp_path: Path) -> None:
     assert result.documents == []
 
 
+@pytest.mark.needs_chroma
 def test_build_warehouse_adapters_covers_all_sources(warehouse) -> None:
     engine, settings = warehouse
 
@@ -210,6 +214,7 @@ class _QuoteExtractor:
         return []
 
 
+@pytest.mark.needs_chroma
 def test_graph_run_in_warehouse_mode_stores_warehouse_documents(warehouse, tmp_path, monkeypatch) -> None:
     from src.agents.graph import run_investigation
     from src.services.runner import InProcessRunner

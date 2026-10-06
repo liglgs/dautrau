@@ -28,6 +28,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -104,8 +105,20 @@ class ProfessionalResponse(WarehouseBase):
     """Phiếu trả lời theo phiên bản (contract ``ProfessionalResponse``)."""
 
     __tablename__ = "professional_responses"
-    # Chặn hai bản "hiện hành" cùng số phiên bản (đua nhau khi hai người cùng lưu).
-    __table_args__ = (Index("uq_response_version", "work_item_id", "version", unique=True),)
+    # Hai ràng buộc duy nhất giữ chuỗi phiên bản lành mạnh:
+    #   * (work_item_id, version) — không hai bản cùng số phiên bản (đua nhau khi lưu);
+    #   * (work_item_id) WHERE status <> 'superseded' — mỗi yêu cầu chỉ một bản "hiện hành".
+    # Ràng buộc thứ hai là chỉ mục duy nhất một phần; PostgreSQL và SQLite đều hỗ trợ.
+    __table_args__ = (
+        Index("uq_response_version", "work_item_id", "version", unique=True),
+        Index(
+            "uq_response_current",
+            "work_item_id",
+            unique=True,
+            postgresql_where=text("status <> 'superseded'"),
+            sqlite_where=text("status <> 'superseded'"),
+        ),
+    )
     response_id: Mapped[str] = mapped_column(String(80), primary_key=True)
     work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
     version: Mapped[int] = mapped_column(Integer, default=1)

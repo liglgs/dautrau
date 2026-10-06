@@ -128,7 +128,13 @@ Quy ước chống mất dữ liệu:
   `UPDATE ... WHERE version = :expected` có kiểm `rowcount`, nên hai người sửa cùng một phiên bản
   thì đúng một người thắng — không còn khe thời gian để cả hai cùng thắng.
 * Hai lần lưu phiếu trả lời song song không tạo hai bản "hiện hành": lần lưu khoá dòng yêu cầu
-  (`SELECT ... FOR UPDATE`) và ràng buộc duy nhất `(work_item_id, version)` là lưới an toàn.
+  (`SELECT ... FOR UPDATE`), và hai chỉ mục duy nhất là lưới an toàn — `(work_item_id, version)`
+  chặn trùng số phiên bản, `(work_item_id) WHERE status <> 'superseded'` chặn hai bản hiện hành.
+* Hai lần duyệt song song cùng một phiếu chỉ có một quyết định thắng: lần duyệt dùng câu lệnh
+  `UPDATE ... WHERE version = expected_version AND status <> 'superseded'`, bên thua nhận
+  `409 VERSION_CONFLICT` (kèm `expected_version` và `current_version`) chứ không ghi đè im lặng.
+* Mã do người gọi đặt phải là chuỗi không rỗng và không dài quá độ rộng cột; mã rỗng **không**
+  được thay bằng mã mới sinh, mà trả `422 INVALID_REQUEST`.
 * Phiếu trả lời đã ở trạng thái `superseded` thì không duyệt được (`409 INVALID_STATE`); mỗi lần
   duyệt phiếu hiện hành tăng `version` và đổi `etag`.
 * Mọi lần ghi đều thêm một dòng `version_refs` giữ ảnh chụp; `history()` đọc lại được toàn bộ.
@@ -139,7 +145,14 @@ kiểm bản chiếu của mình khớp lược đồ này (`tests/test_services
 Kho **không** kiểm cấu trúc lồng sâu do người gọi gửi vào (`context`, `scope`, `unknowns`, `items`,
 `coverage`, ...); tầng `/api/v2` (R2-2-02) chịu trách nhiệm kiểm bằng chính `schemas.json`.
 
-Hai chỗ hợp đồng đã nới cho khớp thực tế lưu trữ:
+Hai điều tầng `/api/v2` phải nhớ khi gọi kho:
+
+* `expected_version` là tham số bắt buộc theo từ khoá; **truyền `None`** khi thiếu, đừng bỏ hẳn tham
+  số — bỏ hẳn sẽ thành `TypeError` của Python (lỗi hệ thống) thay vì `422`.
+* `VersionRef.version` luôn bằng `1` cho `investigation_link` và `follow_up`: hai bảng này chưa có
+  cột `version`, nên mỗi liên kết/việc theo dõi chỉ có một dòng nhật ký và `etag` không đổi theo lần sửa.
+
+Ba chỗ hợp đồng đã nới cho khớp thực tế lưu trữ:
 
 * `Actor.role` không còn bắt buộc — kho chỉ chắc chắn có mã người dùng; máy chủ điền vai trò từ token khi biết.
 * `InvestigationLink.created_by` cho phép `null` — lần chạy tự động có thể không có người tạo.

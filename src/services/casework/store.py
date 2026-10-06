@@ -106,6 +106,12 @@ FOLLOW_UP_KINDS = frozenset({"request_information", "recheck_source", "monitor_c
 FOLLOW_UP_STATUSES = frozenset({"open", "in_progress", "done", "cancelled"})
 ACTOR_ROLES = frozenset({"doctor", "pharmacist", "nurse", "reviewer", "admin", "service"})
 
+# Độ rộng cột trong `models.py`; kiểm ở đây để đầu vào quá dài trả 422 thay vì DataError.
+ID_MAX_LENGTH = 80
+INVESTIGATION_ID_MAX_LENGTH = 120
+REVISION_REASON_MAX_LENGTH = 300
+REVIEW_REASON_MAX_LENGTH = 1000
+
 WORK_ITEM_REVIEW_TARGET = {
     "approve": "approved",
     "reject": "rejected",
@@ -152,10 +158,21 @@ def _as_int(value: Any, field: str) -> int:
         raise invalid_request(f"{field} phải là số nguyên.") from exc
 
 
-def _text(value: Any, field: str) -> str:
+def _text(value: Any, field: str, *, max_length: int | None = None) -> str:
+    """Chuỗi bắt buộc, đã cắt khoảng trắng; quá dài thì 422 (không để cơ sở dữ liệu nổ)."""
     if not isinstance(value, str) or not value.strip():
         raise invalid_request(f"{field} không được để trống.")
-    return value.strip()
+    text = value.strip()
+    if max_length is not None and len(text) > max_length:
+        raise invalid_request(
+            f"{field} dài quá {max_length} ký tự.",
+            {"field": field, "max_length": max_length, "actual_length": len(text)},
+        )
+    return text
+
+
+def _optional_text(value: Any, field: str, *, max_length: int | None = None) -> str | None:
+    return None if value is None else _text(value, field, max_length=max_length)
 
 
 def _json_object(value: Any, field: str) -> dict[str, Any]:
@@ -203,6 +220,18 @@ def _actor(value: Any, field: str = "actor") -> dict[str, Any] | None:
     return actor
 
 
+def _constraint_name(exc: IntegrityError) -> str | None:
+    """Tên ràng buộc/chỉ mục mà cơ sở dữ liệu nêu trong lỗi, nếu đọc được.
+
+    PostgreSQL đưa tên qua ``diag.constraint_name``; SQLite chỉ có trong thông báo lỗi.
+    """
+    diag = getattr(getattr(exc, "orig", None), "diag", None)
+    name = getattr(diag, "constraint_name", None)
+    if name:
+        return str(name)
+    return str(getattr(exc, "orig", exc))
+
+
 def _require(value: Any, allowed: Iterable[str], field: str) -> None:
     if value is None:
         raise invalid_request(f"Thiếu trường bắt buộc: {field}.")
@@ -214,17 +243,25 @@ def ensure_casework_schema(engine: Engine) -> list[str]:
     """Tạo các bảng còn thiếu của lát cắt DI (chỉ thêm, không sửa bảng cũ)."""
     existing = set(inspect(engine).get_table_names())
     missing = [name for name in CASEWORK_TABLES if name not in existing]
+    if not missing:
+        return []
     WarehouseBase.metadata.create_all(
         engine, tables=[WarehouseBase.metadata.tables[name] for name in missing]
     )
     return sorted(missing)
 
 
-def _ensure_work_item(session, work_item_id: str) -> WorkItem:
-    row = session.get(WorkItem, work_item_id)
+def _ensure_row(session, model, identifier: str, what: str):
+    """Đọc một dòng theo khoá chính; mã sai kiểu thì 422, không có thì 404."""
+    identifier = _text(identifier, model.__mapper__.primary_key[0].name, max_length=ID_MAX_LENGTH)
+    row = session.get(model, identifier)
     if row is None:
-        raise not_found("yêu cầu", work_item_id)
+        raise not_found(what, identifier)
     return row
+
+
+def _ensure_work_item(session, work_item_id: str) -> WorkItem:
+    return _ensure_row(session, WorkItem, work_item_id, "yêu cầu")
 
 
 def _related_ids(session, work_item_id: str) -> dict[str, list[str]]:
@@ -252,7 +289,7 @@ def _related_ids(session, work_item_id: str) -> dict[str, list[str]]:
 
 def work_item_document(row: WorkItem, related: dict[str, list[str]] | None = None) -> dict[str, Any]:
     """Chuyển bản ghi ORM sang hình dạng ``WorkItem`` của hợp đồng hospital-v2."""
-    ids = related or {"investigation_ids": [], "response_ids": [], "follow_up_ids": []}
+    ids = related or {}
     return {
         "work_item_id": row.work_item_id,
         "version": row.version,
@@ -266,9 +303,9 @@ def work_item_document(row: WorkItem, related: dict[str, list[str]] | None = Non
         "work_status": row.work_status,
         "run_status": row.run_status,
         "review_status": row.review_status,
-        "investigation_ids": list(ids["investigation_ids"]),
-        "response_ids": list(ids["response_ids"]),
-        "follow_up_ids": list(ids["follow_up_ids"]),
+        "investigation_ids": ids.get("investigation_ids", []),
+        "response_ids": ids.get("response_ids", []),
+        "follow_up_ids": ids.get("follow_up_ids", []),
         "labels": row.labels_json or {},
         "revision_of": row.revision_of,
         "revision_reason": row.revision_reason,
@@ -383,9 +420,11 @@ def _version_document(row: VersionRef) -> dict[str, Any]:
 class CaseWorkStore:
     """Đọc/ghi yêu cầu, liên kết điều tra, gói bằng chứng, phiếu trả lời và theo dõi."""
 
-    def __init__(self, engine: Engine):
+    def __init__(self, engine: Engine, *, ensure_schema: bool = True):
+        """``ensure_schema=False`` cho đường chỉ đọc hoặc khi lược đồ đã do nơi khác dựng."""
         self.engine = engine
-        ensure_casework_schema(engine)
+        if ensure_schema:
+            ensure_casework_schema(engine)
 
     # ------------------------------------------------------------------ tiện ích
 
@@ -422,17 +461,34 @@ class CaseWorkStore:
             )
         )
 
-    def _insert(self, session, row, *, key: str, conflict: MvpError | None = None) -> None:
+    def _insert(
+        self,
+        session,
+        row,
+        *,
+        key: str,
+        conflicts: dict[str, MvpError] | None = None,
+    ) -> None:
         """Chèn bản ghi mới; vi phạm ràng buộc trả 409 thay vì lỗi hệ thống.
 
-        ``conflict`` dùng cho ràng buộc duy nhất không phải khoá chính (ví dụ số phiên
-        bản phiếu trả lời) để thông báo đúng nguyên nhân.
+        ``conflicts`` ánh xạ *tên ràng buộc* sang lỗi muốn trả (ví dụ số phiên bản phiếu
+        trả lời). Mọi ràng buộc khác — kể cả khoá chính trùng — trả ``IDEMPOTENCY_CONFLICT``,
+        để mã trùng luôn được báo đúng là mã trùng.
         """
+        model = type(row)
+        primary_key = model.__mapper__.primary_key[0].name
+        if session.get(model, getattr(row, primary_key)) is not None:
+            # Kiểm trước để lỗi xác định trên mọi hệ quản trị, không phụ thuộc thông báo của cơ sở dữ liệu.
+            raise idempotency_conflict(key)
         session.add(row)
         try:
             session.flush()
         except IntegrityError as exc:
-            raise (conflict or idempotency_conflict(key)) from exc
+            name = _constraint_name(exc)
+            for constraint, error in (conflicts or {}).items():
+                if name is not None and constraint in name:
+                    raise error from exc
+            raise idempotency_conflict(key) from exc
 
     def _apply_work_item_change(
         self,
@@ -457,11 +513,12 @@ class CaseWorkStore:
             .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected)
             .values(**values)
         )
-        if result.rowcount != 1:
-            session.expire_all()
-            current = session.get(WorkItem, work_item_id)
-            raise version_conflict(expected, current.version if current is not None else expected)
         session.expire_all()
+        if result.rowcount != 1:
+            current = session.get(WorkItem, work_item_id)
+            if current is None:
+                raise not_found("yêu cầu", work_item_id)
+            raise version_conflict(expected, current.version)
         row = _ensure_work_item(session, work_item_id)
         document = work_item_document(row, _related_ids(session, work_item_id))
         self._record_version(
@@ -501,8 +558,13 @@ class CaseWorkStore:
         labels = _json_object(labels, "labels")
         owner = _actor(owner, "owner")
         actor = _actor(actor)
-        if work_item_id is not None:
-            work_item_id = _text(work_item_id, "work_item_id")
+        work_item_id = (
+            new_id("wi") if work_item_id is None else _text(work_item_id, "work_item_id", max_length=ID_MAX_LENGTH)
+        )
+        revision_of = _optional_text(revision_of, "revision_of", max_length=ID_MAX_LENGTH)
+        revision_reason = _optional_text(
+            revision_reason, "revision_reason", max_length=REVISION_REASON_MAX_LENGTH
+        )
 
         work_item_id = work_item_id or new_id("wi")
         stamp = now()
@@ -542,6 +604,7 @@ class CaseWorkStore:
         return document
 
     def get_work_item(self, work_item_id: str) -> dict[str, Any]:
+        work_item_id = _text(work_item_id, "work_item_id")
         with session_scope(self.engine) as session:
             row = _ensure_work_item(session, work_item_id)
             return work_item_document(row, _related_ids(session, work_item_id))
@@ -579,6 +642,7 @@ class CaseWorkStore:
         reason: str | None = None,
     ) -> dict[str, Any]:
         """Sửa yêu cầu với khoá lạc quan; trả bản ghi mới kèm ``version`` tăng một."""
+        work_item_id = _text(work_item_id, "work_item_id")
         if not isinstance(changes, dict) or not changes:
             raise invalid_request("Không có trường nào để cập nhật.")
         unknown = sorted(set(changes) - ALLOWED_WORK_ITEM_PATCH_FIELDS)
@@ -601,20 +665,29 @@ class CaseWorkStore:
         for field, allowed in checks:
             if field in changes:
                 _require(changes[field], allowed, field)
-        if "question" in changes:
-            changes = {**changes, "question": _text(changes["question"], "question")}
-        for field in ("context", "scope", "labels"):
-            if field in changes:
-                changes = {**changes, field: _json_object(changes[field], field)}
-        if "unknowns" in changes:
-            changes = {**changes, "unknowns": _json_list(changes["unknowns"], "unknowns")}
-        if "owner" in changes:
-            changes = {**changes, "owner": _actor(changes["owner"], "owner")}
+        validators: dict[str, Any] = {
+            "question": _text,
+            "context": _json_object,
+            "scope": _json_object,
+            "unknowns": _json_list,
+            "labels": _json_object,
+            "owner": _actor,
+            "revision_of": lambda value, field: _optional_text(value, field, max_length=ID_MAX_LENGTH),
+            "revision_reason": lambda value, field: _optional_text(
+                value, field, max_length=REVISION_REASON_MAX_LENGTH
+            ),
+        }
+        changes = {
+            **changes,
+            **{field: validators[field](changes[field], field) for field in changes if field in validators},
+        }
         if reason is not None:
-            changes = {**changes, "revision_reason": reason}
+            changes = {
+                **changes,
+                "revision_reason": _text(reason, "reason", max_length=REVISION_REASON_MAX_LENGTH),
+            }
 
         with session_scope(self.engine) as session:
-            _ensure_work_item(session, work_item_id)
             return self._apply_work_item_change(
                 session,
                 work_item_id,
@@ -639,11 +712,11 @@ class CaseWorkStore:
     ) -> dict[str, Any]:
         _require(purpose, LINK_PURPOSES, "purpose")
         _require(state, LINK_STATES, "state")
-        investigation_id = _text(investigation_id, "investigation_id")
+        investigation_id = _text(investigation_id, "investigation_id", max_length=INVESTIGATION_ID_MAX_LENGTH)
         run_summary = _optional_object(run_summary, "run_summary")
         error = _optional_object(error, "error")
         actor = _actor(actor)
-        link_id = _text(link_id, "link_id") if link_id else new_id("il")
+        link_id = new_id("il") if link_id is None else _text(link_id, "link_id", max_length=ID_MAX_LENGTH)
         row = InvestigationLink(
             link_id=link_id,
             work_item_id=work_item_id,
@@ -686,9 +759,7 @@ class CaseWorkStore:
         error = _optional_object(error, "error")
         actor = _actor(actor)
         with session_scope(self.engine) as session:
-            row = session.get(InvestigationLink, link_id)
-            if row is None:
-                raise not_found("liên kết điều tra", link_id)
+            row = _ensure_row(session, InvestigationLink, link_id, "liên kết điều tra")
             changed: list[str] = []
             if state is not None:
                 row.state = state
@@ -714,6 +785,7 @@ class CaseWorkStore:
             return document
 
     def list_investigation_links(self, work_item_id: str) -> list[dict[str, Any]]:
+        work_item_id = _text(work_item_id, "work_item_id")
         with session_scope(self.engine) as session:
             rows = (
                 session.execute(
@@ -751,7 +823,9 @@ class CaseWorkStore:
         if not isinstance(coverage, dict):
             raise invalid_request("coverage phải là đối tượng.")
         claim = _optional_object(claim, "claim")
-        bundle_id = _text(bundle_id, "bundle_id") if bundle_id else new_id("eb")
+        bundle_id = (
+            new_id("eb") if bundle_id is None else _text(bundle_id, "bundle_id", max_length=ID_MAX_LENGTH)
+        )
         row = EvidenceBundle(
             bundle_id=bundle_id,
             work_item_id=work_item_id,
@@ -782,13 +856,12 @@ class CaseWorkStore:
         return document
 
     def get_evidence_bundle(self, bundle_id: str) -> dict[str, Any]:
+        bundle_id = _text(bundle_id, "bundle_id")
         with session_scope(self.engine) as session:
-            row = session.get(EvidenceBundle, bundle_id)
-            if row is None:
-                raise not_found("gói bằng chứng", bundle_id)
-            return _bundle_document(row)
+            return _bundle_document(_ensure_row(session, EvidenceBundle, bundle_id, "gói bằng chứng"))
 
     def list_evidence_bundles(self, work_item_id: str) -> list[dict[str, Any]]:
+        work_item_id = _text(work_item_id, "work_item_id")
         with session_scope(self.engine) as session:
             rows = (
                 session.execute(
@@ -824,7 +897,9 @@ class CaseWorkStore:
         coverage = _json_object(coverage, "coverage")
         drafted_by = _actor(drafted_by, "drafted_by")
         actor = _actor(actor)
-        response_id = _text(response_id, "response_id") if response_id else new_id("resp")
+        response_id = (
+            new_id("resp") if response_id is None else _text(response_id, "response_id", max_length=ID_MAX_LENGTH)
+        )
 
         with session_scope(self.engine) as session:
             # Khoá dòng yêu cầu để hai lần lưu song song không tạo hai bản "hiện hành".
@@ -851,6 +926,9 @@ class CaseWorkStore:
                 supersedes = previous.response_id
                 previous.status = "superseded"
                 previous.updated_at = now()
+                # Ghi ngay: SQLAlchemy xếp INSERT trước UPDATE, mà ràng buộc
+                # "một bản hiện hành" kiểm ở cuối câu lệnh, nên phải hạ bản cũ xuống trước.
+                session.flush()
                 self._record_version(
                     session,
                     entity="response",
@@ -884,10 +962,13 @@ class CaseWorkStore:
                 key=response_id,
                 # Lưới an toàn: nếu vì lý do nào đó hai bản cùng số phiên bản lọt qua
                 # khoá dòng, ràng buộc duy nhất chặn lại và báo đúng là xung đột phiên bản.
-                conflict=invalid_state(
-                    "Có phiếu trả lời khác vừa được lưu; đọc lại yêu cầu rồi gửi lại.",
-                    {"work_item_id": work_item_id, "attempted_version": version},
-                ),
+                # Mã phiếu trùng vẫn rơi về IDEMPOTENCY_CONFLICT như các bảng khác.
+                conflicts={
+                    "uq_response_version": invalid_state(
+                        "Có phiếu trả lời khác vừa được lưu; đọc lại yêu cầu rồi gửi lại.",
+                        {"work_item_id": work_item_id, "attempted_version": version},
+                    )
+                },
             )
             document = _response_document(row)
             self._record_version(
@@ -903,13 +984,12 @@ class CaseWorkStore:
             return document
 
     def get_response(self, response_id: str) -> dict[str, Any]:
+        response_id = _text(response_id, "response_id")
         with session_scope(self.engine) as session:
-            row = session.get(ProfessionalResponse, response_id)
-            if row is None:
-                raise not_found("phiếu trả lời", response_id)
-            return _response_document(row)
+            return _response_document(_ensure_row(session, ProfessionalResponse, response_id, "phiếu trả lời"))
 
     def list_responses(self, work_item_id: str, *, include_superseded: bool = True) -> list[dict[str, Any]]:
+        work_item_id = _text(work_item_id, "work_item_id")
         with session_scope(self.engine) as session:
             query = select(ProfessionalResponse).where(ProfessionalResponse.work_item_id == work_item_id)
             if not include_superseded:
@@ -932,13 +1012,16 @@ class CaseWorkStore:
     ) -> dict[str, Any]:
         _require(entity, REVIEW_ENTITIES, "entity")
         _require(action, REVIEW_ACTIONS, "action")
-        entity_id = _text(entity_id, "entity_id")
+        entity_id = _text(entity_id, "entity_id", max_length=ID_MAX_LENGTH)
         reviewer = _actor(reviewer, "reviewer")
         if reviewer is None:
             raise invalid_request("reviewer không được để trống.")
+        reason = _optional_text(reason, "reason", max_length=REVIEW_REASON_MAX_LENGTH)
         if reason is not None and len(reason) > 1000:
             raise invalid_request("reason tối đa 1000 ký tự.")
-        review_id = _text(review_id, "review_id") if review_id else new_id("rev")
+        review_id = (
+            new_id("rev") if review_id is None else _text(review_id, "review_id", max_length=ID_MAX_LENGTH)
+        )
         expected = _as_int(expected_version, "expected_version") if expected_version is not None else None
 
         with session_scope(self.engine) as session:
@@ -947,6 +1030,8 @@ class CaseWorkStore:
             entity_version = 0
             snapshot: dict[str, Any]
             snapshot_version: int
+            # Nhánh tự ghi nhật ký phiên bản thì đặt cờ, để cuối hàm không ghi lần thứ hai.
+            logged = False
             if entity == "work_item":
                 row = _ensure_work_item(session, entity_id)
                 entity_version = row.version
@@ -964,30 +1049,26 @@ class CaseWorkStore:
                     changed_fields=["review_status"],
                 )
                 snapshot_version = snapshot["version"]
+                logged = True
             elif entity == "response":
-                response = session.get(ProfessionalResponse, entity_id)
-                if response is None:
-                    raise not_found("phiếu trả lời", entity_id)
+                response = _ensure_row(session, ProfessionalResponse, entity_id, "phiếu trả lời")
                 if response.status == "superseded":
                     raise invalid_state(
                         "Không duyệt được phiếu trả lời đã bị thay thế.",
                         {"response_id": entity_id, "status": response.status},
                     )
-                if expected is not None and expected != response.version:
+                if expected is None:
+                    raise invalid_request("Thiếu expected_version; đọc lại phiếu rồi gửi kèm phiên bản.")
+                if expected != response.version:
                     raise version_conflict(expected, response.version)
                 entity_version = response.version
                 previous_status = response.status
                 new_status = RESPONSE_REVIEW_TARGET[action]
-                response.status = new_status
-                response.updated_at = now()
-                response.version = entity_version + 1
-                response.etag = etag_for("response", entity_id, response.version)
-                snapshot = _response_document(response)
-                snapshot_version = response.version
+                snapshot, snapshot_version = self._apply_response_review(
+                    session, entity_id, expected=entity_version, new_status=new_status
+                )
             else:
-                bundle = session.get(EvidenceBundle, entity_id)
-                if bundle is None:
-                    raise not_found("gói bằng chứng", entity_id)
+                bundle = _ensure_row(session, EvidenceBundle, entity_id, "gói bằng chứng")
                 previous_status, entity_version = "created", 1
                 new_status = "reviewed"
                 snapshot = _bundle_document(bundle)
@@ -1005,18 +1086,64 @@ class CaseWorkStore:
                 previous_status=previous_status,
                 new_status=new_status,
             )
+            # Mã quyết định trùng là mã trùng, không phải xung đột trạng thái.
             self._insert(session, row_review, key=review_id)
-            self._record_version(
-                session,
-                entity=entity,
-                entity_id=entity_id,
-                version=snapshot_version,
-                change_kind="reviewed",
-                changed_fields=["status"],
-                snapshot=snapshot,
-                actor=reviewer,
-            )
+            if not logged:
+                self._record_version(
+                    session,
+                    entity=entity,
+                    entity_id=entity_id,
+                    version=snapshot_version,
+                    change_kind="reviewed",
+                    changed_fields=["status"],
+                    snapshot=snapshot,
+                    actor=reviewer,
+                )
             return _review_document(row_review)
+
+    def _apply_response_review(
+        self, session, response_id: str, *, expected: int, new_status: str
+    ) -> tuple[dict[str, Any], int]:
+        """Duyệt phiếu trả lời bằng so-sánh-rồi-ghi, không đọc-rồi-ghi.
+
+        Không có bước này thì hai người duyệt cùng lúc đều thấy thành công, quyết định
+        sau đè quyết định trước, và nhật ký có hai dòng cùng một số phiên bản.
+        Điều kiện ``status != 'superseded'`` chặn luôn trường hợp một lần lưu khác vừa
+        thay thế phiếu này trong lúc ta đọc.
+        """
+        new_version = expected + 1
+        try:
+            result = session.execute(
+                update(ProfessionalResponse)
+                .where(
+                    ProfessionalResponse.response_id == response_id,
+                    ProfessionalResponse.version == expected,
+                    ProfessionalResponse.status != "superseded",
+                )
+                .values(
+                    status=new_status,
+                    version=new_version,
+                    etag=etag_for("response", response_id, new_version),
+                    updated_at=now(),
+                )
+            )
+        except IntegrityError as exc:
+            # Ràng buộc duy nhất (work_item_id, version) chặn: một phiếu khác vừa chiếm số này.
+            raise invalid_state(
+                "Có phiếu trả lời khác vừa được lưu cùng lúc; đọc lại rồi gửi lại.",
+                {"response_id": response_id, "attempted_version": new_version},
+            ) from exc
+        session.expire_all()
+        if result.rowcount != 1:
+            current = session.get(ProfessionalResponse, response_id)
+            if current is not None and current.status == "superseded":
+                raise invalid_state(
+                    "Không duyệt được phiếu trả lời đã bị thay thế.",
+                    {"response_id": response_id, "status": current.status},
+                )
+            raise version_conflict(expected, current.version if current is not None else expected)
+        response = _ensure_row(session, ProfessionalResponse, response_id, "phiếu trả lời")
+        return _response_document(response), response.version
 
     def list_reviews(self, *, entity: str, entity_id: str) -> list[dict[str, Any]]:
         with session_scope(self.engine) as session:
@@ -1050,7 +1177,9 @@ class CaseWorkStore:
             raise invalid_request("due_at phải là thời điểm.")
         assignee = _actor(assignee, "assignee")
         actor = _actor(actor)
-        follow_up_id = _text(follow_up_id, "follow_up_id") if follow_up_id else new_id("fu")
+        follow_up_id = (
+            new_id("fu") if follow_up_id is None else _text(follow_up_id, "follow_up_id", max_length=ID_MAX_LENGTH)
+        )
         row = FollowUp(
             follow_up_id=follow_up_id,
             work_item_id=work_item_id,
@@ -1095,9 +1224,7 @@ class CaseWorkStore:
             resolution = _text(resolution, "resolution")
         actor = _actor(actor)
         with session_scope(self.engine) as session:
-            row = session.get(FollowUp, follow_up_id)
-            if row is None:
-                raise not_found("việc theo dõi", follow_up_id)
+            row = _ensure_row(session, FollowUp, follow_up_id, "việc theo dõi")
             changed: list[str] = []
             if status is not None:
                 row.status = status
@@ -1126,6 +1253,7 @@ class CaseWorkStore:
             return document
 
     def list_follow_ups(self, work_item_id: str) -> list[dict[str, Any]]:
+        work_item_id = _text(work_item_id, "work_item_id")
         with session_scope(self.engine) as session:
             rows = (
                 session.execute(
@@ -1191,7 +1319,14 @@ class CaseWorkStore:
                 .all()
             )
             return {
-                "work_item": work_item_document(row, _related_ids(session, work_item_id)),
+                "work_item": work_item_document(
+                    row,
+                    {
+                        "investigation_ids": [item.link_id for item in links],
+                        "response_ids": [item.response_id for item in responses],
+                        "follow_up_ids": [item.follow_up_id for item in follow_ups],
+                    },
+                ),
                 "investigation_links": [_link_document(item) for item in links],
                 "evidence_bundles": [_bundle_document(item) for item in bundles],
                 "responses": [_response_document(item) for item in responses],

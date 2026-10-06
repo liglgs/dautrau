@@ -166,8 +166,22 @@ def test_store_enums_stay_inside_the_contract(schemas: dict) -> None:
     assert set(casework_store.ASSESSMENT_STATUSES) <= set(
         defs["EvidenceBundle"]["properties"]["assessment_status"]["enum"]
     )
-    assert set(casework_store.REVIEW_ACTIONS) <= set(defs["ReviewRef"]["properties"]["action"]["enum"])
+    actions = set(defs["ReviewRef"]["properties"]["action"]["enum"])
+    assert set(casework_store.REVIEW_ACTIONS) <= actions
     assert set(casework_store.REVIEW_ENTITIES) <= set(defs["ReviewRef"]["properties"]["entity"]["enum"])
+    # Bảng hành động → trạng thái đích phải phủ *đúng* tập hành động, không thừa không thiếu.
+    assert set(casework_store.WORK_ITEM_REVIEW_TARGET) == set(casework_store.REVIEW_ACTIONS)
+    assert set(casework_store.RESPONSE_REVIEW_TARGET) == set(casework_store.REVIEW_ACTIONS)
+    for target in casework_store.WORK_ITEM_REVIEW_TARGET.values():
+        assert target in set(defs["ReviewStatusRef"]["enum"])
+    for target in casework_store.RESPONSE_REVIEW_TARGET.values():
+        assert target in set(defs["ProfessionalResponse"]["properties"]["status"]["enum"])
+    # Các bảng tra cứu khác cũng phải khớp hợp đồng, nếu không là hợp đồng đã lệch.
+    assert set(casework_store.PRIORITIES) <= set(defs["WorkItem"]["properties"]["priority"]["enum"])
+    assert set(casework_store.LINK_PURPOSES) <= set(defs["InvestigationLink"]["properties"]["purpose"]["enum"])
+    assert set(casework_store.RESPONSE_CREATE_STATUSES) <= set(
+        defs["ProfessionalResponse"]["properties"]["status"]["enum"]
+    )
     # InvestigationLink.state trỏ tới RunStatusRef, không phải enum tại chỗ.
     assert defs["InvestigationLink"]["properties"]["state"] == {"$ref": "#/$defs/RunStatusRef"}
     assert set(casework_store.LINK_STATES) <= set(defs["RunStatusRef"]["enum"])

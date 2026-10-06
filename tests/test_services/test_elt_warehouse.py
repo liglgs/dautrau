@@ -127,6 +127,7 @@ def test_reloading_same_document_updates_instead_of_duplicating(warehouse) -> No
     assert counts["document_sections"] == 1
 
 
+@pytest.mark.needs_chroma
 def test_ingest_document_conflict_and_validation(warehouse) -> None:
     engine, settings = warehouse
     payload = dict(

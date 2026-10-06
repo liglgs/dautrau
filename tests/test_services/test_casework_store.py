@@ -10,6 +10,8 @@ Toàn bộ chạy ngoại tuyến trên SQLite trong ``tmp_path``:
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+from functools import cache
 from pathlib import Path
 
 import pytest
@@ -326,6 +328,7 @@ def test_review_updates_status_and_is_appended(legacy_db):
         action="approve",
         reviewer={"actor_id": "user-3301", "role": "reviewer"},
         reason="Bằng chứng khớp phạm vi.",
+        expected_version=1,
     )
     assert review["previous_status"] == "draft"
     assert review["new_status"] == "approved"
@@ -340,8 +343,24 @@ def test_review_updates_status_and_is_appended(legacy_db):
     assert bad_entity.value.code == ErrorCode.INVALID_REQUEST
 
     with pytest.raises(MvpError) as bad_reviewer:
-        store.add_review(entity="response", entity_id=response["response_id"], action="approve", reviewer={})
+        store.add_review(
+            entity="response",
+            entity_id=response["response_id"],
+            action="approve",
+            reviewer={},
+            expected_version=2,
+        )
     assert bad_reviewer.value.code == ErrorCode.INVALID_REQUEST
+
+    # Thiếu expected_version thì không duyệt được: đọc rồi ghi phải có mốc phiên bản.
+    with pytest.raises(MvpError) as missing_version:
+        store.add_review(
+            entity="response",
+            entity_id=response["response_id"],
+            action="approve",
+            reviewer={"id": "user-3301", "role": "reviewer"},
+        )
+    assert missing_version.value.code == ErrorCode.INVALID_REQUEST
 
 
 def test_review_of_work_item_bumps_version_and_keeps_history(legacy_db):
@@ -657,7 +676,7 @@ def test_history_rows_keep_contract_version_reference(legacy_db):
         assert set(row) >= {"entity", "id", "version", "etag", "updated_at", "updated_by", "revision", "change_kind"}
         assert row["id"] == work_item_id
         assert row["entity"] == "work_item"
-        assert row["etag"].startswith("") and len(row["etag"]) == 32
+        assert len(row["etag"]) == 32
         assert row["updated_at"].endswith("+00:00")
     assert rows[-1]["version"] == updated["version"]
     assert rows[-1]["etag"] == updated["etag"]
@@ -666,9 +685,13 @@ def test_history_rows_keep_contract_version_reference(legacy_db):
 
 # ------------------------------------------- hợp đồng: bản chiếu của kho phải khớp lược đồ
 
+# Sáu trường lõi mà bản chiếu lịch sử chia sẻ với ``VersionRef``; phần còn lại là mở rộng.
+_VERSION_REF_KEYS = ("entity", "id", "version", "etag", "updated_at", "updated_by")
 
+
+@cache
 def _contract_validator(def_name: str):
-    """Bộ kiểm tra lược đồ hospital-v2 cho một định nghĩa, đọc từ tệp hợp đồng."""
+    """Bộ kiểm tra lược đồ hospital-v2 cho một định nghĩa, đọc tệp hợp đồng đúng một lần."""
     import json
 
     from jsonschema import Draft202012Validator
@@ -766,6 +789,7 @@ def test_store_documents_match_the_hospital_contract(legacy_db):
         action="request_changes",
         reviewer={"actor_id": "user-3301", "role": "reviewer"},
         reason="Bổ sung bằng chứng toàn văn.",
+        expected_version=1,
     )
     _assert_matches_contract("ReviewRef", review)
 
@@ -788,4 +812,269 @@ def test_store_documents_match_the_hospital_contract(legacy_db):
     assert bundle_view["work_item"]["follow_up_ids"] == [follow_up["follow_up_id"]]
 
 
-_VERSION_REF_KEYS = ("entity", "id", "version", "etag", "updated_at", "updated_by")
+def test_concurrent_reviews_of_one_response_keep_one_decision(legacy_db):
+    """Hai người duyệt cùng một phiếu: đúng một quyết định thắng, quyết định kia bị từ chối.
+
+    Trước đây nhánh duyệt phiếu là đọc-rồi-ghi nên cả hai đều báo thành công, một quyết
+    định biến mất, và nhật ký có hai dòng cùng một số phiên bản.
+    """
+    import threading
+
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+    response = store.save_response(work_item_id, sections=[{"key": "summary", "text": "Nội dung."}])
+
+    barrier = threading.Barrier(2, timeout=30)
+    results: dict[str, object] = {}
+
+    def reviewer(name: str, action: str) -> None:
+        try:
+            barrier.wait()
+            results[name] = store.add_review(
+                entity="response",
+                entity_id=response["response_id"],
+                action=action,
+                reviewer={"id": name, "role": "reviewer"},
+                expected_version=1,
+            )
+        except BaseException as exc:  # noqa: BLE001
+            results[name] = exc
+
+    threads = [
+        threading.Thread(target=reviewer, args=("user-3301", "approve")),
+        threading.Thread(target=reviewer, args=("user-3302", "reject")),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=60)
+
+    winners = [value for value in results.values() if isinstance(value, dict)]
+    losers = [value for value in results.values() if isinstance(value, BaseException)]
+    assert len(winners) == 1, results
+    assert len(losers) == 1, results
+    assert isinstance(losers[0], MvpError) and losers[0].status == 409, losers[0]
+
+    final = store.get_response(response["response_id"])
+    assert final["version"] == 2
+    assert final["status"] == winners[0]["new_status"]
+
+    # Nhật ký không được có hai dòng cùng một số phiên bản cho cùng thực thể.
+    rows = store.history(entity="response", entity_id=response["response_id"])
+    versions = [row["version"] for row in rows]
+    assert versions == sorted(set(versions)), versions
+    assert len(store.list_reviews(entity="response", entity_id=response["response_id"])) == 1
+
+
+def test_review_of_work_item_logs_one_row_per_version(legacy_db):
+    """Duyệt yêu cầu chỉ ghi *một* dòng nhật ký cho phiên bản mới, không phải hai."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+
+    store.add_review(
+        entity="work_item",
+        entity_id=work_item_id,
+        action="request_changes",
+        reviewer={"id": "user-3301", "role": "reviewer"},
+    )
+    rows = store.history(entity="work_item", entity_id=work_item_id)
+    assert [(row["revision"], row["version"]) for row in rows] == [(1, 1), (2, 2)]
+    assert [row["change_kind"] for row in rows] == ["created", "reviewed"]
+
+
+def test_second_current_response_is_rejected_by_the_database(legacy_db):
+    """Ràng buộc "một bản hiện hành" là bảo đảm của cơ sở dữ liệu, không chỉ của mã."""
+    from sqlalchemy import insert as sql_insert
+    from sqlalchemy.exc import IntegrityError
+
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+    store.save_response(work_item_id, sections=[{"key": "summary", "text": "Bản đầu."}])
+
+    with pytest.raises(IntegrityError):
+        with legacy_db.begin() as conn:
+            conn.execute(
+                sql_insert(WarehouseBase.metadata.tables["professional_responses"]).values(
+                    response_id="resp_chen_ngang",
+                    work_item_id=work_item_id,
+                    version=9,
+                    etag="x",
+                    status="draft",
+                    sections_json=[],
+                    assessment_status="insufficient_evidence",
+                    coverage_json={},
+                    created_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
+                )
+            )
+
+
+def test_validation_rejects_non_string_optional_fields(legacy_db):
+    """``revision_of``/``revision_reason``/``reason`` phải là chuỗi, không được làm nổ 500."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+
+    with pytest.raises(MvpError) as bad_reason:
+        store.create_work_item(question="Câu hỏi", revision_reason=123)
+    assert bad_reason.value.code == ErrorCode.INVALID_REQUEST
+
+    created = store.create_work_item(question="Câu hỏi")
+    with pytest.raises(MvpError) as bad_patch:
+        store.update_work_item(
+            created["work_item_id"], changes={"revision_reason": {"a": 1}}, expected_version=1
+        )
+    assert bad_patch.value.code == ErrorCode.INVALID_REQUEST
+
+    response = store.save_response(created["work_item_id"], sections=[{"key": "summary", "text": "Nội dung."}])
+    with pytest.raises(MvpError) as bad_review_reason:
+        store.add_review(
+            entity="response",
+            entity_id=response["response_id"],
+            action="approve",
+            reviewer={"id": "user-3301", "role": "reviewer"},
+            reason=123,
+            expected_version=1,
+        )
+    assert bad_review_reason.value.code == ErrorCode.INVALID_REQUEST
+
+
+def test_identifier_arguments_are_validated(legacy_db):
+    """Mã truyền vào phải là chuỗi; nếu không thì 422, không phải lỗi hệ thống."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+
+    for call in (
+        lambda: store.get_work_item({"a": 1}),
+        lambda: store.list_responses(None),
+        lambda: store.list_investigation_links(["x"]),
+        lambda: store.get_evidence_bundle(7),
+        lambda: store.work_item_bundle({"a": 1}),
+    ):
+        with pytest.raises(MvpError) as bad_id:
+            call()
+        assert bad_id.value.code == ErrorCode.INVALID_REQUEST
+
+
+def test_store_can_skip_schema_creation(legacy_db):
+    """``ensure_schema=False`` cho đường chỉ đọc và cho nhiều tiến trình khởi động cùng lúc."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db, ensure_schema=False)
+    created = store.create_work_item(question="Câu hỏi")
+    assert store.get_work_item(created["work_item_id"])["question"] == "Câu hỏi"
+
+
+def test_migration_refuses_to_index_duplicate_keys(legacy_db):
+    """Có khoá trùng thì dừng trước khi tạo chỉ mục duy nhất, không để lược đồ nửa vời."""
+    from sqlalchemy import insert as sql_insert
+    from sqlalchemy import text as sql_text
+
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+    store.save_response(work_item_id, sections=[{"key": "summary", "text": "Bản đầu."}])
+
+    # Bỏ ràng buộc rồi cố tình chèn hai bản cùng số phiên bản, đúng kiểu dữ liệu bản cũ để lại.
+    with legacy_db.begin() as conn:
+        conn.execute(sql_text('DROP INDEX IF EXISTS "uq_response_version"'))
+        conn.execute(
+            sql_insert(WarehouseBase.metadata.tables["professional_responses"]).values(
+                response_id="resp_trung_1",
+                work_item_id=work_item_id,
+                version=1,
+                etag="a",
+                status="superseded",
+                sections_json=[],
+                assessment_status="insufficient_evidence",
+                coverage_json={},
+                created_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
+            )
+        )
+
+    state = inspect_state(legacy_db)
+    assert "uq_response_version" in state["duplicate_keys"]
+    assert any(
+        name.startswith("uq_response_version")
+        for name in state["missing_indexes"]["professional_responses"]
+    )
+
+    report = migrate(legacy_db)
+    assert report["blocked"] is True
+    assert report["created_indexes"] == []
+    # Vẫn thiếu chỉ mục (chưa tạo), nhưng không nổ giữa đường và dữ liệu còn nguyên.
+    assert store.counts()["professional_responses"] == 2
+
+
+def test_over_length_inputs_are_rejected_before_the_database(legacy_db):
+    """Đầu vào quá dài phải trả 422; để cơ sở dữ liệu nổ là lỗi hệ thống (DataError)."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    created = store.create_work_item(question="Câu hỏi")
+
+    calls = {
+        "work_item_id": lambda: store.create_work_item(question="Câu hỏi", work_item_id="w" * 81),
+        "revision_of": lambda: store.create_work_item(question="Câu hỏi", revision_of="w" * 81),
+        "revision_reason": lambda: store.create_work_item(question="Câu hỏi", revision_reason="x" * 301),
+        "update reason": lambda: store.update_work_item(
+            created["work_item_id"], changes={"priority": "urgent"}, expected_version=1, reason="x" * 301
+        ),
+        "response_id": lambda: store.save_response(
+            created["work_item_id"], sections=[{"key": "summary", "text": "Nội dung."}], response_id="r" * 81
+        ),
+        "investigation_id": lambda: store.add_investigation_link(
+            created["work_item_id"], investigation_id="i" * 121
+        ),
+        "follow_up_id": lambda: store.add_follow_up(
+            created["work_item_id"], kind="recheck_source", note="Ghi chú.", follow_up_id="f" * 81
+        ),
+    }
+    for label, call in calls.items():
+        with pytest.raises(MvpError) as too_long:
+            call()
+        assert too_long.value.code == ErrorCode.INVALID_REQUEST, label
+
+
+def test_empty_identifier_is_rejected_instead_of_being_replaced(legacy_db):
+    """Mã rỗng là đầu vào sai, không được lặng lẽ thay bằng mã mới sinh."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    created = store.create_work_item(question="Câu hỏi")
+
+    calls = (
+        lambda: store.create_work_item(question="Câu hỏi", work_item_id=""),
+        lambda: store.save_response(
+            created["work_item_id"], sections=[{"key": "summary", "text": "Nội dung."}], response_id=""
+        ),
+        lambda: store.add_investigation_link(created["work_item_id"], investigation_id="inv-1", link_id=""),
+        lambda: store.add_follow_up(created["work_item_id"], kind="recheck_source", note="Ghi chú.", follow_up_id=""),
+        lambda: store.add_evidence_bundle(
+            created["work_item_id"],
+            investigation_id="inv-1",
+            items=[{"source": "pubmed", "identifier": "1"}],
+            gaps=[],
+            coverage={"queries": 1},
+            assessment_status="insufficient_evidence",
+            bundle_id="",
+        ),
+    )
+    for call in calls:
+        with pytest.raises(MvpError) as empty_id:
+            call()
+        assert empty_id.value.code == ErrorCode.INVALID_REQUEST
+
+
+def test_duplicate_response_id_is_reported_as_a_conflict(legacy_db):
+    """Mã phiếu trùng phải báo ``IDEMPOTENCY_CONFLICT`` như mọi mã trùng khác."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+    store.save_response(work_item_id, sections=[{"key": "summary", "text": "Bản đầu."}], response_id="resp-1")
+
+    with pytest.raises(MvpError) as duplicate:
+        store.save_response(
+            work_item_id, sections=[{"key": "summary", "text": "Bản khác."}], response_id="resp-1"
+        )
+    assert duplicate.value.code == ErrorCode.IDEMPOTENCY_CONFLICT

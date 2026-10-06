@@ -24,6 +24,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
@@ -41,13 +42,60 @@ def legacy_tables() -> list[str]:
     return sorted(name for name in WarehouseBase.metadata.tables if name not in CASEWORK_TABLES)
 
 
-def casework_indexes() -> dict[str, list[str]]:
-    """Chỉ mục duy nhất phải có cho từng bảng lát cắt DI."""
-    expected: dict[str, list[str]] = {}
+def casework_indexes() -> dict[str, dict[str, tuple[str, ...]]]:
+    """Chỉ mục duy nhất phải có, kèm các cột — để kiểm cả *tính duy nhất*, không chỉ tên."""
+    expected: dict[str, dict[str, tuple[str, ...]]] = {}
     for name in CASEWORK_TABLES:
         table = WarehouseBase.metadata.tables[name]
-        expected[name] = sorted(index.name for index in table.indexes if index.unique)
-    return {name: names for name, names in expected.items() if names}
+        indexes = {index.name: tuple(column.name for column in index.columns) for index in table.indexes if index.unique}
+        if indexes:
+            expected[name] = indexes
+    return expected
+
+
+def _index_predicate(index) -> str:
+    """Mệnh đề WHERE của chỉ mục duy nhất một phần, đã dịch sang SQL của máy chủ.
+
+    Chỉ mục ``uq_response_current`` chỉ áp cho các bản *chưa* bị thay thế; nếu bỏ mệnh đề
+    này thì phép kiểm trùng sẽ báo nhầm mọi phiếu có nhiều hơn một phiên bản.
+    """
+    for dialect in ("postgresql", "sqlite"):
+        options = index.dialect_options.get(dialect) or {}
+        predicate = options.get("where")
+        if predicate is not None:
+            return str(predicate.compile(compile_kwargs={"literal_binds": True}))
+    return ""
+
+
+def duplicate_keys(engine: Engine) -> dict[str, list[list[Any]]]:
+    """Nhóm khoá đang trùng trên các ràng buộc duy nhất của bảy bảng.
+
+    Phải kiểm trước khi tạo chỉ mục duy nhất: bản cũ cho phép trùng, nên một máy đã chạy
+    bản cũ có thể đang có dữ liệu làm `CREATE UNIQUE INDEX` nổ giữa đường.
+    """
+    existing = set(inspect(engine).get_table_names())
+    duplicates: dict[str, list[list[Any]]] = {}
+    with engine.connect() as conn:
+        for name in CASEWORK_TABLES:
+            if name not in existing:
+                continue
+            table = WarehouseBase.metadata.tables[name]
+            for index in sorted(table.indexes, key=lambda item: item.name or ""):
+                if not index.unique:
+                    continue
+                columns = [column.name for column in index.columns]
+                listed = ", ".join(f'"{column}"' for column in columns)
+                predicate = _index_predicate(index)
+                where = f" WHERE {predicate}" if predicate else ""
+                rows = conn.execute(
+                    text(
+                        f'SELECT {listed} FROM "{name}"{where}'
+                        f" GROUP BY {listed} HAVING count(*) > 1"
+                    )
+                ).fetchall()
+                if rows:
+                    duplicates[index.name] = [list(row) for row in rows]
+    return duplicates
 
 
 def _column_names(engine: Engine, table: str) -> set[str]:
@@ -73,14 +121,25 @@ def _column_gaps(engine: Engine) -> dict[str, list[str]]:
 
 
 def _index_gaps(engine: Engine) -> dict[str, list[str]]:
-    existing = set(inspect(engine).get_table_names())
+    """Chỉ mục còn thiếu *hoặc* đang tồn tại nhưng không duy nhất / sai cột."""
+    inspector = inspect(engine)
+    existing = set(inspector.get_table_names())
     gaps: dict[str, list[str]] = {}
     for name, expected in casework_indexes().items():
         if name not in existing:
             continue
-        missing = sorted(set(expected) - _index_names(engine, name))
-        if missing:
-            gaps[name] = missing
+        actual = {
+            index["name"]: tuple(index["column_names"])
+            for index in inspector.get_indexes(name)
+            if index.get("unique")
+        }
+        problems = [
+            f"{index_name} (cần duy nhất trên {', '.join(columns)})"
+            for index_name, columns in expected.items()
+            if actual.get(index_name) != columns
+        ]
+        if problems:
+            gaps[name] = sorted(problems)
     return gaps
 
 
@@ -92,6 +151,7 @@ def inspect_state(engine: Engine) -> dict[str, object]:
         "missing_legacy": sorted(name for name in legacy_tables() if name not in existing),
         "missing_columns": _column_gaps(engine),
         "missing_indexes": _index_gaps(engine),
+        "duplicate_keys": duplicate_keys(engine),
     }
 
 
@@ -106,16 +166,26 @@ def _row_counts(engine: Engine, names: list[str]) -> dict[str, int]:
 
 
 def create_missing_indexes(engine: Engine) -> list[str]:
-    """Tạo chỉ mục duy nhất còn thiếu của bảy bảng (bảng đã có từ bản nâng cấp trước)."""
-    existing = set(inspect(engine).get_table_names())
+    """Tạo (hoặc dựng lại) chỉ mục duy nhất còn thiếu/sai của bảy bảng."""
+    inspector = inspect(engine)
+    existing = set(inspector.get_table_names())
     created: list[str] = []
     for name, expected in casework_indexes().items():
         if name not in existing:
             continue
         table = WarehouseBase.metadata.tables[name]
+        actual = {
+            index["name"]: tuple(index["column_names"])
+            for index in inspector.get_indexes(name)
+            if index.get("unique")
+        }
         for index in sorted(table.indexes, key=lambda item: item.name or ""):
-            if index.name not in expected or index.name in _index_names(engine, name):
+            if index.name not in expected or actual.get(index.name) == expected[index.name]:
                 continue
+            if index.name in {item["name"] for item in inspector.get_indexes(name)}:
+                # Có tên nhưng không duy nhất (hoặc sai cột): bỏ đi rồi dựng lại cho đúng.
+                with engine.begin() as conn:
+                    conn.execute(text(f'DROP INDEX IF EXISTS "{index.name}"'))
             index.create(engine, checkfirst=True)
             created.append(f"{name}.{index.name}")
     return created
@@ -125,6 +195,22 @@ def migrate(engine: Engine) -> dict[str, object]:
     before_tables = set(inspect(engine).get_table_names())
     legacy_before = _row_counts(engine, legacy_tables())
     created = ensure_casework_schema(engine)
+    duplicates = duplicate_keys(engine)
+    if duplicates:
+        # Không tạo chỉ mục duy nhất trên dữ liệu đang trùng: `CREATE UNIQUE INDEX` sẽ nổ
+        # và để lại lược đồ nửa vời. Dừng trước, in rõ nhóm nào trùng để người trực xử lý.
+        return {
+            "created_tables": created,
+            "created_indexes": [],
+            "tables_before": len(before_tables),
+            "tables_after": len(before_tables) + len(created),
+            "legacy_rows_before": legacy_before,
+            "legacy_rows_after": _row_counts(engine, legacy_tables()),
+            "legacy_drift": {},
+            "duplicate_keys": duplicates,
+            "blocked": True,
+            **{key: value for key, value in inspect_state(engine).items() if key != "duplicate_keys"},
+        }
     created_indexes = create_missing_indexes(engine)
     legacy_after = _row_counts(engine, legacy_tables())
     drift = {
@@ -145,6 +231,7 @@ def migrate(engine: Engine) -> dict[str, object]:
         "missing_legacy": state["missing_legacy"],
         "missing_columns": state["missing_columns"],
         "missing_indexes": state["missing_indexes"],
+        "duplicate_keys": state["duplicate_keys"],
     }
 
 
@@ -162,16 +249,23 @@ def rollback(engine: Engine) -> list[str]:
 
 
 def _problems(state: dict[str, object]) -> list[str]:
+    """Điều kiện khiến `--check` trả mã thoát 1 (bảng cũ thiếu chỉ là cảnh báo)."""
     problems: list[str] = []
-    if state["missing_casework"]:
+    if state.get("missing_casework"):
         problems.append("thiếu bảng: " + ", ".join(state["missing_casework"]))
-    if state["missing_legacy"]:
-        problems.append("thiếu bảng cũ: " + ", ".join(state["missing_legacy"]))
-    for table, columns in state["missing_columns"].items():
+    for table, columns in (state.get("missing_columns") or {}).items():
         problems.append(f"{table} thiếu cột: " + ", ".join(columns))
-    for table, indexes in state["missing_indexes"].items():
+    for table, indexes in (state.get("missing_indexes") or {}).items():
         problems.append(f"{table} thiếu chỉ mục: " + ", ".join(indexes))
+    for index_name, rows in (state.get("duplicate_keys") or {}).items():
+        problems.append(f"{index_name} đang có khoá trùng: {rows}")
     return problems
+
+
+def _warnings(state: dict[str, object]) -> list[str]:
+    if state.get("missing_legacy"):
+        return ["thiếu bảng kho ELT (chỉ là cảnh báo): " + ", ".join(state["missing_legacy"])]
+    return []
 
 
 def main() -> int:
@@ -188,8 +282,19 @@ def main() -> int:
 
     if args.check:
         problems = _problems(state)
-        payload = {"status": "ok" if not problems else "missing", "problems": problems, **state}
-        print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else _describe(problems))
+        warnings = _warnings(state)
+        payload = {
+            "status": "ok" if not problems else "missing",
+            "problems": problems,
+            "warnings": warnings,
+            **state,
+        }
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print(_describe(problems))
+            for warning in warnings:
+                print("Cảnh báo: " + warning)
         return 0 if not problems else 1
 
     if args.rollback:
@@ -201,6 +306,13 @@ def main() -> int:
         return 0
 
     report = migrate(engine)
+    if report.get("blocked"):
+        duplicates = report["duplicate_keys"]
+        print("Từ chối tạo chỉ mục duy nhất: đang có khoá trùng.")
+        for index_name, rows in duplicates.items():
+            print(f"  {index_name}: {rows}")
+        print("Sửa dữ liệu trùng rồi chạy lại. Chưa tạo chỉ mục nào.")
+        return 1
     problems = _problems(
         {
             "missing_casework": report["missing_casework"],
@@ -226,7 +338,7 @@ def main() -> int:
 def _describe(problems: list[str]) -> str:
     if problems:
         return "Chưa đạt: " + "; ".join(problems) + "."
-    return "Đủ bảy bảng lát cắt DI (cột và chỉ mục khớp); bảng cũ không đổi."
+    return "Đủ bảy bảng lát cắt DI (cột khớp, chỉ mục duy nhất đúng)."
 
 
 if __name__ == "__main__":
