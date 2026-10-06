@@ -21,6 +21,7 @@ from src.api.auth import (
     Principal,
     current_principal,
     require_investigation_access,
+    require_permission,
 )
 from src.models.schemas import (
     CancelResponse,
@@ -41,7 +42,7 @@ from src.models.schemas import (
     TraceResponse,
 )
 from src.services.dossier import export_markdown, validate_dossier
-from src.services.errors import forbidden, invalid_state, runner_busy, version_conflict
+from src.services.errors import invalid_state, runner_busy, version_conflict
 from src.services.identity import Permission
 from src.services.runner import get_runner
 from src.services.store import MvpStore
@@ -71,12 +72,6 @@ StoreDep = Annotated[MvpStore, Depends(get_store)]
 UserDep = Annotated[Principal, Depends(current_principal)]
 
 
-def _require(principal: Principal, permission: Permission) -> None:
-    """Đòi một quyền; thiếu thì 403 kèm tên quyền để người vận hành biết đường sửa vai."""
-    if not principal.has(permission):
-        raise forbidden(f"Vai {principal.role} không có quyền {permission}.")
-
-
 class ContinueRequest(BaseModel):
     """Body của ``/continue``. ``expected_version`` là **bắt buộc** (RV-06).
 
@@ -99,11 +94,10 @@ async def create_investigation(
     claim: ClaimInput,
     request: Request,
     store: StoreDep,
-    user: UserDep,
+    user: Annotated[Principal, Depends(require_permission(Permission.INVESTIGATION_CREATE))],
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> CreateInvestigationResponse:
     """Tạo cuộc điều tra mới và chạy nền; trả 202 + ID."""
-    _require(user, Permission.INVESTIGATION_CREATE)
     runner = get_runner()
     state, created = store.create_investigation(claim, idempotency_key=idempotency_key, created_by=user.user_id)
     started = False

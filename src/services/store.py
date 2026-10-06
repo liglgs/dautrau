@@ -868,21 +868,6 @@ class MvpStore:
                 (investigation_id, token),
             )
 
-    def save_review_decision(self, decision: ReviewDecision) -> ReviewDecision:
-        with self._lock, self._conn:
-            self._insert_review_decision(decision)
-            self._audit(
-                decision.investigation_id,
-                decision.reviewer_id,
-                f"review_{decision.action}",
-                {
-                    "decision_id": decision.decision_id,
-                    "checkpoint": str(decision.checkpoint),
-                    "expected_version": decision.expected_version,
-                },
-            )
-        return decision
-
     def commit_review(
         self,
         decision: ReviewDecision,
@@ -1004,28 +989,6 @@ class MvpStore:
             ).fetchone()
         return ReviewDecision.model_validate(json.loads(row["payload_json"])) if row else None
 
-    def update_dossier_status(
-        self,
-        investigation_id: str,
-        version: int,
-        status: ReviewStatus,
-        *,
-        approved_by: str | None = None,
-        approved_at: datetime | None = None,
-    ) -> Dossier:
-        """Cập nhật trạng thái một phiên bản hồ sơ (duyệt/từ chối/vô hiệu)."""
-        with self._lock, self._conn:
-            updated = self._set_dossier_status(
-                investigation_id, version, status, approved_by=approved_by, approved_at=approved_at
-            )
-            self._audit(
-                investigation_id,
-                approved_by or "system",
-                "dossier_status_changed",
-                {"version": version, "status": str(status)},
-            )
-        return updated
-
     def _set_dossier_status(
         self,
         investigation_id: str,
@@ -1081,11 +1044,6 @@ class MvpStore:
         for version in versions:
             self._set_dossier_status(investigation_id, version, ReviewStatus.REJECTED)
         return versions
-
-    def invalidate_dossiers(self, investigation_id: str) -> list[int]:
-        """Vô hiệu hóa mọi phiên bản hồ sơ chưa bị từ chối; trả về danh sách version đã đổi."""
-        with self._lock, self._conn:
-            return self._invalidate_dossiers(investigation_id)
 
     def save_dossier(self, dossier: Dossier) -> Dossier:
         with self._lock, self._conn:
@@ -1326,10 +1284,4 @@ class MvpStore:
                 "UPDATE sessions SET revoked_at = ? WHERE session_id = ? AND revoked_at IS NULL",
                 (now_iso(), session_id),
             )
-            return cur.rowcount > 0
-
-    def delete_session(self, session_id: str) -> bool:
-        """Tương thích ngược: xoá hẳn bản ghi phiên."""
-        with self._lock, self._conn:
-            cur = self._conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
             return cur.rowcount > 0

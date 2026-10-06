@@ -16,20 +16,10 @@ from fastapi import APIRouter, Depends, Query, Response
 
 from src.api.auth import Principal, current_principal
 from src.api.investigations import StoreDep
+from src.services.errors import forbidden
 from src.services.identity import Permission
 
 router = APIRouter(prefix="/admin", tags=["admin"])
-
-
-def _require_audit_read(principal: Principal) -> bool:
-    """Trả ``True`` nếu được đọc toàn bộ; ném 403 nếu không có quyền đọc nào."""
-    from src.services.errors import forbidden
-
-    if principal.has(Permission.AUDIT_READ_ANY):
-        return True
-    if principal.has(Permission.AUDIT_READ_OWN):
-        return False
-    raise forbidden(f"Vai {principal.role} không có quyền đọc nhật ký.")
 
 
 @router.get("/audit")
@@ -45,14 +35,17 @@ async def read_audit(
 
     ``format=jsonl`` trả mỗi bản ghi một dòng — dạng dùng để đối chiếu ngoài hệ thống.
     """
-    see_all = _require_audit_read(user)
-    if see_all:
+    if user.has(Permission.AUDIT_READ_ANY):
         rows = store.list_audit(investigation_id, limit=limit, actor=actor)
-    else:
+        scope = "any"
+    elif user.has(Permission.AUDIT_READ_OWN):
         rows = store.list_audit_scoped(
             user_id=user.user_id, limit=limit, investigation_id=investigation_id, actor=actor
         )
+        scope = "own"
+    else:
+        raise forbidden(f"Vai {user.role} không có quyền đọc nhật ký.")
     if format == "jsonl":
         body = "\n".join(json.dumps(row, ensure_ascii=False) for row in rows)
         return Response(content=f"{body}\n" if body else "", media_type="application/x-ndjson")
-    return {"items": rows, "count": len(rows), "scope": "any" if see_all else "own"}
+    return {"items": rows, "count": len(rows), "scope": scope}

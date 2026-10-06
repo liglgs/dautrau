@@ -45,7 +45,7 @@ LEGACY_ANONYMOUS = "anonymous"
 
 
 class Principal(BaseModel):
-    """Danh tính đã xác minh. Thay cho ``UserSession`` cũ (giữ tên cũ làm bí danh)."""
+    """Danh tính đã xác minh: mã người + vai, do nhà cung cấp danh tính quyết định."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -58,13 +58,6 @@ class Principal(BaseModel):
 
     def has(self, permission: Permission) -> bool:
         return permission in permissions_for(self.role)
-
-    def has_any(self, *permissions: Permission) -> bool:
-        return any(self.has(permission) for permission in permissions)
-
-
-#: Tương thích ngược: mã cũ gọi lớp này là ``UserSession``.
-UserSession = Principal
 
 
 # --------------------------------------------------------------------------------------
@@ -354,16 +347,6 @@ def current_principal(request: Request) -> Principal:
     raise unauthorized("Không có nhà cung cấp danh tính nào được cấu hình.")
 
 
-#: Tương thích ngược với tên cũ.
-def current_user(request: Request) -> Principal:
-    return current_principal(request)
-
-
-def current_role(request: Request) -> Role:
-    """Dependency: trả vai hợp lệ hoặc 401."""
-    return current_principal(request).role
-
-
 def require_permission(permission: Permission):
     """Dependency factory: đòi đúng một quyền."""
 
@@ -421,11 +404,6 @@ def require_investigation_access(
     if can_access_investigation(principal, state, action):
         return
     raise not_found("cuộc điều tra", state.investigation_id)
-
-
-def check_ownership(state: InvestigationState, user: Principal) -> None:
-    """Tương thích ngược: kiểm quyền chạy ca. Dùng ``require_investigation_access`` cho mã mới."""
-    require_investigation_access(user, state, "run")
 
 
 def assert_can_decide(state: InvestigationState, principal: Principal) -> None:
