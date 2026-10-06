@@ -1199,3 +1199,67 @@ async def test_a_broken_bundle_is_not_served_through_the_work_item_either(v2_cli
     # Đường liệt kê vẫn phải chạy: nó không trả nội dung gói, chỉ trả yêu cầu.
     listed = await client.get("/api/v2/work-items", headers=_headers("investigator"))
     assert listed.status_code == 200, listed.text
+
+
+@pytest.mark.asyncio
+async def test_the_last_decision_wins_even_when_the_clocks_match(v2_client_with_store):
+    """Hai quyết định trùng dấu thời gian thì thứ tự thật là ``entity_version``, không phải mã ngẫu nhiên.
+
+    Sắp theo ``review_id`` (mã ngẫu nhiên) làm "quyết định cuối" có thể hoá thành quyết định cũ — và
+    đây là chỗ nói về việc một phiếu đã được duyệt hay chưa, nên sai một lần là sai một dấu duyệt.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client, "investigator")
+    response = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 0,
+                "sources_ok": [],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": False,
+            },
+        },
+        headers=_headers("investigator"),
+    )
+    assert response.status_code == 201, response.text
+    document = response.json()
+    response_id = document["response_id"]
+
+    first = store.add_review(
+        entity="response",
+        entity_id=response_id,
+        action="request_changes",
+        reviewer={"id": "usr_reviewer"},
+        reason="Cần sửa.",
+        expected_version=document["version"],
+        review_id="rev_zzz_cu",
+    )
+    second = store.add_review(
+        entity="response",
+        entity_id=response_id,
+        action="approve",
+        reviewer={"id": "usr_reviewer"},
+        reason="Đã sửa.",
+        expected_version=document["version"] + 1,
+        review_id="rev_aaa_moi",
+    )
+    assert first["entity_version"] < second["entity_version"]
+
+    # Ép hai quyết định về cùng một dấu thời gian: đây là ca mà mã ngẫu nhiên sẽ chọn sai.
+    with store.engine.begin() as connection:
+        connection.execute(
+            text("UPDATE review_refs SET decided_at = :when WHERE entity_id = :entity_id"),
+            {"when": "2026-01-01 00:00:00+00:00", "entity_id": response_id},
+        )
+
+    stored = store.get_response(response_id)
+    assert stored["review"]["action"] == "approve", "quyết định cuối phải thắng, không phải mã nhỏ hơn"
+    assert stored["review"]["review_id"] == "rev_aaa_moi"
+
+    envelope = await client.get(f"/api/v2/work-items/{created['work_item_id']}", headers=_headers("investigator"))
+    assert envelope.status_code == 200, envelope.text
+    assert envelope.json()["responses"][0]["review"]["action"] == "approve"

@@ -384,7 +384,10 @@ def _latest_response_reviews(session: Session, response_ids: list[str]) -> dict[
         session.execute(
             select(ReviewRef)
             .where(ReviewRef.entity == "response", ReviewRef.entity_id.in_(response_ids))
-            .order_by(ReviewRef.decided_at, ReviewRef.review_id)
+            # ``entity_version`` tăng đơn điệu theo từng quyết định, nên nó là thứ tự thật khi hai
+            # quyết định trùng dấu thời gian. Chỉ sắp theo ``review_id`` là sai: mã đó ngẫu nhiên,
+            # không phản ánh thứ tự ghi, nên "quyết định cuối" có thể hoá thành quyết định cũ.
+            .order_by(ReviewRef.decided_at, ReviewRef.entity_version, ReviewRef.review_id)
         )
         .scalars()
         .all()
@@ -1237,7 +1240,10 @@ class CaseWorkStore:
                 session.execute(
                     select(ReviewRef)
                     .where(ReviewRef.entity == entity, ReviewRef.entity_id == entity_id)
-                    .order_by(ReviewRef.decided_at, ReviewRef.review_id)
+                    # ``entity_version`` tăng đơn điệu theo từng quyết định, nên nó là thứ tự thật khi hai
+            # quyết định trùng dấu thời gian. Chỉ sắp theo ``review_id`` là sai: mã đó ngẫu nhiên,
+            # không phản ánh thứ tự ghi, nên "quyết định cuối" có thể hoá thành quyết định cũ.
+            .order_by(ReviewRef.decided_at, ReviewRef.entity_version, ReviewRef.review_id)
                 )
                 .scalars()
                 .all()
