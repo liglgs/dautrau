@@ -45,7 +45,7 @@ flowchart TB
     end
 
     %% Luồng kết nối
-    UI -->|REST + Header X-Vigilens-Role| ProxyRoute
+    UI -->|REST + cookie phiên HttpOnly| ProxyRoute
     ProxyRoute -->|HTTP + Header X-API-Token| AuthMid
     AuthMid --> InvRoutes & RevRoutes
     InvRoutes -->|Tạo ca / Tiếp tục| Runner

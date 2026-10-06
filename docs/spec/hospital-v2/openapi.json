@@ -1,0 +1,608 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "VigiLens hospital v2 - lát cắt DI (đề xuất)",
+    "version": "hospital-v2.2026-10-06",
+    "description": "Đoạn OpenAPI đề xuất cho lát cắt DI. CHƯA triển khai trong ứng dụng: đây là hợp đồng để Người 1 lưu trữ, Người 3 xử lý và Người 4 render cùng ví dụ. Lược đồ thật nằm ở schemas.json (một nguồn sự thật duy nhất). Mọi đường dẫn đều additive trong namespace /api/v2, không đổi hợp đồng MVP hiện có."
+  },
+  "x-contract-status": "proposed_not_implemented",
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "IfMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "ETag phiên bản đang sửa; lệch thì trả 409 version_conflict."
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "description": "Khoá chống tạo trùng; cùng khoá nhưng nội dung khác thì trả 409 idempotency_conflict."
+      },
+      "WorkItemId": {
+        "name": "work_item_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Thiếu hoặc sai token.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "schemas.json#/$defs/ApiError"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Sai vai trò.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "schemas.json#/$defs/ApiError"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Không tìm thấy.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "schemas.json#/$defs/ApiError"
+            }
+          }
+        }
+      },
+      "VersionConflict": {
+        "description": "Xung đột phiên bản.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "schemas.json#/$defs/ApiError"
+            },
+            "examples": {
+              "default": {
+                "summary": "hai người cùng sửa một hồ sơ",
+                "$ref": "examples/version-conflict-error.json"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v2/work-items": {
+      "post": {
+        "operationId": "createWorkItem",
+        "summary": "Tiếp nhận yêu cầu (nháp hoặc đã nhận)",
+        "description": "Thiếu thông tin vẫn tiếp nhận được: trường chưa biết ghi vào scope với resolution=unknown và vào unknowns. Không tự suy diễn giá trị.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/WorkItem"
+              },
+              "examples": {
+                "default": {
+                  "summary": "nháp còn trường unknown",
+                  "$ref": "examples/work-item-draft-unknown.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Đã tạo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkItem"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "nháp còn trường unknown",
+                    "$ref": "examples/work-item-draft-unknown.json"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "description": "Trùng khoá idempotency với nội dung khác.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dữ liệu không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listWorkItems",
+        "summary": "Hàng chờ yêu cầu",
+        "parameters": [
+          {
+            "name": "work_status",
+            "in": "query",
+            "schema": {
+              "$ref": "schemas.json#/$defs/WorkStatus"
+            }
+          },
+          {
+            "name": "owner_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkItemList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v2/work-items/{work_item_id}": {
+      "get": {
+        "operationId": "getWorkItem",
+        "summary": "Đọc một yêu cầu",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Yêu cầu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkItem"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "đang chạy, đã gán chủ sở hữu",
+                    "$ref": "examples/work-item-accepted.json"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateWorkItem",
+        "summary": "Sửa câu hỏi/phạm vi, gán chủ sở hữu",
+        "description": "Mỗi lần ghi tăng version. Sửa phạm vi tạo bản ghi mới với revision_of trỏ bản cũ; không ghi đè lịch sử.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/WorkItem"
+              },
+              "examples": {
+                "default": {
+                  "summary": "bản sửa phạm vi",
+                  "$ref": "examples/work-item-accepted.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bản đã sửa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkItem"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "đang chạy, đã gán chủ sở hữu",
+                    "$ref": "examples/work-item-accepted.json"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          },
+          "422": {
+            "description": "Dữ liệu không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/investigations": {
+      "post": {
+        "operationId": "linkInvestigation",
+        "summary": "Liên kết một lần chạy điều tra",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/InvestigationLink"
+              },
+              "examples": {
+                "default": {
+                  "summary": "liên kết lần chạy đầu",
+                  "$ref": "examples/investigation-link.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Đã liên kết.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/InvestigationLink"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "liên kết lần chạy đầu",
+                    "$ref": "examples/investigation-link.json"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Dữ liệu không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/evidence-bundle": {
+      "get": {
+        "operationId": "getEvidenceBundle",
+        "summary": "Gói bằng chứng của lần chạy gần nhất",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "name": "investigation_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gói bằng chứng (có thể chỉ gồm tóm tắt hoặc lỗi nguồn).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/EvidenceBundle"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "bằng chứng chỉ có tóm tắt",
+                    "$ref": "examples/evidence-bundle-abstract-only.json"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "description": "Lỗi nguồn; gói bằng chứng ghi sources_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/EvidenceBundle"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "lỗi nguồn, không kết luận",
+                    "$ref": "examples/evidence-bundle-source-error.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "summary": "Tạo phiếu trả lời (luôn là bản nháp)",
+        "description": "Bản nháp không tự trở thành câu trả lời đã duyệt; chỉ endpoint review mới đổi status.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/ProfessionalResponse"
+              },
+              "examples": {
+                "default": {
+                  "summary": "phiếu nháp",
+                  "$ref": "examples/professional-response-draft.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Phiếu nháp.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ProfessionalResponse"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "phiếu nháp, chưa duyệt",
+                    "$ref": "examples/professional-response-draft.json"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Dữ liệu không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/responses/{response_id}/review": {
+      "post": {
+        "operationId": "reviewResponse",
+        "summary": "Duyệt phiếu trả lời",
+        "parameters": [
+          {
+            "name": "response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/ReviewRef"
+              },
+              "examples": {
+                "default": {
+                  "summary": "quyết định duyệt",
+                  "$ref": "examples/review-decision.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Phiếu đã duyệt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ProfessionalResponse"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "phiếu đã duyệt",
+                    "$ref": "examples/professional-response-approved.json"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        }
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/follow-ups": {
+      "post": {
+        "operationId": "createFollowUp",
+        "summary": "Tạo việc theo dõi/chuyển giao",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/FollowUp"
+              },
+              "examples": {
+                "default": {
+                  "summary": "việc theo dõi",
+                  "$ref": "examples/follow-up.json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Đã tạo việc theo dõi.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/FollowUp"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "việc theo dõi",
+                    "$ref": "examples/follow-up.json"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Dữ liệu không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -7,7 +7,7 @@ import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Skeleton } from "
 import { AgentTimeline, GapList } from "@/components/pv/agent-timeline";
 import { useCancelRun, useEvidence, useGaps, useInvestigation, useTimeline } from "@/lib/hooks/use-data";
 import { useAgentStream } from "@/lib/hooks/use-agent-stream";
-import { useAppStore } from "@/lib/store/app-store";
+import { canRequestMore, useAppStore } from "@/lib/store/app-store";
 
 export default function InvestigationOverviewPage() {
   const params = useParams<{ id: string }>();
@@ -75,7 +75,7 @@ export default function InvestigationOverviewPage() {
           <CardBody>
             <GapList
               gaps={gaps ?? []}
-              canRequestMore={role === "reviewer" || role === "admin"}
+              canRequestMore={canRequestMore(role)}
               onRequestMore={() => router.push(`/app/investigations/${encodeURIComponent(id)}/review`)}
             />
           </CardBody>

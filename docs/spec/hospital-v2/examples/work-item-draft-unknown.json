@@ -1,0 +1,106 @@
+{
+  "work_item_id": "wi-2026-000481",
+  "version": 1,
+  "etag": "W/\"wi-2026-000481-v1\"",
+  "context": {
+    "request_id": "req-2026-000481",
+    "requester": {
+      "id": "user-1182",
+      "role": "doctor",
+      "unit": "Khoa Nội tổng hợp"
+    },
+    "channel": "web",
+    "received_at": "2026-10-06T09:15:00+07:00",
+    "raw_text": "Bệnh nhân đang dùng metformin, có ghi nhận tiêu chảy. Nhờ tra cứu giúp.",
+    "language": "vi",
+    "source_system": {
+      "name": "hospital-EMR",
+      "record_id": "BN-2026-77120",
+      "deidentified": true
+    },
+    "attachments": []
+  },
+  "question": "Metformin và tiêu chảy ở người lớn dùng đường uống?",
+  "scope": {
+    "drug": {
+      "value": "metformin",
+      "resolution": "candidate",
+      "source": "dictionary",
+      "evidence_ref": "dict:mvp_candidates_2026_10_02#metformin"
+    },
+    "event": {
+      "value": "diarrhoea",
+      "resolution": "confirmed",
+      "source": "requester",
+      "evidence_ref": null
+    },
+    "population": {
+      "value": "adults",
+      "resolution": "confirmed",
+      "source": "requester",
+      "evidence_ref": null
+    },
+    "route": {
+      "value": "oral",
+      "resolution": "candidate",
+      "source": "dictionary",
+      "evidence_ref": null
+    },
+    "dose": {
+      "value": null,
+      "resolution": "unknown",
+      "source": "unknown",
+      "evidence_ref": null
+    },
+    "time_window": {
+      "value": null,
+      "resolution": "unknown",
+      "source": "unknown",
+      "evidence_ref": null
+    },
+    "indication": {
+      "value": null,
+      "resolution": "unknown",
+      "source": "unknown",
+      "evidence_ref": null
+    },
+    "comparator": {
+      "value": null,
+      "resolution": "unknown",
+      "source": "unknown",
+      "evidence_ref": null
+    }
+  },
+  "unknowns": [
+    {
+      "field": "dose",
+      "reason": "yêu cầu không nêu liều; không tự suy diễn",
+      "needs_confirmation": true
+    },
+    {
+      "field": "time_window",
+      "reason": "không có mốc thời gian",
+      "needs_confirmation": true
+    },
+    {
+      "field": "comparator",
+      "reason": "không có thuốc so sánh",
+      "needs_confirmation": false
+    }
+  ],
+  "priority": "routine",
+  "owner": null,
+  "work_status": "draft",
+  "run_status": "not_started",
+  "review_status": "not_required",
+  "investigation_ids": [],
+  "response_ids": [],
+  "follow_up_ids": [],
+  "revision_of": null,
+  "revision_reason": null,
+  "labels": {
+    "clinic": "noi-tong-hop"
+  },
+  "created_at": "2026-10-06T09:15:00+07:00",
+  "updated_at": "2026-10-06T09:15:00+07:00"
+}

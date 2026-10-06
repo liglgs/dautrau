@@ -7,8 +7,14 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       APP_ENV: development
-      INVESTIGATOR_TOKEN: ${INVESTIGATOR_TOKEN:?Set INVESTIGATOR_TOKEN locally}
-      REVIEWER_TOKEN: ${REVIEWER_TOKEN:?Set REVIEWER_TOKEN locally}
+      # Tài khoản khởi động: bắt buộc, vì cầu nối giao diện không còn đường tự khai vai (AUTH-01).
+      MVP_BOOTSTRAP_INVESTIGATOR_EMAIL: ${INVESTIGATOR_EMAIL:?Set INVESTIGATOR_EMAIL locally}
+      MVP_BOOTSTRAP_INVESTIGATOR_PASSWORD: ${INVESTIGATOR_PASSWORD:?Set INVESTIGATOR_PASSWORD locally}
+      MVP_BOOTSTRAP_REVIEWER_EMAIL: ${REVIEWER_EMAIL:?Set REVIEWER_EMAIL locally}
+      MVP_BOOTSTRAP_REVIEWER_PASSWORD: ${REVIEWER_PASSWORD:?Set REVIEWER_PASSWORD locally}
+      # Quản trị là tuỳ chọn: không đặt thì bỏ qua, không phải lỗi.
+      MVP_BOOTSTRAP_ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      MVP_BOOTSTRAP_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       MVP_DB_PATH: ${MVP_DB_PATH:-/app/data/mvp.sqlite3}
       MVP_SNAPSHOT_ROOT: /app/data/snapshots
       MVP_SOURCE_MODE: ${MVP_SOURCE_MODE:-fixture}
@@ -27,6 +33,11 @@ services:
       CORS_ORIGINS: http://127.0.0.1:3100,http://localhost:3100
     volumes:
       - mvp_data:/app/data
+    # Nạp tài khoản khởi động rồi mới chạy máy chủ; chạy lại không ghi đè tài khoản đã có.
+    command:
+      - sh
+      - -c
+      - python scripts/mvp_seed_users.py && exec uvicorn src.main:app --host 0.0.0.0 --port 8000 --workers 1
     restart: unless-stopped
   frontend:
     build:
@@ -36,8 +47,6 @@ services:
       - "127.0.0.1:3100:3100"
     environment:
       VIGILENS_API_BASE: http://backend:8000
-      VIGILENS_INVESTIGATOR_TOKEN: ${INVESTIGATOR_TOKEN:?Set INVESTIGATOR_TOKEN locally}
-      VIGILENS_REVIEWER_TOKEN: ${REVIEWER_TOKEN:?Set REVIEWER_TOKEN locally}
     depends_on:
       backend:
         condition: service_healthy

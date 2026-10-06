@@ -7,10 +7,11 @@ import { LoaderCircle, ShieldCheck } from "lucide-react";
 import { Alert, Button, Card, CardBody, Input, Label } from "@/components/ui";
 import { ROLE_LABEL, useAppStore } from "@/lib/store/app-store";
 import { DATA_MODE } from "@/lib/api";
-import { request, SESSION_AUTH } from "@/lib/api/real";
+import { request } from "@/lib/api/real";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Role } from "@/lib/types";
 
+/** Tài khoản minh họa chỉ tồn tại ở chế độ dữ liệu mẫu. */
 const DEMO_ACCOUNTS: { role: Role; email: string; password: string }[] = [
   { role: "investigator", email: "dieutra@demo.vigilens", password: "demo-investigator" },
   { role: "reviewer", email: "duyet@demo.vigilens", password: "demo-reviewer" },
@@ -21,8 +22,9 @@ export default function LoginPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const setRole = useAppStore((state) => state.setRole);
-  const sessionMode = DATA_MODE === "api" && SESSION_AUTH;
-  const [token, setToken] = React.useState("");
+  // Chế độ API: đăng nhập thật bằng email + mật khẩu, phiên nằm trong cookie HttpOnly.
+  // AUTH-01: không còn "chế độ token vai trò" cho trình duyệt tự khai vai.
+  const sessionMode = DATA_MODE === "api";
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [pending, setPending] = React.useState(false);
@@ -35,10 +37,13 @@ export default function LoginPage() {
     if (sessionMode) {
       setPending(true);
       try {
-        const user = await request<{ role: "investigator" | "reviewer" }>("/api/v1/auth/login", { method: "POST", body: { token } });
+        const user = await request<{ user_id: string; role: Role }>("/api/v1/auth/login", {
+          method: "POST",
+          body: { email: email.trim(), password },
+        });
         queryClient.clear();
         setRole(user.role);
-        setToken("");
+        setPassword("");
         const destination = new URLSearchParams(window.location.search).get("returnTo");
         router.replace((destination === "/app" || destination?.startsWith("/app/")) && !destination?.includes("\\") ? destination : "/app");
       } catch (error) { setError((error as Error).message); }
@@ -47,9 +52,7 @@ export default function LoginPage() {
     }
     const account = DEMO_ACCOUNTS.find((item) => item.email === email.trim() && item.password === password);
     if (!account) {
-      setError(
-        "Bản MVP chưa có hệ thống tài khoản. Dùng một trong các tài khoản minh họa bên dưới, hoặc vào thẳng khu vực làm việc.",
-      );
+      setError("Ở chế độ dữ liệu minh họa, chỉ các tài khoản minh họa bên dưới đăng nhập được.");
       return;
     }
     setPending(true);
@@ -63,29 +66,31 @@ export default function LoginPage() {
         <div>
           <h1 className="font-display text-[24px] text-foreground">Đăng nhập</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            {sessionMode ? "Đăng nhập bằng token do nhóm cung cấp. Vai trò được xác định từ phiên máy chủ." : "Đăng nhập minh họa để thử giao diện bằng dữ liệu mẫu."}
+            {sessionMode
+              ? "Đăng nhập bằng email và mật khẩu. Vai trò do máy chủ xác định, không phải do trình duyệt chọn."
+              : "Đăng nhập minh họa để thử giao diện bằng dữ liệu mẫu."}
           </p>
         </div>
 
         <form onSubmit={submit} className="space-y-3">
-          {sessionMode ? <div><Label htmlFor="token">Token đăng nhập</Label><Input id="token" type="password" autoComplete="off" required value={token} onChange={(event) => setToken(event.target.value)} /></div> : <>
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="ten@donvi.vn" />
+            <Input id="email" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="ten@donvi.vn" />
           </div>
           <div>
             <Label htmlFor="password">Mật khẩu</Label>
-            <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
           </div>
-          <div className="flex items-center justify-between text-[12px]">
-            <Link href="/forgot-password" className="text-muted-foreground underline">
-              Quên mật khẩu?
-            </Link>
-            <Link href="/register" className="text-muted-foreground underline">
-              Tạo tài khoản
-            </Link>
-          </div>
-          </>}
+          {!sessionMode ? (
+            <div className="flex items-center justify-between text-[12px]">
+              <Link href="/forgot-password" className="text-muted-foreground underline">
+                Quên mật khẩu?
+              </Link>
+              <Link href="/register" className="text-muted-foreground underline">
+                Tạo tài khoản
+              </Link>
+            </div>
+          ) : null}
           {error ? <Alert tone="caution" title="Chưa đăng nhập được">{error}</Alert> : null}
           <Button type="submit" className="w-full" disabled={pending}>
             {pending ? <LoaderCircle className="h-4 w-4 animate-spin-slow" aria-hidden /> : <ShieldCheck className="h-4 w-4" aria-hidden />}
@@ -93,33 +98,35 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        {!sessionMode ? <>
-        <div className="border-t border-border pt-3">
-          <p className="text-[12px] uppercase tracking-wide text-muted-foreground">Tài khoản minh họa</p>
-          <ul className="mt-2 space-y-1.5">
-            {DEMO_ACCOUNTS.map((account) => (
-              <li key={account.email} className="flex items-center justify-between gap-2 text-[12px]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail(account.email);
-                    setPassword(account.password);
-                    setError(null);
-                  }}
-                  className="mono text-left text-muted-foreground underline"
-                >
-                  {account.email} / {account.password}
-                </button>
-                <span className="text-muted-foreground">{ROLE_LABEL[account.role]}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {!sessionMode ? (
+          <>
+            <div className="border-t border-border pt-3">
+              <p className="text-[12px] uppercase tracking-wide text-muted-foreground">Tài khoản minh họa</p>
+              <ul className="mt-2 space-y-1.5">
+                {DEMO_ACCOUNTS.map((account) => (
+                  <li key={account.email} className="flex items-center justify-between gap-2 text-[12px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail(account.email);
+                        setPassword(account.password);
+                        setError(null);
+                      }}
+                      className="mono text-left text-muted-foreground underline"
+                    >
+                      {account.email} / {account.password}
+                    </button>
+                    <span className="text-muted-foreground">{ROLE_LABEL[account.role]}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-        <Link href="/app" className="block text-center text-[13px] text-muted-foreground underline">
-          Vào khu vực làm việc không cần đăng nhập
-        </Link>
-        </> : null}
+            <Link href="/app" className="block text-center text-[13px] text-muted-foreground underline">
+              Vào khu vực làm việc không cần đăng nhập
+            </Link>
+          </>
+        ) : null}
       </CardBody>
     </Card>
   );

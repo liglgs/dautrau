@@ -141,7 +141,11 @@
     "file": "vn-adr-2024.html",
     "bytes": 40082,
     "sha256": "9e44308d134676186ac36ef01555d3929a5c9b1b7ac1ccb2d3b0780527469f0a",
-    "verified_payload": true
+    "verified_payload": true,
+    "sha256_committed": "07a24ca65dfc041e4eeeaf6d4bc4c80efbc851f6c6dbbd62eb6c0cf7dc9662b9",
+    "bytes_committed": 39579,
+    "normalization": "crlf_to_lf_at_import",
+    "normalization_note": "Tệp được lưu lại ở dạng xuống dòng LF khi nhập repo; sha256/bytes là của bản tải về, sha256_committed/bytes_committed là của bản đã cam kết."
   },
   {
     "id": "vn-adr-2025",
@@ -155,7 +159,11 @@
     "file": "vn-adr-2025.html",
     "bytes": 33976,
     "sha256": "1c5eedc0920fb5f29fff5d4a29d424b76c970c2b9b36f53d7e5cbf936669c973",
-    "verified_payload": true
+    "verified_payload": true,
+    "sha256_committed": "27fcce2c0dd068d507b0aab993cad4bb1603dea5afac703056727df8aa45bc50",
+    "bytes_committed": 33481,
+    "normalization": "crlf_to_lf_at_import",
+    "normalization_note": "Tệp được lưu lại ở dạng xuống dòng LF khi nhập repo; sha256/bytes là của bản tải về, sha256_committed/bytes_committed là của bản đã cam kết."
   },
   {
     "id": "dailymed-label-pantoprazole-oral",
@@ -197,7 +205,11 @@
     "file": "vn-latest-bulletin-index.html",
     "bytes": 17818,
     "sha256": "80c1a424f8b0ffa9fcb6e5f631f24b4fa20e909da1d701065e9358dd95702ece",
-    "verified_payload": true
+    "verified_payload": true,
+    "sha256_committed": "3e5f001ec1556f936d5216152f4bac374f278c8ee587741520b6c9cec2c033fe",
+    "bytes_committed": 17428,
+    "normalization": "crlf_to_lf_at_import",
+    "normalization_note": "Tệp được lưu lại ở dạng xuống dòng LF khi nhập repo; sha256/bytes là của bản tải về, sha256_committed/bytes_committed là của bản đã cam kết."
   },
   {
     "id": "openfda-event-docs",

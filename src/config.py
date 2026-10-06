@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    app_name: str = "MedReview VMEC-03"
+    app_name: str = "VigiLens"
     app_env: Literal["development", "production", "test"] = "development"
     app_port: int = Field(default=8000, ge=1, le=65535)
     app_host: str = "0.0.0.0"
@@ -56,7 +56,30 @@ class Settings(BaseSettings):
         ]
         return [k.strip() for k in raw if k and k.strip()]
 
+    @property
+    def is_production_like(self) -> bool:
+        """``True`` với mọi môi trường **không** phải phát triển/kiểm thử.
+
+        Dùng thay cho so sánh ``== "production"``: một bản triển khai lỡ quên đặt ``APP_ENV`` sẽ
+        mang giá trị mặc định ``development``, nên chỉ so sánh bằng chuỗi là tự mở lại đường tắt.
+        """
+        return self.app_env not in ("development", "test")
+
+    # Xác thực và phân quyền (B1)
+    #: ``auto`` = có ``SUPABASE_URL`` thì Supabase, không thì chế độ nội bộ.
+    auth_provider: Literal["auto", "local", "supabase", "test"] = "auto"
+    #: Bật ``X-Test-User`` cho bài kiểm thử. Bị chặn cứng khi ``app_env=production``.
+    vigilens_test_auth: bool = False
+    supabase_url: str = ""
+    supabase_anon_key: str = ""
+    #: Chỉ đặt ở phía máy chủ; **không bao giờ** lộ ra trình duyệt.
+    supabase_service_role_key: str = ""
+    supabase_jwt_audience: str = "authenticated"
+
     # MVP điều tra an toàn thuốc (P-066)
+    #: Khoá tĩnh dùng chung của giai đoạn ngoại tuyến. Mặc định **tắt**: đây là khoá dùng chung,
+    #: không phải danh tính, nên phải bật tường minh chứ không bật theo kiểu "không phải production".
+    vigilens_allow_legacy_tokens: bool = False
     investigator_token: str = ""
     reviewer_token: str = ""
     mvp_db_path: str = "data/mvp.sqlite3"
@@ -66,7 +89,7 @@ class Settings(BaseSettings):
         "match", "route_mismatch", "missing_scope", "imprecise_null",
         "fake_quote", "contradiction", "ambiguous_brand", "faers_only",
     ] = "match"
-    mvp_source_mode: Literal["fixture", "live"] = "fixture"
+    mvp_source_mode: Literal["fixture", "live", "warehouse"] = "fixture"
     mvp_pubmed_mode: Literal["api", "local"] = "api"
     mvp_pubmed_corpus_root: str = "data/pubmed-local"
     mvp_snapshot_root: str = "data/snapshots"
@@ -77,8 +100,16 @@ class Settings(BaseSettings):
     session_cookie_secure: bool = False
     research_token: str = ""
 
-    # Vector Store
-    chroma_persist_dir: str = "./data/chroma"
+    # Kho ELT (PostgreSQL) — mặc định suy ra từ database_url với tên csdl vigilens_elt
+    elt_database_url: str = ""
+
+    # Vector Store / RAG
+    rag_enabled: bool = True
+    rag_chroma_dir: str = "./data/chroma"
+    rag_collection: str = "vigilens_docs"
+    rag_embedding_provider: Literal["auto", "gemini", "hash"] = "auto"
+    rag_embedding_model: str = "gemini-embedding-001"
+    rag_top_k: int = Field(default=6, ge=1, le=50)
 
     @field_validator("database_url")
     @classmethod

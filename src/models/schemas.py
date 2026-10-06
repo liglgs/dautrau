@@ -39,6 +39,11 @@ RESERVED_LLM_CALLS_FOR_DOSSIER = 2
 
 SOURCE_NAMES: tuple[str, ...] = ("pubmed", "dailymed", "faers")
 
+#: RV-04 — ngưỡng lý do duyệt tối thiểu, dùng chung cho giao diện và máy chủ.
+#: Giao diện đã đòi 15 ký tự từ trước; máy chủ chỉ cần khác rỗng, nên gọi thẳng API là lách được
+#: yêu cầu ghi lý do. Giao diện giữ cùng con số ở ``frontend/lib/review-rules.ts``.
+MIN_REVIEW_REASON = 15
+
 UNKNOWN_TOKENS: frozenset[str] = frozenset(
     {
         "",
@@ -180,6 +185,7 @@ class ErrorCode(StrEnum):
     SOURCE_ERROR = "source_error"
     LLM_FORMAT_ERROR = "llm_format_error"
     MODEL_UNAVAILABLE = "model_unavailable"
+    UNAVAILABLE = "unavailable"
 
 
 # --------------------------------------------------------------------------------------
@@ -220,6 +226,26 @@ class ClaimInput(BaseModel):
     route: str | None = Field(default=None, max_length=120)
     time_window: str | None = Field(default=None, max_length=120)
     config: InvestigationConfig | None = Field(default=None)
+
+    @field_validator("claim_text", "drug", "event")
+    @classmethod
+    def _reject_blank(cls, value: str) -> str:
+        """IN-05: chuỗi chỉ gồm khoảng trắng không phải là nội dung.
+
+        Giao diện đã chặn từ trước, nhưng gọi thẳng API thì lọt: ``min_length=1`` để ``"   "``
+        đi qua, và ca đó chạy hết ngân sách rồi trả về hồ sơ rỗng.
+        """
+        if not value.strip():
+            raise ValueError("không được chỉ gồm khoảng trắng")
+        return value
+
+    @field_validator("population", "dose", "route", "time_window")
+    @classmethod
+    def _blank_optional_is_absent(cls, value: str | None) -> str | None:
+        """Trường tuỳ chọn gửi lên toàn khoảng trắng được coi như không khai."""
+        if value is None:
+            return None
+        return value.strip() or None
 
 
 class NormalizedClaim(BaseModel):
@@ -370,7 +396,8 @@ class EvidenceUnit(BaseModel):
     quote: str = Field(min_length=1, max_length=2000)
     locator: QuoteLocator
     scope: EvidenceScope = Field(default_factory=EvidenceScope)
-    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    # EV-07: trường ``confidence`` cũ (mặc định 0.5, có nơi ghi 0.0) đã bị bỏ. Nó chưa từng được
+    # hiệu chỉnh bằng dữ liệu thật, nhưng lại nằm cạnh trích đoạn nên bị đọc như xác suất đúng.
     evidence_type: EvidenceType = EvidenceType.OTHER
     version: int = Field(default=1, ge=1)
     excluded: bool = False
@@ -386,7 +413,12 @@ class AssessmentResult(BaseModel):
     rationale: str = Field(min_length=1, max_length=4000)
     evidence_ids: list[str] = Field(default_factory=list)
     scope_notes: list[str] = Field(default_factory=list)
-    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    #: Báo phủ bằng chứng theo từng trường của câu hỏi, đếm từ bằng chứng **đã thật sự tìm được**.
+    #: Giá trị: ``verified`` (có bằng chứng khớp trường đó), ``partial`` (có bằng chứng nhắc tới
+    #: nhưng chưa khớp), ``not_specified`` (câu hỏi có nêu nhưng chưa bằng chứng nào nói tới),
+    #: ``missing`` (câu hỏi không nêu trường đó). Trước đây trường này không tồn tại nên giao diện
+    #: tự suy từ phần chuẩn hoá câu hỏi — tức là báo phủ nói về *câu hỏi*, không về *bằng chứng*.
+    coverage: dict[str, str] = Field(default_factory=dict)
 
 
 # --------------------------------------------------------------------------------------
@@ -476,6 +508,9 @@ class InvestigationState(BaseModel):
     source_status: dict[str, SourceStatus] = Field(default_factory=dict)
     config: InvestigationConfig = Field(default_factory=InvestigationConfig)
     created_by: str = Field(default="anonymous", max_length=120)
+    #: Tổng thời gian agent thật sự chạy (ms), cộng dồn qua các lần chạy và chạy tiếp. Không tính
+    #: thời gian chờ người duyệt. Trước đây giao diện luôn hiện 0 vì trường này không tồn tại.
+    elapsed_ms: int = Field(default=0, ge=0)
     version: int = Field(default=1, ge=1)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -663,6 +698,157 @@ class CancelResponse(BaseModel):
     run_status: RunStatus
     cancelled: bool
     message: str = ""
+
+
+# --------------------------------------------------------------------------------------
+# Mô hình phản hồi HTTP (API-01)
+#
+# Trước đây các điểm cuối dưới đây khai ``-> dict[str, Any]`` nên OpenAPI chỉ ghi ``object``:
+# hợp đồng không nói được trường nào tồn tại, và giao diện phải đoán. Phần bao ngoài được mô
+# hình hoá chặt; các khối JSON sâu bên trong (claim, ngân sách, bằng chứng) vẫn để dạng dict vì
+# chúng được đọc thẳng từ bản ghi cũ và không nên bị lọc lại khi trả về.
+# --------------------------------------------------------------------------------------
+
+
+class CreateInvestigationResponse(BaseModel):
+    """202 khi tạo cuộc điều tra mới."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    created: bool
+    started: bool
+    run_status: str
+    version: int = Field(ge=1)
+    events_url: str
+
+
+class InvestigationSummary(BaseModel):
+    """Một dòng trong danh sách cuộc điều tra."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    run_status: str
+    assessment_status: str | None = None
+    checkpoint: str | None = None
+    next_stage: str | None = None
+    version: int = Field(ge=1)
+    drug: str | None = None
+    event: str | None = None
+    review_status: str | None = None
+    last_review: dict[str, Any] | None = None
+    created_by: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class InvestigationListResponse(BaseModel):
+    """Danh sách có phân trang; ``scope`` nói rõ đang nhìn thấy ca của ai."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[InvestigationSummary]
+    total: int = Field(ge=0)
+    limit: int = Field(ge=1)
+    offset: int = Field(ge=0)
+    has_more: bool
+    scope: Literal["own", "any"]
+
+
+class InvestigationDetailResponse(BaseModel):
+    """Trạng thái đầy đủ để giao diện polling."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    created_at: str | None = None
+    updated_at: str | None = None
+    claim: dict[str, Any]
+    normalized_claim: dict[str, Any] | None = None
+    run_status: str
+    assessment_status: str | None = None
+    assessment: dict[str, Any] | None = None
+    stop_reason: str | None = None
+    checkpoint: str | None = None
+    next_stage: str | None = None
+    review_status: str | None = None
+    last_review: dict[str, Any] | None = None
+    version: int = Field(ge=1)
+    budget: dict[str, Any]
+    step_index: int = Field(ge=0)
+    searched_sources: list[str] = Field(default_factory=list)
+    source_status: dict[str, str] = Field(default_factory=dict)
+    counters: dict[str, int] = Field(default_factory=dict)
+    gaps: list[dict[str, Any]] = Field(default_factory=list)
+    #: API-04a: tổng thời gian agent thật sự chạy (ms), không tính thời gian chờ người duyệt.
+    elapsed_ms: int = Field(default=0, ge=0)
+    #: RT-01: chế độ chạy đang bật (nguồn thật hay mẫu, bằng chứng thật hay phát lại).
+    run_mode: dict[str, Any] = Field(default_factory=dict)
+
+
+class EventListResponse(BaseModel):
+    """Timeline tiến trình cho polling."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    last_id: int = Field(ge=0)
+
+
+class EvidenceListResponse(BaseModel):
+    """Bằng chứng kèm tài liệu nguồn và kết quả so khớp phạm vi."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    active_count: int = Field(ge=0)
+
+
+class DocumentResponse(BaseModel):
+    """Nội dung tài liệu gốc + locator để đối chiếu trích dẫn."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    document: SourceDocument
+    locators: list[dict[str, Any]] = Field(default_factory=list)
+    #: API-04b: trạng thái của ``document.hash``. Giao diện đọc ``hash_status`` từ **phản hồi này**
+    #: (``getDocument`` trong ``frontend/lib/api/real.ts``), không đọc từ danh sách bằng chứng.
+    hash_status: str = "unchecked"
+
+
+class DossierResponse(BaseModel):
+    """Hồ sơ nháp hoặc đã duyệt gần nhất, kèm báo cáo kiểm tra."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    dossier: Dossier | None = None
+    approved: Dossier | None = None
+    validation: ValidationReport | None = None
+
+
+class ContinueResponse(BaseModel):
+    """202 khi chạy tiếp; ``resumed=False`` nghĩa là yêu cầu trùng đã được xử lý."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    run_status: str
+    resumed: bool
+    detail: str | None = None
+
+
+class TraceResponse(BaseModel):
+    """Vết suy luận, các bước chạy LLM và tình trạng ngân sách."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    investigation_id: str
+    run_status: str
+    step_index: int = Field(ge=0)
+    budget: dict[str, Any]
+    counters: dict[str, int] = Field(default_factory=dict)
+    traces: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------------------

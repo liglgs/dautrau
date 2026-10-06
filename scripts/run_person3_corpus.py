@@ -26,6 +26,8 @@ def main():
     os.environ.update({"MVP_EVIDENCE_MODE": "fixture", "LANGSMITH_TRACING": "false", "LANGCHAIN_TRACING_V2": "false"})
     os.environ.setdefault("INVESTIGATOR_TOKEN", "person3-investigator-demo")
     os.environ.setdefault("REVIEWER_TOKEN", "person3-reviewer-demo")
+    # Bản demo ngoại tuyến dùng khoá tĩnh cũ, mà khoá đó mặc định tắt từ B1.7.
+    os.environ.setdefault("VIGILENS_ALLOW_LEGACY_TOKENS", "1")
     from src.config import get_settings
     get_settings.cache_clear()
     from src.main import app

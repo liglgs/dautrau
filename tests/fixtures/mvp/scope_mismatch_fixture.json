@@ -62,7 +62,6 @@
         "time_window": "12 weeks",
         "study_type": "randomised trial"
       },
-      "confidence": 0.8,
       "evidence_type": "rct",
       "version": 1,
       "excluded": false,

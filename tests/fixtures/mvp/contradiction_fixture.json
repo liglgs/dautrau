@@ -74,7 +74,6 @@
         "time_window": "first 8 weeks",
         "study_type": "nested case-control"
       },
-      "confidence": 0.7,
       "evidence_type": "observational",
       "version": 1,
       "excluded": false,
@@ -98,7 +97,6 @@
         "time_window": "12 weeks",
         "study_type": "prospective cohort"
       },
-      "confidence": 0.6,
       "evidence_type": "observational",
       "version": 1,
       "excluded": false,

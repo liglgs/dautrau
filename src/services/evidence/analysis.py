@@ -17,6 +17,7 @@ from src.models.schemas import (
     SourceDocument,
     Stance,
 )
+from src.services.assessment import coverage_from_evidence
 from src.services.evidence.contracts import read_annotation
 from src.services.evidence.contradiction import ContradictionAnalyzer
 from src.services.evidence.scope import ScopeMatcher
@@ -75,7 +76,9 @@ class EvidenceAnalyzer:
             assessment=AssessmentResult(
                 assessment_status=status, rationale=reason,
                 evidence_ids=[item.evidence_id for item in (support + contrary)],
-                scope_notes=scope.notes, confidence=0.0,
+                scope_notes=scope.notes,
+                # API-03: cùng cách đếm với đường MVP, để giao diện không phải suy báo phủ từ câu hỏi.
+                coverage=coverage_from_evidence(active, claim),
             ), scope=scope, gaps=gaps,
         )
 

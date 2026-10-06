@@ -55,6 +55,18 @@ data/benchmark/*
 data/templates/*
 !data/templates/dossier.md
 !data/templates/dossier.synthetic.md
+# Đặc tả nguồn ELT (nhỏ, cần cho máy mới); phần thô/staging/manifest thì không commit.
+!data/elt/
+data/elt/*
+!data/elt/dataset-spec.json
+
+# Chuẩn vàng giai đoạn 1 (nhỏ, cần cho máy mới); bản thô trong data/gold/raw thì không commit.
+!data/gold/
+data/gold/*
+!data/gold/spec.json
+!data/gold/drug-event-pairs.jsonl
+!data/gold/manifest.json
+!data/gold/README.md
 *.db
 *.db-wal
 *.db-shm

@@ -68,6 +68,17 @@ async def _create(client: AsyncClient, key: str = "key-1", claim: dict | None = 
     return response.json()
 
 
+#: RV-04 — máy chủ đòi lý do duyệt dài ít nhất 15 ký tự, giống giao diện.
+REVIEW_REASON = "Kiểm thử tự động: lý do đủ dài để qua ngưỡng RV-04."
+
+
+async def _current_version(client: AsyncClient, investigation_id: str) -> int:
+    """Đọc phiên bản hiện tại để gửi kèm ``/continue`` (RV-06 bắt buộc ``expected_version``)."""
+    response = await client.get(f"/api/v1/investigations/{investigation_id}", headers=INVESTIGATOR)
+    assert response.status_code == 200, response.text
+    return int(response.json()["version"])
+
+
 # --------------------------------------------------------------------------------------
 # Token & phân quyền
 # --------------------------------------------------------------------------------------
@@ -106,6 +117,7 @@ async def test_investigator_cannot_submit_review(mvp_client):
             "action": "approve",
             "checkpoint": state["checkpoint"],
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert response.status_code == 403
@@ -180,6 +192,7 @@ async def test_full_flow_from_claim_to_approved_export(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert approve_assessment.status_code == 200, approve_assessment.text
@@ -189,15 +202,15 @@ async def test_full_flow_from_claim_to_approved_export(mvp_client):
     assert still_blocked.status_code == 409, "duyệt kết luận không được tự mở export"
 
     resumed = await mvp_client.post(
-        f"/api/v1/investigations/{investigation_id}/continue", headers=INVESTIGATOR, json={}
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=INVESTIGATOR,
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
     )
     assert resumed.status_code == 202
     dossier_state = await _wait_for_checkpoint(mvp_client, investigation_id)
     assert dossier_state["checkpoint"] == "dossier"
 
-    dossier_response = await mvp_client.get(
-        f"/api/v1/investigations/{investigation_id}/dossier", headers=INVESTIGATOR
-    )
+    dossier_response = await mvp_client.get(f"/api/v1/investigations/{investigation_id}/dossier", headers=INVESTIGATOR)
     payload = dossier_response.json()
     assert payload["dossier"]["version"] == 1
     assert payload["dossier"]["status"] == "pending"
@@ -212,6 +225,7 @@ async def test_full_flow_from_claim_to_approved_export(mvp_client):
             "action": "approve",
             "checkpoint": "dossier",
             "expected_version": dossier_state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert approve_dossier.status_code == 200, approve_dossier.text
@@ -245,12 +259,15 @@ async def test_review_status_is_exposed_and_a_rejection_is_not_an_approval(mvp_c
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert approve.status_code == 200, approve.text
 
     resumed = await mvp_client.post(
-        f"/api/v1/investigations/{investigation_id}/continue", headers=INVESTIGATOR, json={}
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=INVESTIGATOR,
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
     )
     assert resumed.status_code == 202
     dossier_state = await _wait_for_checkpoint(mvp_client, investigation_id)
@@ -334,6 +351,7 @@ async def test_reviewer_identity_comes_from_token(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
             "reviewer_id": "ke-gia-mao",
         },
     )
@@ -353,6 +371,7 @@ async def test_stale_expected_version_returns_409(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert ok.status_code == 200
@@ -365,6 +384,7 @@ async def test_stale_expected_version_returns_409(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert stale.status_code == 409
@@ -396,7 +416,9 @@ async def test_continue_while_checkpoint_pending_is_409(mvp_client):
     investigation_id = created["investigation_id"]
     await _wait_for_checkpoint(mvp_client, investigation_id)
     response = await mvp_client.post(
-        f"/api/v1/investigations/{investigation_id}/continue", headers=INVESTIGATOR, json={}
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=INVESTIGATOR,
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
     )
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "invalid_state"
@@ -421,11 +443,23 @@ async def test_continue_double_click_is_idempotent(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     headers = {**INVESTIGATOR, "Idempotency-Key": "continue-key"}
-    first = await mvp_client.post(f"/api/v1/investigations/{investigation_id}/continue", headers=headers, json={})
-    second = await mvp_client.post(f"/api/v1/investigations/{investigation_id}/continue", headers=headers, json={})
+    # Double-click thật là hai lần gửi **y hệt nhau**, nên phải cùng một phiên bản; đọc lại phiên
+    # bản giữa hai lần sẽ biến lần thứ hai thành một yêu cầu mới hợp lệ, không còn là bấm trùng.
+    version = await _current_version(mvp_client, investigation_id)
+    first = await mvp_client.post(
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=headers,
+        json={"expected_version": version},
+    )
+    second = await mvp_client.post(
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=headers,
+        json={"expected_version": version},
+    )
     assert first.status_code == 202 and first.json()["resumed"] is True
     assert second.status_code == 202 and second.json()["resumed"] is False
 
@@ -449,9 +483,14 @@ async def test_continue_after_completion_is_409(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
-    await mvp_client.post(f"/api/v1/investigations/{investigation_id}/continue", headers=INVESTIGATOR, json={})
+    await mvp_client.post(
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=INVESTIGATOR,
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
+    )
     dossier_state = await _wait_for_checkpoint(mvp_client, investigation_id)
     done = await mvp_client.post(
         f"/api/v1/investigations/{investigation_id}/reviews",
@@ -461,11 +500,14 @@ async def test_continue_after_completion_is_409(mvp_client):
             "action": "approve",
             "checkpoint": "dossier",
             "expected_version": dossier_state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     assert done.status_code == 200
     response = await mvp_client.post(
-        f"/api/v1/investigations/{investigation_id}/continue", headers=INVESTIGATOR, json={}
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=INVESTIGATOR,
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
     )
     assert response.status_code == 409
 
@@ -493,6 +535,34 @@ async def test_evidence_and_document_endpoints(mvp_client):
     locator = body["locators"][0]["locator"]
     text = body["document"]["text"]
     assert text[locator["start"] : locator["end"]] == body["locators"][0]["quote"]
+
+
+@pytest.mark.asyncio
+async def test_document_detail_reports_hash_status_the_ui_reads(mvp_client):
+    """API-04b: giao diện đọc ``hash_status`` từ chính phản hồi này, không phải từ danh sách bằng chứng.
+
+    Kỳ vọng được suy ra độc lập từ ``metadata.raw_hash`` của tài liệu, nên phép thử không lặp lại
+    chính công thức của mã nguồn.
+    """
+    created = await _create(mvp_client, key="hash-1")
+    investigation_id = created["investigation_id"]
+    await _wait_for_checkpoint(mvp_client, investigation_id)
+
+    evidence = await mvp_client.get(
+        f"/api/v1/investigations/{investigation_id}/evidence", headers=INVESTIGATOR
+    )
+    doc_id = evidence.json()["items"][0]["doc_id"]
+
+    response = await mvp_client.get(
+        f"/api/v1/investigations/{investigation_id}/documents/{doc_id}", headers=INVESTIGATOR
+    )
+    assert response.status_code == 200
+    body = response.json()
+
+    assert "hash_status" in body, "giao diện đọc trường này; thiếu là lại hiện 'chưa đối chiếu' mãi"
+    assert body["hash_status"] in {"verified", "unchecked"}
+    raw_hash = (body["document"].get("metadata") or {}).get("raw_hash")
+    assert body["hash_status"] == ("verified" if raw_hash else "unchecked")
 
 
 @pytest.mark.asyncio
@@ -586,12 +656,13 @@ async def test_export_returns_markdown_media_type(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     await mvp_client.post(
         f"/api/v1/investigations/{investigation_id}/continue",
         headers={**INVESTIGATOR, "Idempotency-Key": "media-continue"},
-        json={},
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
     )
     dossier_state = await _wait_for_checkpoint(mvp_client, investigation_id)
     await mvp_client.post(
@@ -602,6 +673,7 @@ async def test_export_returns_markdown_media_type(mvp_client):
             "action": "approve",
             "checkpoint": "dossier",
             "expected_version": dossier_state["version"],
+            "reason": REVIEW_REASON,
         },
     )
     exported = await mvp_client.get(f"/api/v1/investigations/{investigation_id}/export", headers=INVESTIGATOR)
@@ -622,10 +694,12 @@ async def test_new_continue_while_running_is_409(mvp_client):
     response = await mvp_client.post(
         f"/api/v1/investigations/{investigation_id}/continue",
         headers={**INVESTIGATOR, "Idempotency-Key": "running-continue"},
-        json={},
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
     )
     assert response.status_code in (409, 429)
-    assert response.json()["error"]["code"] in ("invalid_state", "runner_busy")
+    # Cuộc đang chạy làm phiên bản nhảy liên tục, nên 409 có thể là "đang chạy" hoặc
+    # "phiên bản đã cũ"; cả hai đều buộc client đọc lại trạng thái rồi mới thử tiếp.
+    assert response.json()["error"]["code"] in ("invalid_state", "runner_busy", "version_conflict")
 
 
 @pytest.mark.asyncio
@@ -686,9 +760,14 @@ async def test_export_and_approval_refuse_a_tampered_dossier(mvp_client):
             "action": "approve",
             "checkpoint": "assessment",
             "expected_version": state["version"],
+            "reason": REVIEW_REASON,
         },
     )
-    await mvp_client.post(f"/api/v1/investigations/{investigation_id}/continue", headers=INVESTIGATOR, json={})
+    await mvp_client.post(
+        f"/api/v1/investigations/{investigation_id}/continue",
+        headers=INVESTIGATOR,
+        json={"expected_version": await _current_version(mvp_client, investigation_id)},
+    )
     dossier_state = await _wait_for_checkpoint(mvp_client, investigation_id)
     assert dossier_state["checkpoint"] == "dossier"
 
@@ -706,6 +785,7 @@ async def test_export_and_approval_refuse_a_tampered_dossier(mvp_client):
             "action": "approve",
             "checkpoint": "dossier",
             "expected_version": store.get_state(investigation_id).version,
+            "reason": REVIEW_REASON,
         },
     )
     assert approve.status_code == 409, approve.text
@@ -722,10 +802,13 @@ async def test_export_and_approval_refuse_a_tampered_dossier(mvp_client):
             "action": "approve",
             "checkpoint": "dossier",
             "expected_version": store.get_state(investigation_id).version,
+            "reason": REVIEW_REASON,
         },
     )
     assert approve_ok.status_code == 200, approve_ok.text
-    assert (await mvp_client.get(f"/api/v1/investigations/{investigation_id}/export", headers=REVIEWER)).status_code == 200
+    assert (
+        await mvp_client.get(f"/api/v1/investigations/{investigation_id}/export", headers=REVIEWER)
+    ).status_code == 200
 
     # Sửa lại trích dẫn sau khi đã duyệt: export phải từ chối.
     tampered = store.get_state(investigation_id)

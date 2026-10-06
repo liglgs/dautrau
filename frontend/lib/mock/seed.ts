@@ -4,7 +4,6 @@ import type {
   DocumentRecord,
   EvidenceItem,
   Gap,
-  IngestionJob,
   Investigation,
   EvalRun,
 } from "@/lib/types";
@@ -427,45 +426,6 @@ export const DEMO_AUDIT: Record<string, AuditEntry[]> = {
     { id: "AUD-12", at: iso(310), actor: { name: "DS. Trần Minh", kind: "human" }, action: "Sửa trích dẫn E2", reason: "Trích dẫn lệch so với nhãn", target: "E2" },
   ],
 };
-
-export const DEMO_INGESTION: IngestionJob[] = [
-  {
-    id: "ING-0001",
-    kind: "identifier",
-    source: "pubmed",
-    total: 120,
-    ok: 118,
-    failed: 2,
-    stage: "done",
-    status: "partial",
-    createdBy: "admin@demo",
-    createdAt: iso(240),
-  },
-  {
-    id: "ING-0002",
-    kind: "csv",
-    source: "faers",
-    total: 500,
-    ok: 500,
-    failed: 0,
-    stage: "indexing",
-    status: "running",
-    createdBy: "admin@demo",
-    createdAt: iso(30),
-  },
-  {
-    id: "ING-0003",
-    kind: "file",
-    source: "dailymed",
-    total: 40,
-    ok: 40,
-    failed: 0,
-    stage: "done",
-    status: "completed",
-    createdBy: "admin@demo",
-    createdAt: iso(600),
-  },
-];
 
 export const DEMO_EVAL_RUNS: EvalRun[] = [
   {

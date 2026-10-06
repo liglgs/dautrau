@@ -431,7 +431,37 @@ def update_gaps_node(gstate: MvpGraphState) -> dict[str, Any]:
         state,
         event=("gaps", f"Cập nhật khoảng trống: {len(state.gaps)} gap, chuỗi không tiến triển = {streak}"),
     )
+    # RT-02: đây là node cuối của mỗi lượt, nên đây là chỗ duy nhất ghi được một dòng nhật ký
+    # trọn vẹn cho lượt đó — nguồn đã tìm, số lượt, ngân sách đã tiêu và chế độ đang chạy.
+    ctx.emit(
+        saved.investigation_id,
+        "turn",
+        f"Lượt {saved.step_index}: {len(saved.searched_sources)} nguồn, "
+        f"{len(saved.active_evidence())} bằng chứng, {len(saved.gaps)} khoảng trống",
+        _turn_log_payload(saved),
+    )
     return {"investigation": saved}
+
+
+def _turn_log_payload(state: InvestigationState) -> dict[str, Any]:
+    """Dòng nhật ký của một lượt điều tra: nguồn, số lượt, ngân sách, chế độ chạy."""
+    from src.config import get_settings
+    from src.services.runmode import resolve_run_mode
+
+    mode = resolve_run_mode(get_settings())
+    return {
+        "turn": state.step_index,
+        "searched_sources": list(state.searched_sources),
+        "source_status": {key: str(value) for key, value in state.source_status.items()},
+        "evidence_active": len(state.active_evidence()),
+        "gaps": len(state.gaps),
+        "no_progress_streak": state.no_progress_streak,
+        # Lấy nguyên ``BudgetState.model_dump()`` để trường ngân sách mới tự vào nhật ký, không
+        # phải sửa tay ở đây (bản liệt kê tay trước đây thiếu ``max_llm_calls``,
+        # ``max_input_tokens`` và ``max_output_tokens``).
+        "budget": state.budget.model_dump(),
+        "mode": mode.as_event_payload(),
+    }
 
 
 # --------------------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDataSource } from "@/lib/api";
-import type { CreateInvestigationInput } from "@/lib/api/types";
+import type { CreateInvestigationInput, IngestDocumentInput, RagSearchInput, WarehouseDocumentsParams } from "@/lib/api/types";
 import type { Investigation, ReviewAction } from "@/lib/types";
 
 export const qk = {
@@ -15,6 +15,11 @@ export const qk = {
   dossier: (id: string) => ["dossier", id] as const,
   audit: (id: string) => ["audit", id] as const,
   gaps: (id: string) => ["gaps", id] as const,
+  drugLookup: (name: string) => ["drug-lookup", name] as const,
+  warehouseOverview: ["warehouse-overview"] as const,
+  warehouseDocuments: (params: WarehouseDocumentsParams) => ["warehouse-documents", params] as const,
+  warehouseDocument: (docId: string) => ["warehouse-document", docId] as const,
+  ingestionEvents: ["ingestion-events"] as const,
 };
 
 /**
@@ -130,6 +135,75 @@ export function useCancelRun(id: string) {
     mutationFn: () => getDataSource().cancelRun(id),
     onSuccess: () => {
       for (const key of [qk.investigation(id), qk.timeline(id), qk.dossier(id), qk.investigations]) void client.invalidateQueries({ queryKey: key });
+    },
+  });
+}
+
+// -----------------------------------------------------------------------------------------
+// Kho bằng chứng (ELT + Postgres + ChromaDB)
+// -----------------------------------------------------------------------------------------
+
+/** Tra thuốc theo tên; chỉ gọi khi đã có từ khoá (ít nhất 3 ký tự ở các ô gợi ý). */
+export function useDrugLookup(name: string, enabled = true) {
+  const query = name.trim();
+  return useQuery({
+    queryKey: qk.drugLookup(query),
+    queryFn: () => getDataSource().lookupDrug(query),
+    enabled: enabled && query.length >= 2,
+    staleTime: 30_000,
+    retry: false,
+  });
+}
+
+export function useWarehouseOverview(enabled = true) {
+  return useQuery({
+    queryKey: qk.warehouseOverview,
+    queryFn: () => getDataSource().warehouseOverview(),
+    enabled,
+    retry: false,
+  });
+}
+
+export function useWarehouseDocuments(params: WarehouseDocumentsParams = {}, enabled = true) {
+  return useQuery({
+    queryKey: qk.warehouseDocuments(params),
+    queryFn: () => getDataSource().warehouseDocuments(params),
+    enabled,
+    retry: false,
+  });
+}
+
+export function useWarehouseDocument(docId: string, previewChars?: number) {
+  return useQuery({
+    queryKey: qk.warehouseDocument(docId),
+    queryFn: () => getDataSource().warehouseDocument(docId, previewChars),
+    enabled: Boolean(docId),
+    retry: false,
+  });
+}
+
+/** Tìm ngữ nghĩa trên kho; chạy theo yêu cầu (mutation) để không gọi backend khi chưa bấm. */
+export function useRagSearch() {
+  return useMutation({ mutationFn: (input: RagSearchInput) => getDataSource().ragSearch(input) });
+}
+
+export function useIngestionEvents(limit?: number) {
+  return useQuery({
+    queryKey: qk.ingestionEvents,
+    queryFn: () => getDataSource().ingestionEvents(limit),
+    refetchInterval: 10_000,
+    retry: false,
+  });
+}
+
+export function useIngestDocument() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: IngestDocumentInput) => getDataSource().ingestDocument(input),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: qk.ingestionEvents });
+      void client.invalidateQueries({ queryKey: qk.warehouseOverview });
+      void client.invalidateQueries({ queryKey: ["warehouse-documents"] });
     },
   });
 }

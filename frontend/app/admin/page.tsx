@@ -90,9 +90,9 @@ export default function AdminOverviewPage() {
           <Users className="h-4 w-4 text-muted-foreground" aria-hidden />
         </CardHeader>
         <CardBody className="space-y-1.5 text-[13px] text-muted-foreground">
-          <p>Bản MVP chỉ có hai token vai trò dùng chung, chưa có tài khoản riêng và chưa có phiên đăng nhập.</p>
-          <p>Chưa có endpoint hủy cuộc điều tra; cần hủy thì dừng tiến trình và ghi chú trong audit log.</p>
-          <p>Các màn hình quản trị dưới đây trình bày thiết kế và dữ liệu minh họa cho giai đoạn sau.</p>
+          <p>Backend xác thực bằng token vai trò (X-API-Token) hoặc phiên đăng nhập qua POST /api/v1/auth/login; vai trò quyết định quyền duyệt hồ sơ và quyền nạp tài liệu.</p>
+          <p>Cuộc điều tra đang chạy hủy được bằng POST /api/v1/investigations/&#123;id&#125;/cancel; thao tác được ghi vào nhật ký kiểm toán.</p>
+          <p>Màn hình “Nạp tài liệu” và “Kho tài liệu” đã nối backend thật (kho ELT + Postgres + ChromaDB); các màn hình quản trị còn lại trình bày thiết kế cho giai đoạn sau.</p>
         </CardBody>
       </Card>
     </div>

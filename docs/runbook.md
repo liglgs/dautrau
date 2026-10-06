@@ -10,8 +10,10 @@ Python 3.11+, Node.js 24. Từ thư mục gốc:
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
 # Tạo token riêng cho từng vai trò, chỉ giữ trong phiên PowerShell này.
-$env:INVESTIGATOR_TOKEN = [guid]::NewGuid().ToString('N')
-$env:REVIEWER_TOKEN = [guid]::NewGuid().ToString('N')
+$env:INVESTIGATOR_EMAIL = "dieutra@benhvien.vn"
+$env:INVESTIGATOR_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:REVIEWER_EMAIL = "duyet@benhvien.vn"
+$env:REVIEWER_PASSWORD = [guid]::NewGuid().ToString('N')
 $env:MVP_SOURCE_MODE = 'fixture'
 .\.venv\Scripts\python.exe -m uvicorn src.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
@@ -19,12 +21,10 @@ $env:MVP_SOURCE_MODE = 'fixture'
 Trong cửa sổ PowerShell thứ hai, đặt cùng hai token vào biến môi trường phía server Next.js (không đặt `NEXT_PUBLIC_*_TOKEN`), rồi:
 
 ```powershell
-cd vigilens
+cd frontend
 npm ci
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = 'api'
 $env:VIGILENS_API_BASE = 'http://127.0.0.1:8000'
-$env:VIGILENS_INVESTIGATOR_TOKEN = $env:INVESTIGATOR_TOKEN
-$env:VIGILENS_REVIEWER_TOKEN = $env:REVIEWER_TOKEN
 npm run dev -- --hostname 127.0.0.1
 ```
 
@@ -36,7 +36,9 @@ VigiLens hiện cho trình duyệt chọn vai trò và chưa có phiên đăng n
 
 `MVP_SOURCE_MODE=fixture` là mặc định, không gọi nguồn thật hoặc model. Claim có kịch bản trong `tests/fixtures/mvp` dùng dữ liệu synthetic; claim ngoài bộ kịch bản trả thiếu bằng chứng.
 
-`MVP_SOURCE_MODE=live` gắn PubMed, DailyMed và FAERS sau normalization. Đặt thêm `MVP_EVIDENCE_MODE=person3` và dictionary verified để bật normalizer/extractor/analyzer/dossier Người 3 qua gateway và budget Người 2; xem [cấu hình đầy đủ](person3/merged_runtime.md). Chỉ bật source live giữ extractor fixture. Chế độ person3 không bịa quote khi nguồn/model lỗi; có gap và checkpoint review.
+`MVP_SOURCE_MODE=live` gắn PubMed, DailyMed và FAERS sau normalization. Đặt thêm `MVP_EVIDENCE_MODE=person3` và dictionary verified để bật normalizer/extractor/analyzer/dossier Người 3 qua gateway và budget Người 2; xem [cấu hình đầy đủ](person3/merged_runtime.md). Chỉ bật source live mà không đổi chế độ bằng chứng thì app **không khởi động**: tổ hợp `MVP_SOURCE_MODE=live` + `MVP_EVIDENCE_MODE=fixture` bị chặn vì nó gắn bằng chứng mẫu lên tài liệu thật. Đổi `MVP_EVIDENCE_MODE` sang `person3` cùng lúc. Chế độ person3 không bịa quote khi nguồn/model lỗi; có gap và checkpoint review.
+
+`MVP_SOURCE_MODE=warehouse` lấy bằng chứng từ **kho ELT đã nạp** thay vì gọi mạng: chỉ mục RAG (Chroma) xếp hạng đoạn theo ngữ nghĩa, rồi toàn văn được đọc từ PostgreSQL — nguồn chuẩn của nội dung. Mọi tài liệu đưa vào điều tra đều có provenance trong kho (`retrieval_method=warehouse_rag`, `chunk_id`, điểm tương đồng, cờ chất lượng), trích dẫn trỏ đúng vào văn bản đã lưu. Chỉ mục thiếu hoặc lỗi trả về `error` của nguồn và được ghi thành gap, không bịa tài liệu. Truy hồi cục bộ không tiêu request nguồn nhưng vẫn tính một bước nghiệp vụ. Chạy chế độ này sau khi đã nạp kho và dựng chỉ mục (`python -m scripts.elt.run_elt`, `python -m scripts.elt.load_chroma`); kết hợp được với `MVP_EVIDENCE_MODE=person3`.
 
 ```powershell
 .\.venv\Scripts\python.exe -m scripts.smoke_sources --live
@@ -105,9 +107,29 @@ Rollback local: dừng backend, giữ bản data hiện tại, checkout bản co
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests -q
-.\.venv\Scripts\python.exe -m ruff check src tests scripts/mvp_backup.py scripts/mvp_deployment_smoke.py scripts/smoke_sources.py scripts/import_pubmed.py
+.\.venv\Scripts\python.exe -m ruff check src tests scripts/mvp_backup.py scripts/mvp_deployment_smoke.py scripts/smoke_sources.py scripts/import_pubmed.py scripts/elt scripts/gold
 ```
 
 Test mặc định chặn socket ngoài loopback; live tests phải đánh dấu `live` và chạy chủ động bằng `-m live`. HTTP fixtures dùng `httpx.MockTransport`, không cần API key.
 
 Lockfile được lấy từ bộ dependencies đã chạy test, kiểm tra riêng khả năng resolve cho Python 3.11. Không coi việc có Dockerfile là bằng chứng Docker stack đã chạy thành công. M10 nghiệm thu cuối còn phụ thuộc M04/M08/M09, clone sạch, luồng UI → review → export, bốn demo và báo cáo đánh giá của các thành viên liên quan.
+
+## 6. Lược đồ lát cắt DI (chỉ thêm bảng)
+
+Bảy bảng của lát cắt DI (`work_items`, `investigation_links`, `evidence_bundles`,
+`professional_responses`, `follow_ups`, `version_refs`, `review_refs`) nằm cùng cơ sở dữ liệu kho ELT.
+Bước nâng cấp chỉ **tạo thêm bảng**, không sửa bảng cũ:
+
+```bash
+python -m scripts.elt.migrate_casework --check    # 0 = đủ bảng, 1 = còn thiếu
+python -m scripts.elt.migrate_casework            # tạo bảng còn thiếu, in số dòng trước/sau
+python -m scripts.elt.migrate_casework --rollback --yes   # bỏ bảy bảng DI (mất dữ liệu DI)
+```
+
+`--check` đối chiếu bảng, cột và chỉ mục duy nhất còn thiếu (mã thoát 1 khi còn thiếu). Script đếm
+số dòng của 14 bảng kho trước và sau khi chạy; lệch thì trả mã thoát 1.
+Kiểm thử ngoại tuyến cho lưu trữ và bước nâng cấp: `python -m pytest tests/test_services/test_casework_store.py -q`
+(bao gồm bài đua hai luồng ghi song song và bài đối chiếu bản chiếu với `docs/spec/hospital-v2/schemas.json`).
+
+Sao lưu/phục hồi: bảy bảng này nằm trong cùng volume PostgreSQL `elt_postgres_data`, nên quy trình
+`pg_dump`/`pg_restore` của kho áp dụng nguyên vẹn; `--rollback` chỉ dùng khi muốn bỏ hẳn dữ liệu DI.

@@ -17,7 +17,7 @@ File [approved-fixture-dossier.md](approved-fixture-dossier.md) là nội dung r
 
 ## Tái tạo
 
-Trong `vigilens/`, sau `npm ci` và `npm.cmd exec playwright install chromium`:
+Trong `frontend/`, sau `npm ci` và `npm.cmd exec playwright install chromium`:
 
 ```powershell
 npm.cmd run test:e2e -- --config playwright.demo.config.ts

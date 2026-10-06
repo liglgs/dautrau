@@ -18,6 +18,10 @@ sqlalchemy>=2.0,<3
 alembic>=1.14,<2
 psycopg[binary]>=3.2,<4
 pwdlib[argon2]>=0.2,<1
+# JWT bất đối xứng cho chế độ Supabase: PyJWT để giải mã, cryptography cho thuật toán EC/RSA.
+# Thiếu hai gói này thì AUTH_PROVIDER=supabase trả 503 chứ không chạy được.
+PyJWT>=2.9,<3
+cryptography>=43
 
 # Vector Store (tuỳ chọn)
 # chromadb>=0.5.0
@@ -30,3 +34,4 @@ defusedxml>=0.7.1,<1
 ruff>=0.8.0
 pytest>=8.0.0
 pytest-asyncio>=0.24.0
+jsonschema>=4.20.0

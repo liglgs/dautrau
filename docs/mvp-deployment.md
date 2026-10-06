@@ -1,33 +1,41 @@
 # Triển khai demo local MVP và kiểm tra CI
 
-Gói này bổ sung môi trường và kiểm tra tự động cho runtime MVP: SQLite, runner trong tiến trình, fixture synthetic, FastAPI và VigiLens. Demo mặc định không cần model key hoặc nguồn ngoài. Có connectors PubMed/DailyMed/FAERS và PubMed local; xem [runbook](runbook.md). Cấu hình `MVP_EVIDENCE_MODE=person3` + `MVP_SOURCE_MODE=live` ghép bộ phân tích/hồ sơ Người 3; [hướng dẫn](person3/merged_runtime.md) mô tả model và dictionary container. Giữ network guard; chỉ bật source live vẫn dùng extractor fixture.
+Gói này bổ sung môi trường và kiểm tra tự động cho runtime MVP: SQLite, runner trong tiến trình, fixture synthetic, FastAPI và VigiLens. Demo mặc định không cần model key hoặc nguồn ngoài. Có connectors PubMed/DailyMed/FAERS và PubMed local; xem [runbook](runbook.md). Cấu hình `MVP_EVIDENCE_MODE=person3` + `MVP_SOURCE_MODE=live` ghép bộ phân tích/hồ sơ Người 3; [hướng dẫn](person3/merged_runtime.md) mô tả model và dictionary container. Giữ network guard. Hai công tắc chế độ phải đi cùng nhau: `MVP_SOURCE_MODE=live` hoặc `warehouse` bắt buộc đi với `MVP_EVIDENCE_MODE=person3`, và ngược lại. Tổ hợp lệch bị chặn ngay lúc khởi động — trước đây bật source live mà quên đổi chế độ bằng chứng vẫn chạy, và hệ thống gắn bằng chứng fixture lên tài liệu tải từ mạng, nên hồ sơ xuất ra trông như thật.
 
 ## Chạy Docker trên Windows
 
-Bật Docker Desktop. Từ thư mục gốc, tạo token riêng cho hai vai trò trong phiên PowerShell:
+Bật Docker Desktop. Từ thư mục gốc, tạo mật khẩu riêng cho hai tài khoản khởi tạo trong phiên PowerShell.
+`docker-compose.mvp.yml` đọc các biến **phía host** dưới đây rồi truyền vào container dưới tên
+`MVP_BOOTSTRAP_*`:
 
 ```powershell
-$env:INVESTIGATOR_TOKEN = [guid]::NewGuid().ToString('N')
-$env:REVIEWER_TOKEN = [guid]::NewGuid().ToString('N')
+$env:INVESTIGATOR_EMAIL = "dieutra@benhvien.vn"
+$env:INVESTIGATOR_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:REVIEWER_EMAIL = "duyet@benhvien.vn"
+$env:REVIEWER_PASSWORD = [guid]::NewGuid().ToString('N')
 docker compose -f docker-compose.mvp.yml config --quiet
 docker compose -f docker-compose.mvp.yml up -d --build --wait --wait-timeout 120
 ```
 
 Mở `http://127.0.0.1:3100`; backend ở `http://127.0.0.1:8000`, `/ready` và `/docs`. Cả hai cổng host chỉ bind loopback. Một worker Uvicorn, database và snapshots giữ trong volume `mvp_data`. Không chạy đồng thời stack cũ dùng cùng cổng.
 
-Frontend build chế độ API và mặc định xác thực bằng session. Đăng nhập bằng token tương ứng của backend; Next server proxy chuyển cookie `session_id` HttpOnly và backend kiểm tra vai trò từ session. Các request thay đổi dữ liệu phải có `Origin` trùng origin frontend. Gói này phục vụ demo local.
+Frontend build chế độ API và mặc định xác thực bằng session. Trước khi backend khởi động, `scripts/mvp_seed_users.py` tạo ba tài khoản từ biến `MVP_BOOTSTRAP_*` ở trên; đăng nhập bằng email + mật khẩu đó, không còn ô chọn vai. Next server proxy chuyển cookie `session_id` HttpOnly và backend đọc vai trò thật từ bảng `app_users`. Các request thay đổi dữ liệu phải có `Origin` trùng origin frontend. Gói này phục vụ demo local.
 
 ## Smoke luồng triển khai
 
 Python 3.11+, cài dependencies bằng lockfile:
 
 ```powershell
+$env:INVESTIGATOR_TOKEN = "khoa-tinh-cua-stack"
+$env:REVIEWER_TOKEN = "khoa-tinh-cua-stack"
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
 .\.venv\Scripts\python.exe -m scripts.mvp_deployment_smoke --output data/deployment-smoke.json
 ```
 
-Giữ `INVESTIGATOR_TOKEN` và `REVIEWER_TOKEN` trong cùng phiên PowerShell, đúng với token đã dùng khi khởi động stack. Smoke đăng nhập hai vai trò qua proxy, giữ cookie riêng và gửi `Origin`, rồi tạo một cuộc điều tra synthetic, chờ assessment, kiểm tra investigator không được duyệt, export bị chặn trước cả hai lần duyệt, approve assessment, continue, approve dossier rồi export Markdown. Mỗi quote được so với `document.text[start:end]`; output ghi ID, số evidence, byte và SHA-256 của export, không ghi token/cookie. Không gọi nguồn hoặc LLM thật; không dùng kết quả này làm benchmark y khoa.
+Smoke xác thực bằng hai khoá tĩnh cấu hình trên máy chủ, giữ cookie riêng và gửi `Origin`, rồi tạo một cuộc điều tra synthetic, chờ assessment, kiểm tra investigator không được duyệt, export bị chặn trước cả hai lần duyệt, approve assessment, continue, approve dossier rồi export Markdown. Mỗi quote được so với `document.text[start:end]`; output ghi ID, số evidence, byte và SHA-256 của export, không ghi token/cookie. Không gọi nguồn hoặc LLM thật; không dùng kết quả này làm benchmark y khoa.
+
+Khoá tĩnh dùng chung mặc định **tắt** từ B1.7, nên stack kiểm tra phải đặt thêm `VIGILENS_ALLOW_LEGACY_TOKENS=1` cùng với `INVESTIGATOR_TOKEN`/`REVIEWER_TOKEN`; thiếu cờ đó thì smoke nhận 401 ngay ở bước đầu. Cách bền vững hơn là cấp khoá máy `vln_...` bằng `scripts/auth_cli.py issue-token` rồi truyền khoá đó qua hai biến trên.
 
 ## Backup/restore
 
@@ -49,6 +57,12 @@ Backup mặc định lấy database trong `MVP_DB_PATH` và snapshots trong `MVP
 Dừng gói demo bằng `docker compose -f docker-compose.mvp.yml down`. Không thêm `-v` nếu cần giữ database. CI dùng `down -v` chỉ cho volume thử nghiệm được tạo trong job.
 
 ## CI và giới hạn CD
+
+> **Trạng thái hiện tại (06/10/2026):** CI đã được dựng lại ở commit `1f654cf` —
+> `.github/workflows/ci.yml` gồm 3 job trên runner `ubuntu-latest` (backend: lint + kiểm OpenAPI +
+> pytest offline; data-and-contract; frontend: tsc/lint/vitest), nhưng **chưa chạy trên GitHub**
+> (việc R2-1-07 trong `docs/phan-cong-vong-2/TIEN_DO_THUC_THI.md`). Phần dưới đây mô tả bộ CI
+> self-hosted trước đây và chỉ còn là bản mẫu; **đừng coi là bằng chứng CI đang xanh**.
 
 `.github/workflows/ci.yml` chạy khi push `main`/`develop`/`feat/project-foundation`, PR vào `main` hoặc nhánh `codex/pr-mvp-*`, hoặc chạy thủ công:
 

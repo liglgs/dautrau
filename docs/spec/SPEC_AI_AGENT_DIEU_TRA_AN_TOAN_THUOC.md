@@ -362,7 +362,14 @@ Dossier gồm:
     "time_window": "30 days"
   },
   "status": "insufficient_evidence",
-  "confidence": 0.61,
+  "coverage": {
+    "drug": "verified",
+    "adverseEvent": "partial",
+    "population": "not_specified",
+    "dose": "missing",
+    "route": "not_specified",
+    "timeWindow": "not_specified"
+  },
   "scope_assessment": {
     "matched": ["adult", "oral route"],
     "mismatched": ["available evidence uses higher dose"],
@@ -377,6 +384,12 @@ Dossier gồm:
   "audit_log_id": "audit-001"
 }
 ```
+
+> **Ghi chú (EV-07):** trường `confidence` đã bị gỡ khỏi hợp đồng. Bản đầu đặt một điểm tin cậy
+> hằng số ngay cạnh trích dẫn nguyên văn, nên người đọc tưởng đó là xác suất đã hiệu chỉnh, trong
+> khi chưa từng hiệu chỉnh trên dữ liệu thật. Thay vào đó là `coverage` — đếm từ bằng chứng đang
+> hoạt động, mỗi trường nhận một trong `verified` / `partial` / `missing` / `not_specified`.
+> Hệ quả: hệ thống chỉ nói được điều đã kiểm chứng, và im lặng ở chỗ chưa có bằng chứng.
 
 ---
 

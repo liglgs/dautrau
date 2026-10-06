@@ -246,6 +246,26 @@ export function SourceChip({ source, className }: { source: SourceId; className?
   );
 }
 
+/** Nhãn nguồn của kho bằng chứng: ba nguồn công khai dùng SourceChip, nguồn khác dùng chip trung tính. */
+export const WAREHOUSE_SOURCE_LABEL: Record<string, string> = {
+  pubmed: "PubMed",
+  dailymed: "DailyMed",
+  faers: "openFDA FAERS",
+  reference: "Tài liệu tham chiếu",
+  manual: "Tài liệu nạp tay",
+};
+
+export function WarehouseSourceChip({ source, className }: { source: string; className?: string }) {
+  if (source === "pubmed" || source === "dailymed" || source === "faers") {
+    return <SourceChip source={source} className={className} />;
+  }
+  return (
+    <Chip tone="neutral" className={className}>
+      {WAREHOUSE_SOURCE_LABEL[source] ?? source}
+    </Chip>
+  );
+}
+
 
 const COV_LABEL: Record<Cov, { label: string; tone: "support" | "caution" | "contradict" | "neutral" }> = {
   verified: { label: "Đã xác minh", tone: "support" },

@@ -20,9 +20,7 @@ export default defineConfig({
       url: "http://127.0.0.1:3103", reuseExistingServer: false, timeout: 120_000,
       env: {
         NEXT_DIST_DIR: ".next/integration",
-        NEXT_PUBLIC_VIGILENS_DATA_MODE: "api", NEXT_PUBLIC_VIGILENS_AUTH_MODE: "session", VIGILENS_API_BASE: "http://127.0.0.1:8203",
-        VIGILENS_INVESTIGATOR_TOKEN: "person4-integration-investigator",
-        VIGILENS_REVIEWER_TOKEN: "person4-integration-reviewer",
+        NEXT_PUBLIC_VIGILENS_DATA_MODE: "api", VIGILENS_API_BASE: "http://127.0.0.1:8203",
       },
     },
   ],

@@ -1,0 +1,21 @@
+{
+  "follow_up_id": "fu-2026-000481-1",
+  "work_item_id": "wi-2026-000481",
+  "kind": "monitor_case",
+  "status": "open",
+  "note": "Theo dõi thêm 2 tuần; ghi nhận lại mức độ tiêu chảy và việc tuân thủ thuốc.",
+  "due_at": "2026-10-20T17:00:00+07:00",
+  "assignee": {
+    "id": "user-1182",
+    "role": "doctor",
+    "unit": "Khoa Nội tổng hợp"
+  },
+  "created_by": {
+    "id": "user-2044",
+    "role": "pharmacist",
+    "unit": "Khoa Dược"
+  },
+  "created_at": "2026-10-06T09:41:00+07:00",
+  "closed_at": null,
+  "resolution": null
+}

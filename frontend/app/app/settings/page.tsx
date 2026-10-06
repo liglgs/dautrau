@@ -4,7 +4,6 @@ import { Card, CardBody, CardHeader, CardTitle, Chip, Label, Select } from "@/co
 import { BRAND } from "@/lib/brand";
 import { DATA_MODE } from "@/lib/api";
 import { useAppStore, ROLE_LABEL } from "@/lib/store/app-store";
-import { SESSION_AUTH } from "@/lib/api/real";
 import type { Density } from "@/lib/store/app-store";
 import type { Role } from "@/lib/types";
 
@@ -26,7 +25,7 @@ export default function SettingsPage() {
         <CardBody className="grid gap-3 sm:grid-cols-2">
           <div>
             <Label htmlFor="role">Vai trò</Label>
-            <Select disabled={DATA_MODE === "api" && SESSION_AUTH} id="role" value={role} onChange={(event) => setRole(event.target.value as Role)}>
+            <Select disabled={DATA_MODE === "api"} id="role" value={role} onChange={(event) => setRole(event.target.value as Role)}>
               {(Object.keys(ROLE_LABEL) as Role[]).map((key) => (
                 <option key={key} value={key}>
                   {ROLE_LABEL[key]}
@@ -34,7 +33,7 @@ export default function SettingsPage() {
               ))}
             </Select>
             <p className="mt-1 text-[12px] text-muted-foreground">
-              {DATA_MODE === "api" && SESSION_AUTH ? "Vai trò do phiên máy chủ xác định. Đăng xuất để đổi tài khoản." : "Đổi vai trò chỉ dành cho chế độ minh họa."}
+              {DATA_MODE === "api" ? "Vai trò do phiên máy chủ xác định. Đăng xuất để đổi tài khoản." : "Đổi vai trò chỉ dành cho chế độ minh họa."}
             </p>
           </div>
           <div>
@@ -72,7 +71,7 @@ export default function SettingsPage() {
             <code className="mono">/api/backend/*</code> (biến <code className="mono">VIGILENS_API_BASE</code>). Token vai trò không bao giờ vào bundle trình duyệt.
           </p>
           <p>
-            {SESSION_AUTH ? "Chế độ API dùng cookie HttpOnly từ phiên máy chủ. Token chỉ dùng lúc đăng nhập, không được lưu trong localStorage. Vai trò hiển thị lấy từ phiên đã xác nhận." : "Chế độ token chỉ dùng cho demo/test local. Proxy chọn token máy chủ theo vai trò trình duyệt gửi."}
+            "Chế độ API dùng cookie HttpOnly từ phiên máy chủ. Mật khẩu chỉ dùng lúc đăng nhập, không được lưu trong localStorage. Vai trò hiển thị lấy từ phiên đã xác nhận, và trình duyệt không gửi vai cho máy chủ."
           </p>
         </CardBody>
       </Card>

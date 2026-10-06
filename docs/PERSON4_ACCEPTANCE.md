@@ -1,6 +1,6 @@
 # Đối chiếu nghiệm thu Người 4 — mục 17–18
 
-Cập nhật 03/10/2026 trên main `fa1c1d1` và các PR đề xuất. Đây là bằng chứng kiểm tra kỹ thuật, chưa phải nghiệm thu toàn nhóm hoặc chuyên môn. [Plan](planthegioifinal.md), [status](PERSON4_STATUS.md), [test report](../vigilens/TEST_REPORT.md).
+Cập nhật 03/10/2026 trên main `fa1c1d1` và các PR đề xuất. Đây là bằng chứng kiểm tra kỹ thuật, chưa phải nghiệm thu toàn nhóm hoặc chuyên môn. [Plan](planthegioifinal.md), [status](PERSON4_STATUS.md), [test report](../frontend/TEST_REPORT.md).
 
 ## Definition of Done
 

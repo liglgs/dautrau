@@ -1,5 +1,9 @@
 # Thử Người 3 qua graph, backend và VigiLens
 
+> **AUTH-01 (2026-10-06):** cầu nối giao diện không còn nhận vai do trình duyệt khai
+> (`X-Vigilens-Role`) và không còn token vai trò phía máy chủ. Đăng nhập bằng email + mật khẩu;
+> tạo tài khoản bằng `scripts/auth_cli.py create-user`.
+
 Nhánh `tiendat` đã merge main và áp dụng phần Người 3. Runner API đã có chế độ `person3_demo`: normalizer, extraction, scope, contradiction và dossier của Người 3 chạy qua LangGraph, SQLite và endpoint review/export của Người 2. Nguồn tài liệu và model vẫn được giả lập, không cần API key. Chế độ này không phải demo y khoa với nguồn thật.
 
 ## 1. Kiểm thử tự động trước
@@ -22,6 +26,7 @@ Trong terminal thứ nhất:
 $env:INVESTIGATOR_TOKEN = "person3-investigator-demo"
 $env:REVIEWER_TOKEN = "person3-reviewer-demo"
 python scripts/run_person3_demo.py
+# Script tự bật VIGILENS_ALLOW_LEGACY_TOKENS=1: đây là đường chạy ngoại tuyến dùng khoá tĩnh cũ.
 ```
 
 Giữ terminal chạy. Backend: `http://127.0.0.1:8000`. Swagger: `http://127.0.0.1:8000/docs`.
@@ -37,15 +42,14 @@ python -m pip install -r requirements-person3-demo.txt
 Trong terminal thứ hai, cũng tại thư mục gốc repository:
 
 ```powershell
-npm.cmd --prefix vigilens ci --no-audit --no-fund
+cd frontend
+npm.cmd ci --no-audit --no-fund
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = "api"
 $env:VIGILENS_API_BASE = "http://127.0.0.1:8000"
-$env:VIGILENS_INVESTIGATOR_TOKEN = "person3-investigator-demo"
-$env:VIGILENS_REVIEWER_TOKEN = "person3-reviewer-demo"
-npm.cmd --prefix vigilens run dev -- --hostname 127.0.0.1
+npm.cmd run dev -- --hostname 127.0.0.1
 ```
 
-Đợi `Ready`, mở `http://localhost:3100/app/investigations/new`. Không dùng `.local-preview/vigilens` nữa; `vigilens/` là code đã merge.
+Đợi `Ready`, mở `http://localhost:3100/app/investigations/new`. Không dùng `.local-preview/vigilens` nữa; `frontend/` là code đã merge.
 
 Lần thử npm trong chat bị lỗi quyền `EACCES` khi tải gói từ npm registry. UI chưa được xác nhận trong trình duyệt; các lệnh trên cần chạy trong terminal người dùng để tải dependencies.
 

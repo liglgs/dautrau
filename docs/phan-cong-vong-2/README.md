@@ -20,10 +20,12 @@ phan-cong-vong-2/
 |---|---|---|---|---|
 | 1 | [Dữ liệu, hạ tầng, deploy](nguoi-1/README.md) | 8 | Manifest, nguồn, data inventory, staging/backup khung | Contract nhỏ từ 2; quy tắc mapping/coverage từ 3; build/UI từ 4 cho release |
 | 2 — bạn | [Agent, workflow, API](nguoi-2/README.md) | 9 | Contract A, interface/harness, permission matrix | Provenance/storage từ 1; fields/rubric/template từ 3; flow/feedback từ 4 |
-| 3 | [Bằng chứng, hồ sơ chuyên môn](nguoi-3/README.md) | 8 | Rubric, mapping, extraction trên snapshot, template, annotation guide | Snapshot/metadata từ 1; interface/context từ 2; feedback giao diện từ 4; reviewer thật cho clinical labels |
-| 4 | [UI, evaluation, demo](nguoi-4/README.md) | 8 | Prototype, field map, protocol/baseline; sau H1 làm UI theo examples | Contract/API từ 2; evidence/template/rubric từ 3; staging/dữ liệu từ 1 |
+| 3 | [Bằng chứng, hồ sơ chuyên môn](nguoi-3/README.md) | 8 | Rubric, mapping, extraction trên snapshot, template, annotation guide — bắt đầu được phần kỹ thuật/nháp, nhưng không nghiệm thu được khi chưa có dược sĩ/dữ liệu bệnh viện | Snapshot/metadata từ 1; interface/context từ 2; feedback giao diện từ 4; reviewer thật cho clinical labels |
+| 4 | [UI, evaluation, demo](nguoi-4/README.md) | 8 | Prototype, field map, protocol/baseline làm ngay (R2-4-01, R2-4-07 không chờ backend/agent); UI theo examples sau H1; phần chờ API checkpoint/WorkItem của 2 và rubric của 3 ghi WAITING | Contract/API từ 2; evidence/template/rubric từ 3; staging/dữ liệu từ 1 |
 
 Thứ tự: **H0 đầu vào nghiệp vụ → H1 contract nhỏ → tiếp nhận/làm rõ → bằng chứng → phiếu trả lời/theo dõi → release/pilot**. H1 giúp ba người còn lại bắt đầu phát triển mà không phải chờ toàn bộ agent. Nguồn/storage/rubric/UI cũng là phụ thuộc của Người 2.
+
+Tiến độ thực thi từng task (mẫu 18.3, kèm artifact và bằng chứng) ghi tại [`TIEN_DO_THUC_THI.md`](TIEN_DO_THUC_THI.md). Tài liệu mô tả dữ liệu thật nằm trong [`data/`](../data/README.md).
 
 Phân biệt `DEV_DONE` (xong phần riêng), `INTEGRATED` (nối các bên thật) và `PILOT_ACCEPTED` (người dùng/chuyên viên nghiệm thu). Khi chờ, ghi task/đầu vào thiếu/ai giao/việc có thể tiếp tục; không dùng một trạng thái “xong” chung cho cả ba mức.
 

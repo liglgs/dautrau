@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { CircleAlert, CircleCheck, Info, Sparkles } from "lucide-react";
 import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Input, Label, Textarea } from "@/components/ui";
 import { ClaimChips, SourceChip } from "@/components/pv/badges";
-import { useCreateInvestigation } from "@/lib/hooks/use-data";
+import { useCreateInvestigation, useDrugLookup } from "@/lib/hooks/use-data";
 import { SubmissionIdentity, validateClaim } from "@/lib/claim-form";
 import { DATA_MODE } from "@/lib/api";
 import type { SourceId } from "@/lib/types";
@@ -16,6 +16,37 @@ const SAMPLE_CLAIMS = [
   "Telmisartan gây phù mạch ở người lớn.",
   "Warfarin gây xuất huyết nội sọ ở người trên 75 tuổi.",
 ];
+
+/**
+ * Gợi ý không bắt buộc từ kho bằng chứng: chỉ hiện khi đã gõ ≥3 ký tự, bấm để điền vào ô.
+ * Không chặn gửi biểu mẫu và không thay đổi luồng kiểm tra hiện có.
+ */
+function SuggestionList({
+  label,
+  options,
+  onPick,
+}: {
+  label: string;
+  options: string[];
+  onPick: (value: string) => void;
+}) {
+  if (!options.length) return null;
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1.5" aria-label={label}>
+      <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Gợi ý</span>
+      {options.slice(0, 5).map((option) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => onPick(option)}
+          className="rounded-[var(--radius-chip)] border border-border px-2 py-0.5 text-[12px] text-muted-foreground hover:bg-muted"
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function NewInvestigationPage() {
   const router = useRouter();
@@ -34,6 +65,23 @@ export default function NewInvestigationPage() {
   const [maxDocs, setMaxDocs] = React.useState(50);
   const [localError, setLocalError] = React.useState<string | null>(null);
   const hasDraft = Boolean(claimText || drug || adverseEvent || population || dose || route || timeWindow);
+  // Gợi ý lấy từ kho bằng chứng; tra theo ô hoạt chất trước, nếu trống thì theo ô biến cố.
+  const suggestionTerm = drug.trim().length >= 3 ? drug : adverseEvent;
+  const suggestions = useDrugLookup(suggestionTerm, suggestionTerm.trim().length >= 3);
+  const drugOptions = React.useMemo(() => {
+    const typed = drug.trim().toLowerCase();
+    return (suggestions.data?.drugs ?? [])
+      .map((item) => item.name)
+      .filter((name) => name.toLowerCase().includes(typed))
+      .slice(0, 5);
+  }, [suggestions.data, drug]);
+  const eventOptions = React.useMemo(() => {
+    const typed = adverseEvent.trim().toLowerCase();
+    return (suggestions.data?.pairs ?? [])
+      .map((pair) => pair.event_term)
+      .filter((term) => !typed || term.toLowerCase().includes(typed))
+      .slice(0, 5);
+  }, [suggestions.data, adverseEvent]);
   React.useEffect(() => {
     if (!hasDraft) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -138,10 +186,12 @@ export default function NewInvestigationPage() {
               <div>
                 <Label htmlFor="drug">Hoạt chất *</Label>
                 <Input id="drug" value={drug} onChange={(event) => setDrug(event.target.value)} placeholder="metformin" />
+                <SuggestionList label="Gợi ý hoạt chất từ kho" options={drugOptions} onPick={setDrug} />
               </div>
               <div>
                 <Label htmlFor="event">Biến cố bất lợi *</Label>
                 <Input id="event" value={adverseEvent} onChange={(event) => setAdverseEvent(event.target.value)} placeholder="nhiễm toan lactic" />
+                <SuggestionList label="Gợi ý biến cố từ kho" options={eventOptions} onPick={setAdverseEvent} />
               </div>
               <div>
                 <Label htmlFor="population">Quần thể</Label>

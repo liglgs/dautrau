@@ -10,6 +10,7 @@ Trách nhiệm:
 from __future__ import annotations
 
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -17,6 +18,7 @@ from typing import Any
 from src.models.schemas import CheckpointKind, ErrorCode, InvestigationState, RunStatus
 from src.services.errors import MvpError, invalid_state, runner_busy
 from src.services.llm import LLMGateway
+from src.services.runmode import describe_run_mode, resolve_run_mode
 from src.services.store import MvpStore
 
 Executor = Callable[[InvestigationState, "RunContext"], InvestigationState]
@@ -42,6 +44,13 @@ class RunContext:
     evidence_analyzer: Any | None = None
     scenario: dict[str, Any] | None = None
     source_factory: Callable[[Any], dict[str, Any]] | None = None
+    #: API-04a: mốc bắt đầu lượt chạy và thời gian đã cộng dồn của các lượt trước. ``None`` ⇒
+    #: không phải lượt chạy thật (test gọi node trực tiếp) nên không đụng vào ``elapsed_ms``.
+    started_at: float | None = None
+    base_elapsed_ms: int = 0
+    #: Giá trị ``elapsed_ms`` của lần lưu gần nhất trong lượt này, để biết bản executor trả về đã
+    #: được lưu hay chưa (xem ``InProcessRunner.run``).
+    last_stamped_ms: int | None = None
 
     def is_cancelled(self, investigation_id: str) -> bool:
         return self.runner is not None and self.runner.is_cancelled(investigation_id)
@@ -60,12 +69,23 @@ class RunContext:
     ) -> InvestigationState:
         """Lưu state sau một node (mặc định kiểm tra phiên bản hiện tại của state)."""
         self.check_cancelled(state.investigation_id)
+        state = self.stamped(state)
         return self.store.save_state(
             state,
             expected_version=state.version if expected_version is None else expected_version,
             event=event,
             actor=actor,
         )
+
+    def stamped(self, state: InvestigationState) -> InvestigationState:
+        """Gắn thời gian chạy đã cộng dồn vào state (không đổi gì nếu chưa có lượt chạy thật)."""
+        if self.started_at is None:
+            return state
+        stamped = state.model_copy(
+            update={"elapsed_ms": self.base_elapsed_ms + int((time.monotonic() - self.started_at) * 1000)}
+        )
+        self.last_stamped_ms = stamped.elapsed_ms
+        return stamped
 
     def emit(self, investigation_id: str, kind: str, message: str = "", payload: dict[str, Any] | None = None) -> int:
         return self.store.append_event(investigation_id, kind, message, payload)
@@ -117,16 +137,16 @@ class InProcessRunner:
         self._lock = threading.Lock()
         self._current: str | None = None
         self._cancelled_ids: set[str] = set()
-        #: Chống double-click cho ``/continue``: khoá theo ``investigation_id`` + token
-        #: (Idempotency-Key kèm version). Chỉ trong tiến trình — khớp thiết kế runner đơn tiến
-        #: trình của MVP (P04); khi tách worker bền vững thì thay bằng bảng trong DB.
-        self._resume_seen: dict[str, set[str]] = {}
 
     def is_cancelled(self, investigation_id: str) -> bool:
         return investigation_id in self._cancelled_ids
 
-    def cancel(self, investigation_id: str) -> InvestigationState:
-        """Hủy cuộc điều tra: giải phóng runner nếu đang chạy, chuyển trạng thái sang CANCELLED."""
+    def cancel(self, investigation_id: str, *, actor: str = "system", actor_role: str | None = None) -> InvestigationState:
+        """Hủy cuộc điều tra: giải phóng runner nếu đang chạy, chuyển trạng thái sang CANCELLED.
+
+        ``actor`` là **mã người** bấm hủy (AUTH-03/B1.7 mục 3) — trước đây thao tác của người dùng
+        bị ghi nhật ký thành ``system``, nên không truy được ai đã hủy.
+        """
         state = self.store.get_state(investigation_id)
         if state.run_status in (RunStatus.COMPLETED, RunStatus.FAILED, RunStatus.CANCELLED):
             raise invalid_state(
@@ -135,26 +155,29 @@ class InProcessRunner:
             )
         self._cancelled_ids.add(investigation_id)
         cancelled_state = state.model_copy(update={"run_status": RunStatus.CANCELLED})
-        saved = self.store.save_state(cancelled_state, event=("cancelled", "Người dùng đã hủy cuộc điều tra."))
+        saved = self.store.save_state(
+            cancelled_state,
+            event=("cancelled", "Người dùng đã hủy cuộc điều tra."),
+            actor=actor,
+            actor_role=actor_role,
+        )
         return saved
 
     def register_resume(self, investigation_id: str, token: str | None) -> bool:
-        """Ghi nhận yêu cầu chạy tiếp; ``False`` nghĩa là double-click đã xử lý."""
+        """Ghi nhận yêu cầu chạy tiếp; ``False`` nghĩa là double-click đã xử lý.
+
+        RV-06: khoá chống lặp nằm trong kho, không nằm trong RAM — sống sót qua khởi động lại
+        tiến trình và dùng chung cho mọi tiến trình.
+        """
         if token is None:
             return True
-        seen = self._resume_seen.setdefault(investigation_id, set())
-        if token in seen:
-            return False
-        seen.add(token)
-        return True
+        return self.store.register_resume_request(investigation_id, token)
 
     def forget_resume(self, investigation_id: str, token: str | None) -> None:
         """Bỏ ghi nhận khi lần chạy tiếp không thực sự bắt đầu (lỗi/không chiếm được khoá)."""
         if token is None:
             return
-        seen = self._resume_seen.get(investigation_id)
-        if seen is not None:
-            seen.discard(token)
+        self.store.forget_resume_request(investigation_id, token)
 
     # ------------------------------------------------------------------ khóa
 
@@ -201,11 +224,25 @@ class InProcessRunner:
                 pubmed_mode=settings.mvp_pubmed_mode,
                 pubmed_corpus_root=settings.mvp_pubmed_corpus_root,
             )
+        elif settings.mvp_source_mode == "warehouse":
+            # Truy hồi bằng chứng từ kho ELT + chỉ mục RAG thay vì gọi mạng.
+            from src.services.sources.warehouse import build_warehouse_adapters
+            from src.services.warehouse.db import get_warehouse_engine
+
+            engine = get_warehouse_engine(settings.elt_database_url)
+            context.source_factory = lambda claim: build_warehouse_adapters(
+                engine=engine,
+                settings=settings,
+                drug=claim.drug_ingredient,
+                event=claim.event_term,
+                max_documents=settings.mvp_source_max_documents,
+            )
         return context
 
     def run(self, investigation_id: str, *, resume: bool = False) -> InvestigationState:
         """Chạy đồng bộ tới khi dừng (hoàn tất hoặc chờ reviewer)."""
         self.acquire(investigation_id)
+        context: RunContext | None = None
         try:
             state = self.store.get_state(investigation_id)
             if not resume and state.run_status not in (
@@ -224,22 +261,53 @@ class InProcessRunner:
             if not resume:
                 update["next_stage"] = None
                 update["stop_reason"] = None
+            # RT-01: gắn chế độ chạy vào chính dòng "bắt đầu chạy" thay vì thêm một dòng mới, để
+            # trình tự sự kiện (created → running → normalize → …) mà giao diện đang đọc giữ nguyên.
+            from src.config import get_settings
+
+            mode = resolve_run_mode(get_settings())
             state = self.store.save_state(
-                state.model_copy(update=update), event=("running", "Agent bắt đầu chạy.")
+                state.model_copy(update=update),
+                event=(
+                    "running",
+                    f"Agent bắt đầu chạy. {describe_run_mode(get_settings())}",
+                    mode.as_event_payload(),
+                ),
             )
-            result = self.executor(state, self.context())
-            if result.run_status is RunStatus.RUNNING:
-                result = self.store.save_state(
-                    result.model_copy(update={"run_status": RunStatus.COMPLETED}),
-                    event=("completed", "Agent kết thúc mà không còn bước chờ."),
+            context = self.context()
+            # API-04a: mọi lần lưu trong lượt này đều mang theo thời gian chạy đã cộng dồn, nên
+            # bản lưu cuối cùng của graph đã có số đúng — không cần thêm một lần lưu nữa (mỗi lần
+            # lưu thừa lại đẩy ``version`` lên và làm lệch trình tự sự kiện giao diện đang đọc).
+            context.started_at = time.monotonic()
+            context.base_elapsed_ms = state.elapsed_ms
+            result = self.executor(state, context)
+            finished = result.run_status is RunStatus.RUNNING
+            if finished:
+                result = result.model_copy(update={"run_status": RunStatus.COMPLETED})
+            if finished or result.elapsed_ms != context.last_stamped_ms:
+                # Executor kết thúc mà không lưu lần cuối (hoặc không lưu gì cả): chốt lại để số đo
+                # thời gian không bị mất. Trường hợp thường — graph đã lưu ở node cuối — không tốn
+                # thêm lần lưu nào, nên ``version`` và trình tự sự kiện giữ nguyên như trước.
+                result = context.save(
+                    result,
+                    event=(
+                        ("completed", "Agent kết thúc mà không còn bước chờ.")
+                        if finished
+                        else None
+                    ),
+                    actor="system",
                 )
             return result
         except InvestigationCancelledError:
             state = self.store.get_state(investigation_id)
             if state.run_status is not RunStatus.CANCELLED:
+                # Huỷ cũng là một lượt đã chạy: thời gian tiêu tốn trước khi huỷ vẫn phải được ghi,
+                # nếu không số đo lại rơi về 0 đúng ở những lượt dài nhất.
+                cancelled = state.model_copy(update={"run_status": RunStatus.CANCELLED})
+                if context is not None:
+                    cancelled = context.stamped(cancelled)
                 state = self.store.save_state(
-                    state.model_copy(update={"run_status": RunStatus.CANCELLED}),
-                    event=("cancelled", "Cuộc điều tra đã dừng lại do người dùng hủy."),
+                    cancelled, event=("cancelled", "Cuộc điều tra đã dừng lại do người dùng hủy.")
                 )
             return state
         except Exception as exc:
@@ -249,7 +317,7 @@ class InProcessRunner:
                 state = self.store.get_state(investigation_id)
                 if state.run_status is RunStatus.CANCELLED:
                     return state
-            self._mark_failed(investigation_id, exc)
+            self._mark_failed(investigation_id, exc, context)
             raise
         finally:
             self._cancelled_ids.discard(investigation_id)
@@ -282,7 +350,9 @@ class InProcessRunner:
         except Exception:  # pragma: no cover - thread nền đã ghi trạng thái failed
             pass
 
-    def _mark_failed(self, investigation_id: str, exc: Exception) -> None:
+    def _mark_failed(
+        self, investigation_id: str, exc: Exception, context: RunContext | None = None
+    ) -> None:
         if isinstance(exc, InvestigationCancelledError):
             return
         try:
@@ -291,10 +361,11 @@ class InProcessRunner:
             return
         if state.run_status is RunStatus.FAILED:
             return
-        self.store.save_state(
-            state.model_copy(update={"run_status": RunStatus.FAILED}),
-            event=("failed", f"Lỗi khi chạy: {exc}"),
-        )
+        failed = state.model_copy(update={"run_status": RunStatus.FAILED})
+        if context is not None:
+            # Lỗi vẫn là một lượt đã chạy: giữ lại thời gian đã tiêu tốn thay vì trả về 0.
+            failed = context.stamped(failed)
+        self.store.save_state(failed, event=("failed", f"Lỗi khi chạy: {exc}"))
 
     # ------------------------------------------------------------------ phục hồi
 

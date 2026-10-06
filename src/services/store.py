@@ -35,6 +35,7 @@ from src.models.schemas import (
     SourceDocument,
 )
 from src.services.errors import idempotency_conflict, invalid_state, not_found, version_conflict
+from src.services.request_context import current_request_id
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS investigations (
@@ -103,8 +104,11 @@ CREATE TABLE IF NOT EXISTS review_decisions (
     checkpoint TEXT NOT NULL,
     action TEXT NOT NULL,
     reviewer_id TEXT NOT NULL,
+    actor_role TEXT,
     reason TEXT NOT NULL DEFAULT '',
     expected_version INTEGER NOT NULL,
+    result_version INTEGER,
+    result_status TEXT,
     payload_json TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
@@ -123,11 +127,20 @@ CREATE TABLE IF NOT EXISTS dossier_versions (
     UNIQUE (investigation_id, version)
 );
 
+CREATE TABLE IF NOT EXISTS resume_requests (
+    investigation_id TEXT NOT NULL,
+    token TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (investigation_id, token)
+);
+
 CREATE TABLE IF NOT EXISTS audit_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     investigation_id TEXT,
     actor TEXT NOT NULL,
+    actor_role TEXT,
     action TEXT NOT NULL,
+    request_id TEXT,
     payload_json TEXT,
     created_at TEXT NOT NULL
 );
@@ -137,14 +150,54 @@ CREATE TABLE IF NOT EXISTS sessions (
     user_id TEXT NOT NULL,
     role TEXT NOT NULL,
     created_at TEXT NOT NULL,
-    expires_at TEXT NOT NULL
+    expires_at TEXT NOT NULL,
+    revoked_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (user_id);
+
+CREATE TABLE IF NOT EXISTS app_users (
+    user_id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    display_name TEXT NOT NULL DEFAULT '',
+    role TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    password_hash TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    created_by TEXT NOT NULL DEFAULT 'system'
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_app_users_email ON app_users (email);
+CREATE INDEX IF NOT EXISTS idx_app_users_role ON app_users (role);
+
+CREATE TABLE IF NOT EXISTS api_tokens (
+    token_hash TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    label TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    expires_at TEXT,
+    revoked_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_api_tokens_user ON api_tokens (user_id);
 """
 
 
 def now_iso() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _strip_confidence(node: object) -> bool:
+    """Xoá ``confidence`` khỏi object bằng chứng/kết luận; trả ``True`` nếu có thay đổi."""
+    changed = False
+    if isinstance(node, dict):
+        if "confidence" in node and ("evidence_id" in node or "assessment_status" in node):
+            node.pop("confidence")
+            changed = True
+        for value in node.values():
+            changed = _strip_confidence(value) or changed
+    elif isinstance(node, list):
+        for value in node:
+            changed = _strip_confidence(value) or changed
+    return changed
 
 
 def _hash_request(claim: ClaimInput) -> str:
@@ -158,6 +211,26 @@ def _last_review_payload(action: Any, checkpoint: Any, created_at: Any) -> dict[
     if action is None:
         return None
     return {"action": str(action), "checkpoint": str(checkpoint) if checkpoint else None, "created_at": created_at}
+
+
+def _audit_row(row: Any) -> dict[str, Any]:
+    """Chuyển một dòng ``audit_events`` thành dict cho API.
+
+    Bản ghi cũ chỉ có chuỗi vai trong ``actor``; đánh dấu ``legacy_actor`` để người đọc biết mà
+    không phải đoán, và không cần sửa lại lịch sử đã ghi.
+    """
+    keys = row.keys()
+    return {
+        "id": row["id"],
+        "investigation_id": row["investigation_id"],
+        "actor": row["actor"],
+        "actor_role": row["actor_role"] if "actor_role" in keys else None,
+        "action": row["action"],
+        "request_id": row["request_id"] if "request_id" in keys else None,
+        "legacy_actor": "actor_role" not in keys or row["actor_role"] is None,
+        "payload": json.loads(row["payload_json"] or "{}"),
+        "created_at": row["created_at"],
+    }
 
 
 class MvpStore:
@@ -220,6 +293,56 @@ class MvpStore:
             cols = [col[1] for col in self._conn.execute("PRAGMA table_info(investigations)").fetchall()]
             if cols and "created_by" not in cols:
                 self._conn.execute("ALTER TABLE investigations ADD COLUMN created_by TEXT DEFAULT 'anonymous'")
+            # Cột thêm sau (AUTH-03): nhật ký phải trả lời được "ai làm gì", không chỉ "vai nào".
+            self._add_column("sessions", "revoked_at", "TEXT")
+            self._add_column("audit_events", "actor_role", "TEXT")
+            self._add_column("audit_events", "request_id", "TEXT")
+            # Cột kết quả của quyết định duyệt (RV-07): một quyết định phải nói được nó đã dẫn tới
+            # phiên bản nào và trạng thái gì, thay vì để người đọc tự suy từ thứ tự thời gian.
+            self._add_column("review_decisions", "actor_role", "TEXT")
+            self._add_column("review_decisions", "result_version", "INTEGER")
+            self._add_column("review_decisions", "result_status", "TEXT")
+            self._drop_legacy_confidence()
+
+    def _drop_legacy_confidence(self) -> None:
+        """EV-07: bỏ khoá ``confidence`` còn nằm trong JSON đã ghi của các bản cũ.
+
+        ``EvidenceUnit`` và ``AssessmentResult`` dùng ``extra="forbid"``, nên chỉ cần xoá trường khỏi
+        hợp đồng là mọi hàng cũ mang trường đó **không đọc được nữa** — mỗi cuộc điều tra cũ trả 500.
+        Điểm tin cậy cũ là hằng số viết tay, không phải dữ liệu nghiệp vụ, nên xoá thẳng là an toàn;
+        giữ lại chỉ để đọc thì lại phải nới ``extra`` cho cả hợp đồng mới.
+
+        Chỉ đụng vào khoá ``confidence`` nằm trong object nhận diện được là bằng chứng
+        (``evidence_id``) hoặc kết luận (``assessment_status``), để không xoá nhầm một trường cùng
+        tên nhưng khác nghĩa ở chỗ khác.
+        """
+        with self._lock, self._conn:
+            for table, column, key in (
+                ("investigations", "state_json", "id"),
+                ("evidence_versions", "payload_json", "id"),
+            ):
+                # Quét theo đúng khoá JSON ``"confidence"`` chứ không theo chuỗi trần: nhãn DailyMed
+                # hay có câu "95% confidence interval", và những hàng đó không cần ``json.loads``.
+                rows = self._conn.execute(
+                    f"""SELECT {key}, {column} FROM {table} WHERE {column} LIKE '%"confidence"%'"""
+                ).fetchall()
+                for row in rows:
+                    try:
+                        payload = json.loads(row[column])
+                    except (TypeError, ValueError):
+                        continue
+                    if not _strip_confidence(payload):
+                        continue
+                    self._conn.execute(
+                        f"UPDATE {table} SET {column} = ? WHERE {key} = ?",
+                        (json.dumps(payload, ensure_ascii=False), row[key]),
+                    )
+
+    def _add_column(self, table: str, column: str, ddl_type: str) -> None:
+        """Thêm cột nếu file SQLite cũ chưa có (idempotent)."""
+        existing = [row[1] for row in self._conn.execute(f"PRAGMA table_info({table})").fetchall()]
+        if existing and column not in existing:
+            self._conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}")
 
     def close(self) -> None:
         with self._lock:
@@ -236,6 +359,7 @@ class MvpStore:
         idempotency_key: str | None = None,
         investigation_id: str | None = None,
         created_by: str = "anonymous",
+        actor_role: str | None = None,
     ) -> tuple[InvestigationState, bool]:
         """Tạo cuộc điều tra mới; trả ``(state, created)``.
 
@@ -245,10 +369,16 @@ class MvpStore:
         request_hash = _hash_request(claim)
         with self._lock, self._conn:
             if idempotency_key:
+                # AUTH-02: khoá chống lặp chỉ có hiệu lực trong phạm vi **người tạo**. Tra cứu phải
+                # kèm ``created_by``; nếu khoá đã thuộc người khác thì từ chối 409 — tuyệt đối không
+                # trả về ca của người đó. Đây chính là đường rò rỉ dữ liệu đã bị bịt.
                 row = self._conn.execute(
-                    "SELECT id, request_hash FROM investigations WHERE idempotency_key = ?", (idempotency_key,)
+                    "SELECT id, request_hash, created_by FROM investigations WHERE idempotency_key = ?",
+                    (idempotency_key,),
                 ).fetchone()
                 if row is not None:
+                    if row["created_by"] != created_by:
+                        raise idempotency_conflict(idempotency_key)
                     if row["request_hash"] != request_hash:
                         raise idempotency_conflict(idempotency_key)
                     return self._load_state(row["id"]), False
@@ -289,7 +419,13 @@ class MvpStore:
                 ),
             )
             self._append_event(identifier, "created", "Tạo cuộc điều tra mới.")
-            self._audit(identifier, "system", "investigation_created", {"claim": claim.model_dump()})
+            self._audit(
+                identifier,
+                created_by,
+                "investigation_created",
+                {"claim": claim.model_dump()},
+                actor_role=actor_role,
+            )
         return state, True
 
     def get_state(self, investigation_id: str) -> InvestigationState:
@@ -309,10 +445,16 @@ class MvpStore:
         state: InvestigationState,
         *,
         expected_version: int | None = None,
-        event: tuple[str, str] | None = None,
+        event: tuple[str, str] | tuple[str, str, dict[str, Any]] | None = None,
         actor: str = "system",
+        actor_role: str | None = None,
     ) -> InvestigationState:
-        """Lưu state với kiểm tra phiên bản (stale version không được ghi đè)."""
+        """Lưu state với kiểm tra phiên bản (stale version không được ghi đè).
+
+        ``event`` nhận ``(kind, message)`` hoặc ``(kind, message, payload)``. Dạng ba phần tử cho
+        phép gắn dữ liệu có cấu trúc vào đúng dòng nhật ký đã có, thay vì phải thêm một dòng mới
+        làm nhiễu trình tự sự kiện mà giao diện đang đọc.
+        """
         with self._lock, self._conn:
             row = self._conn.execute(
                 "SELECT version FROM investigations WHERE id = ?", (state.investigation_id,)
@@ -323,13 +465,17 @@ class MvpStore:
             if expected_version is not None and expected_version != current:
                 raise version_conflict(expected_version, current)
             updated = state.model_copy(update={"version": current + 1, "updated_at": datetime.now(UTC)})
+            # API-05: ghi lại cả ``claim_json``. Trước đây cột này giữ nguyên câu hỏi gốc, nên sau
+            # khi sửa câu hỏi (``edit_claim``) màn chi tiết hiện dữ liệu mới còn màn danh sách vẫn
+            # hiện thuốc/biến cố cũ — hai màn hình nói hai chuyện khác nhau.
             self._conn.execute(
                 """UPDATE investigations
-                   SET state_json = ?, run_status = ?, assessment_status = ?, checkpoint = ?, next_stage = ?,
-                       version = ?, updated_at = ?
+                   SET state_json = ?, claim_json = ?, run_status = ?, assessment_status = ?,
+                       checkpoint = ?, next_stage = ?, version = ?, updated_at = ?
                    WHERE id = ?""",
                 (
                     updated.model_dump_json(),
+                    updated.claim.model_dump_json(),
                     str(updated.run_status),
                     str(updated.assessment_status) if updated.assessment_status else None,
                     str(updated.checkpoint) if updated.checkpoint else None,
@@ -340,19 +486,34 @@ class MvpStore:
                 ),
             )
             if event is not None:
-                self._append_event(updated.investigation_id, event[0], event[1])
+                payload = event[2] if len(event) > 2 else None
+                self._append_event(updated.investigation_id, event[0], event[1], payload)
             self._audit(
                 updated.investigation_id,
                 actor,
                 "state_saved",
                 {"version": updated.version, "run_status": str(updated.run_status)},
+                actor_role=actor_role,
             )
         return updated
 
-    def list_investigations(self, limit: int = 50) -> list[dict[str, Any]]:
+    def list_investigations(
+        self,
+        limit: int = 50,
+        *,
+        created_by: str | None = None,
+        offset: int = 0,
+    ) -> list[dict[str, Any]]:
+        """Danh sách cuộc điều tra, mới nhất trước.
+
+        ``created_by`` lọc **trong câu truy vấn** (trước ``LIMIT``). AUTH-02: lọc ở tầng Python
+        sau khi đã cắt trang làm ca cũ biến mất khỏi danh sách và làm ``limit`` trả về thiếu.
+        """
+        where = "WHERE i.created_by = ?" if created_by is not None else ""
+        params: list[Any] = [created_by] if created_by is not None else []
         with self._lock:
             rows = self._conn.execute(
-                """SELECT i.id, i.run_status, i.assessment_status, i.checkpoint, i.next_stage,
+                f"""SELECT i.id, i.run_status, i.assessment_status, i.checkpoint, i.next_stage,
                           i.version, i.claim_json, i.created_by, i.created_at, i.updated_at,
                           d.status AS review_status,
                           r.action AS last_review_action,
@@ -366,8 +527,9 @@ class MvpStore:
                      ON r.rowid = (SELECT rowid FROM review_decisions
                                     WHERE investigation_id = i.id
                                     ORDER BY created_at DESC, rowid DESC LIMIT 1)
-                   ORDER BY i.updated_at DESC LIMIT ?""",
-                (limit,),
+                   {where}
+                   ORDER BY i.updated_at DESC LIMIT ? OFFSET ?""",
+                (*params, limit, max(offset, 0)),
             ).fetchall()
         result = []
         for row in rows:
@@ -482,38 +644,100 @@ class MvpStore:
             for row in rows
         ]
 
-    def _audit(self, investigation_id: str | None, actor: str, action: str, payload: dict | None = None) -> None:
+    def _audit(
+        self,
+        investigation_id: str | None,
+        actor: str,
+        action: str,
+        payload: dict | None = None,
+        *,
+        actor_role: str | None = None,
+        request_id: str | None = None,
+    ) -> None:
+        # Mã yêu cầu lấy từ middleware khi lời gọi không truyền tường minh, để dòng nhật ký trùng
+        # với ``request_id`` mà người dùng thấy trong phản hồi lỗi.
         self._conn.execute(
-            "INSERT INTO audit_events (investigation_id, actor, action, payload_json, created_at) VALUES (?, ?, ?, ?, ?)",
-            (investigation_id, actor, action, json.dumps(payload or {}, ensure_ascii=False), now_iso()),
+            """INSERT INTO audit_events
+               (investigation_id, actor, actor_role, action, request_id, payload_json, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                investigation_id,
+                actor,
+                actor_role,
+                action,
+                request_id if request_id is not None else current_request_id(),
+                json.dumps(payload or {}, ensure_ascii=False),
+                now_iso(),
+            ),
         )
 
-    def audit(self, investigation_id: str | None, actor: str, action: str, payload: dict | None = None) -> None:
+    def audit(
+        self,
+        investigation_id: str | None,
+        actor: str,
+        action: str,
+        payload: dict | None = None,
+        *,
+        actor_role: str | None = None,
+        request_id: str | None = None,
+    ) -> None:
+        """Ghi nhật ký. ``actor`` là **mã người** (AUTH-03), ``actor_role`` để vẫn lọc được theo vai."""
         with self._lock, self._conn:
-            self._audit(investigation_id, actor, action, payload)
+            self._audit(investigation_id, actor, action, payload, actor_role=actor_role, request_id=request_id)
 
-    def list_audit(self, investigation_id: str | None = None, limit: int = 200) -> list[dict[str, Any]]:
+    def list_audit(
+        self,
+        investigation_id: str | None = None,
+        limit: int = 200,
+        *,
+        actor: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Nhật ký append-only. ``actor`` lọc theo mã người (dùng cho phạm vi ``audit:read:own``)."""
+        clauses: list[str] = []
+        params: list[Any] = []
+        if investigation_id is not None:
+            clauses.append("investigation_id = ?")
+            params.append(investigation_id)
+        if actor is not None:
+            clauses.append("actor = ?")
+            params.append(actor)
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         with self._lock:
-            if investigation_id is None:
-                rows = self._conn.execute(
-                    "SELECT * FROM audit_events ORDER BY id ASC LIMIT ?", (limit,)
-                ).fetchall()
-            else:
-                rows = self._conn.execute(
-                    "SELECT * FROM audit_events WHERE investigation_id = ? ORDER BY id ASC LIMIT ?",
-                    (investigation_id, limit),
-                ).fetchall()
-        return [
-            {
-                "id": row["id"],
-                "investigation_id": row["investigation_id"],
-                "actor": row["actor"],
-                "action": row["action"],
-                "payload": json.loads(row["payload_json"] or "{}"),
-                "created_at": row["created_at"],
-            }
-            for row in rows
-        ]
+            rows = self._conn.execute(
+                f"SELECT * FROM audit_events {where} ORDER BY id ASC LIMIT ?", (*params, limit)
+            ).fetchall()
+        result = []
+        for row in rows:
+            result.append(_audit_row(row))
+        return result
+
+    def list_audit_scoped(
+        self,
+        *,
+        user_id: str,
+        limit: int = 200,
+        investigation_id: str | None = None,
+        actor: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Nhật ký trong phạm vi một người: ca do họ tạo, hoặc hành động của chính họ.
+
+        Phạm vi lọc nằm trong câu truy vấn, không lọc sau ``LIMIT`` — nếu không, một người có
+        nhiều bản ghi sẽ đẩy bản ghi của người khác vào trang và bị cắt mất.
+        """
+        clauses = ["(investigation_id IN (SELECT id FROM investigations WHERE created_by = ?) OR actor = ?)"]
+        params: list[Any] = [user_id, user_id]
+        if investigation_id is not None:
+            clauses.append("investigation_id = ?")
+            params.append(investigation_id)
+        if actor is not None:
+            clauses.append("actor = ?")
+            params.append(actor)
+        with self._lock:
+            rows = self._conn.execute(
+                f"SELECT * FROM audit_events WHERE {' AND '.join(clauses)} ORDER BY id ASC LIMIT ?",
+                (*params, limit),
+            ).fetchall()
+        return [_audit_row(row) for row in rows]
 
     # ----------------------------------------------------------------------------------
     # Documents / evidence
@@ -598,24 +822,29 @@ class MvpStore:
             ).fetchall()
         return [SourceDocument.model_validate(json.loads(row["payload_json"])) for row in rows]
 
+    def _insert_evidence_version(self, investigation_id: str, evidence: EvidenceUnit, *, version: int | None = None) -> None:
+        """Ghi thêm một phiên bản bằng chứng. Gọi trong giao dịch đang mở của người gọi."""
+        record_version = version or evidence.version
+        self._conn.execute(
+            """INSERT INTO evidence_versions
+               (evidence_id, investigation_id, version, doc_id, stance, excluded, payload_json, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                evidence.evidence_id,
+                investigation_id,
+                record_version,
+                evidence.doc_id,
+                str(evidence.stance),
+                1 if evidence.excluded else 0,
+                evidence.model_copy(update={"version": record_version}).model_dump_json(),
+                now_iso(),
+            ),
+        )
+
     def save_evidence(self, investigation_id: str, evidence: EvidenceUnit, *, version: int | None = None) -> EvidenceUnit:
         record_version = version or evidence.version
         with self._lock, self._conn:
-            self._conn.execute(
-                """INSERT INTO evidence_versions
-                   (evidence_id, investigation_id, version, doc_id, stance, excluded, payload_json, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    evidence.evidence_id,
-                    investigation_id,
-                    record_version,
-                    evidence.doc_id,
-                    str(evidence.stance),
-                    1 if evidence.excluded else 0,
-                    evidence.model_copy(update={"version": record_version}).model_dump_json(),
-                    now_iso(),
-                ),
-            )
+            self._insert_evidence_version(investigation_id, evidence, version=version)
         return evidence.model_copy(update={"version": record_version})
 
     def list_evidence(self, investigation_id: str, *, include_excluded: bool = True) -> list[EvidenceUnit]:
@@ -639,32 +868,178 @@ class MvpStore:
     # Reviews / dossier
     # ----------------------------------------------------------------------------------
 
-    def save_review_decision(self, decision: ReviewDecision) -> ReviewDecision:
+    def _insert_review_decision(
+        self,
+        decision: ReviewDecision,
+        *,
+        result_version: int | None = None,
+        result_status: str | None = None,
+        actor_role: str | None = None,
+    ) -> None:
+        """Ghi một quyết định review. Gọi trong giao dịch đang mở của người gọi."""
+        self._conn.execute(
+            """INSERT INTO review_decisions
+               (decision_id, investigation_id, checkpoint, action, reviewer_id, actor_role, reason,
+                expected_version, result_version, result_status, payload_json, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                decision.decision_id,
+                decision.investigation_id,
+                str(decision.checkpoint),
+                str(decision.action),
+                decision.reviewer_id,
+                actor_role,
+                decision.reason,
+                decision.expected_version,
+                result_version,
+                result_status,
+                decision.model_dump_json(),
+                decision.created_at.isoformat(),
+            ),
+        )
+
+    # ------------------------------------------------------------------ chạy tiếp (RV-06)
+
+    def register_resume_request(self, investigation_id: str, token: str) -> bool:
+        """Ghi nhận một yêu cầu chạy tiếp; ``True`` nếu đây là lần đầu.
+
+        RV-06: trước đây việc chống double-click nằm trong RAM của tiến trình API. Khởi động lại
+        tiến trình là mất, và khi có nhiều tiến trình thì mỗi tiến trình nhớ một kiểu. Ghi xuống
+        kho thì khoá chống lặp sống sót qua khởi động lại và dùng chung cho mọi tiến trình.
+        """
+        with self._lock, self._conn:
+            cursor = self._conn.execute(
+                "INSERT OR IGNORE INTO resume_requests (investigation_id, token, created_at) VALUES (?, ?, ?)",
+                (investigation_id, token, now_iso()),
+            )
+            return cursor.rowcount == 1
+
+    def has_resume_request(self, investigation_id: str, token: str) -> bool:
+        """Đã từng nhận yêu cầu chạy tiếp với token này chưa (chỉ đọc, không tiêu thụ khoá).
+
+        Cần hàm chỉ đọc vì thứ tự kiểm tra quan trọng: một cú bấm trùng phải được nhận ra **trước**
+        khi kiểm phiên bản — lượt chạy nền do cú bấm đầu tiên khởi động làm phiên bản nhảy liên tục,
+        nên nếu kiểm phiên bản trước thì cú bấm thứ hai bị trả 409 thay vì câu trả lời "đã xử lý rồi".
+        """
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT 1 FROM resume_requests WHERE investigation_id = ? AND token = ?",
+                (investigation_id, token),
+            ).fetchone()
+        return row is not None
+
+    def forget_resume_request(self, investigation_id: str, token: str) -> None:
+        """Bỏ ghi nhận khi lần chạy tiếp không thực sự bắt đầu (lỗi/không chiếm được khoá)."""
         with self._lock, self._conn:
             self._conn.execute(
-                """INSERT INTO review_decisions
-                   (decision_id, investigation_id, checkpoint, action, reviewer_id, reason, expected_version,
-                    payload_json, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                "DELETE FROM resume_requests WHERE investigation_id = ? AND token = ?",
+                (investigation_id, token),
+            )
+
+    def commit_review(
+        self,
+        decision: ReviewDecision,
+        state: InvestigationState,
+        *,
+        expected_version: int,
+        event: tuple[str, str],
+        dossier_status: tuple[int, ReviewStatus, str | None, datetime | None] | None = None,
+        evidence: EvidenceUnit | None = None,
+        invalidate_dossiers: bool = False,
+        actor_role: str | None = None,
+    ) -> InvestigationState:
+        """Áp dụng một quyết định review trong **một** giao dịch (RV-07).
+
+        Trước đây quyết định được ghi trước rồi mới áp dụng từng bước, nên một quyết định sai vẫn
+        nằm lại trong nhật ký, và hai người duyệt cùng lúc thì người sau ghi đè người trước.
+        Ở đây mọi thay đổi (bằng chứng, hồ sơ, state, quyết định, sự kiện, nhật ký) hoặc cùng
+        thành công, hoặc cùng không. Giao dịch tự kiểm tra lại ``expected_version`` ngay trước khi
+        ghi, nên một cập nhật xen giữa sẽ làm quyết định cũ bị từ chối bằng 409 thay vì bị ghi đè.
+        """
+        investigation_id = state.investigation_id
+        with self._lock, self._conn:
+            row = self._conn.execute(
+                "SELECT version FROM investigations WHERE id = ?", (investigation_id,)
+            ).fetchone()
+            if row is None:
+                raise not_found("cuộc điều tra", investigation_id)
+            current = int(row["version"])
+            if current != expected_version:
+                raise version_conflict(expected_version, current)
+
+            if evidence is not None:
+                self._insert_evidence_version(investigation_id, evidence)
+
+            if dossier_status is not None:
+                version, status, approved_by, approved_at = dossier_status
+                self._set_dossier_status(
+                    investigation_id, version, status, approved_by=approved_by, approved_at=approved_at
+                )
+                self._audit(
+                    investigation_id,
+                    approved_by or decision.reviewer_id,
+                    "dossier_status_changed",
+                    {"version": version, "status": str(status)},
+                    actor_role=actor_role,
+                )
+
+            if invalidate_dossiers:
+                for version in self._invalidate_dossiers(investigation_id):
+                    # Hồ sơ bị vô hiệu do quyết định này, nên quy về người ra quyết định.
+                    self._audit(
+                        investigation_id,
+                        decision.reviewer_id,
+                        "dossier_status_changed",
+                        {"version": version, "status": str(ReviewStatus.REJECTED)},
+                        actor_role=actor_role,
+                    )
+
+            updated = state.model_copy(update={"version": current + 1, "updated_at": datetime.now(UTC)})
+            cursor = self._conn.execute(
+                """UPDATE investigations
+                   SET state_json = ?, claim_json = ?, run_status = ?, assessment_status = ?,
+                       checkpoint = ?, next_stage = ?, version = ?, updated_at = ?
+                   WHERE id = ? AND version = ?""",
                 (
-                    decision.decision_id,
-                    decision.investigation_id,
-                    str(decision.checkpoint),
-                    str(decision.action),
-                    decision.reviewer_id,
-                    decision.reason,
-                    decision.expected_version,
-                    decision.model_dump_json(),
-                    decision.created_at.isoformat(),
+                    updated.model_dump_json(),
+                    updated.claim.model_dump_json(),
+                    str(updated.run_status),
+                    str(updated.assessment_status) if updated.assessment_status else None,
+                    str(updated.checkpoint) if updated.checkpoint else None,
+                    updated.next_stage,
+                    updated.version,
+                    updated.updated_at.isoformat(),
+                    investigation_id,
+                    current,
                 ),
             )
+            if cursor.rowcount != 1:
+                # Chốt thứ hai ở tầng SQL: nếu ai đó chen vào giữa hai lệnh, cả giao dịch bị hủy.
+                raise version_conflict(expected_version, current)
+
+            self._insert_review_decision(
+                decision,
+                result_version=updated.version,
+                result_status=str(updated.run_status),
+                actor_role=actor_role,
+            )
+            self._conn.execute(
+                "INSERT INTO events (investigation_id, kind, message, payload_json, created_at) VALUES (?, ?, ?, ?, ?)",
+                (investigation_id, event[0], event[1], "{}", now_iso()),
+            )
             self._audit(
-                decision.investigation_id,
+                investigation_id,
                 decision.reviewer_id,
                 f"review_{decision.action}",
-                {"checkpoint": str(decision.checkpoint), "expected_version": decision.expected_version},
+                {
+                    "decision_id": decision.decision_id,
+                    "checkpoint": str(decision.checkpoint),
+                    "expected_version": decision.expected_version,
+                    "result_version": updated.version,
+                },
+                actor_role=actor_role,
             )
-        return decision
+        return updated
 
     def list_review_decisions(self, investigation_id: str) -> list[ReviewDecision]:
         with self._lock:
@@ -682,7 +1057,7 @@ class MvpStore:
             ).fetchone()
         return ReviewDecision.model_validate(json.loads(row["payload_json"])) if row else None
 
-    def update_dossier_status(
+    def _set_dossier_status(
         self,
         investigation_id: str,
         version: int,
@@ -691,53 +1066,52 @@ class MvpStore:
         approved_by: str | None = None,
         approved_at: datetime | None = None,
     ) -> Dossier:
-        """Cập nhật trạng thái một phiên bản hồ sơ (duyệt/từ chối/vô hiệu)."""
-        with self._lock, self._conn:
-            row = self._conn.execute(
-                "SELECT payload_json FROM dossier_versions WHERE investigation_id = ? AND version = ?",
-                (investigation_id, version),
-            ).fetchone()
-            if row is None:
-                raise not_found(f"Không có hồ sơ phiên bản {version}.", {"investigation_id": investigation_id})
-            dossier = Dossier.model_validate(json.loads(row["payload_json"]))
-            updated = dossier.model_copy(
-                update={"status": status, "approved_by": approved_by, "approved_at": approved_at}
-            )
-            self._conn.execute(
-                """UPDATE dossier_versions SET status = ?, payload_json = ?, approved_by = ?, approved_at = ?
-                   WHERE investigation_id = ? AND version = ?""",
-                (
-                    str(status),
-                    updated.model_dump_json(),
-                    approved_by,
-                    approved_at.isoformat() if approved_at else None,
-                    investigation_id,
-                    version,
-                ),
-            )
-            self._audit(
+        """Ghi trạng thái hồ sơ. Gọi trong giao dịch đang mở của người gọi.
+
+        OUT-05: **không** xóa dấu duyệt cũ khi không có dấu duyệt mới. Trước đây hàm này luôn gán
+        ``approved_by``/``approved_at`` theo tham số (mặc định ``None``), nên chỉ cần một hồ sơ đã
+        duyệt bị đẩy sang "từ chối" là mất luôn bằng chứng ai đã duyệt và duyệt lúc nào.
+        """
+        row = self._conn.execute(
+            "SELECT payload_json FROM dossier_versions WHERE investigation_id = ? AND version = ?",
+            (investigation_id, version),
+        ).fetchone()
+        if row is None:
+            raise not_found(f"Không có hồ sơ phiên bản {version}.", {"investigation_id": investigation_id})
+        dossier = Dossier.model_validate(json.loads(row["payload_json"]))
+        updated = dossier.model_copy(
+            update={
+                "status": status,
+                "approved_by": approved_by if approved_by is not None else dossier.approved_by,
+                "approved_at": approved_at if approved_at is not None else dossier.approved_at,
+            }
+        )
+        self._conn.execute(
+            """UPDATE dossier_versions SET status = ?, payload_json = ?, approved_by = ?, approved_at = ?
+               WHERE investigation_id = ? AND version = ?""",
+            (
+                str(status),
+                updated.model_dump_json(),
+                updated.approved_by,
+                updated.approved_at.isoformat() if updated.approved_at else None,
                 investigation_id,
-                approved_by or "system",
-                "dossier_status_changed",
-                {"version": version, "status": str(status)},
-            )
+                version,
+            ),
+        )
         return updated
 
-    def invalidate_dossiers(self, investigation_id: str) -> list[int]:
-        """Vô hiệu hóa mọi phiên bản hồ sơ chưa bị từ chối; trả về danh sách version đã đổi."""
-        changed: list[int] = []
-        with self._lock:
-            versions = [
-                int(row["version"])
-                for row in self._conn.execute(
-                    "SELECT version FROM dossier_versions WHERE investigation_id = ? AND status != 'rejected'",
-                    (investigation_id,),
-                ).fetchall()
-            ]
+    def _invalidate_dossiers(self, investigation_id: str) -> list[int]:
+        """Vô hiệu hóa mọi hồ sơ chưa bị từ chối. Gọi trong giao dịch đang mở của người gọi."""
+        versions = [
+            int(row["version"])
+            for row in self._conn.execute(
+                "SELECT version FROM dossier_versions WHERE investigation_id = ? AND status != 'rejected'",
+                (investigation_id,),
+            ).fetchall()
+        ]
         for version in versions:
-            self.update_dossier_status(investigation_id, version, ReviewStatus.REJECTED)
-            changed.append(version)
-        return changed
+            self._set_dossier_status(investigation_id, version, ReviewStatus.REJECTED)
+        return versions
 
     def save_dossier(self, dossier: Dossier) -> Dossier:
         with self._lock, self._conn:
@@ -796,11 +1170,173 @@ class MvpStore:
             ).fetchall()
         return [Dossier.model_validate(json.loads(row["payload_json"])) for row in rows]
 
+    def count_investigations(self, *, created_by: str | None = None) -> int:
+        """Tổng số cuộc điều tra khớp bộ lọc — để API trả ``total`` mà không đếm bằng độ dài trang."""
+        where = "WHERE created_by = ?" if created_by is not None else ""
+        params: tuple[Any, ...] = (created_by,) if created_by is not None else ()
+        with self._lock:
+            row = self._conn.execute(f"SELECT COUNT(*) AS n FROM investigations {where}", params).fetchone()
+        return int(row["n"]) if row is not None else 0
+
+    # ----------------------------------------------------------------------------------
+    # Người dùng, khoá máy, phiên (AUTH-01/02/03)
+    # ----------------------------------------------------------------------------------
+
+    def create_user(
+        self,
+        *,
+        user_id: str,
+        email: str,
+        role: str,
+        display_name: str = "",
+        password_hash: str | None = None,
+        created_by: str = "system",
+        actor_role: str | None = None,
+    ) -> dict[str, Any]:
+        """Tạo tài khoản. ``email`` duy nhất — trùng thì ném lỗi ràng buộc của cơ sở dữ liệu.
+
+        ``created_by`` là **mã người cấp tài khoản**; sự kiện được ghi nhật ký trong cùng giao dịch
+        với INSERT, nên không có tài khoản nào tồn tại mà không rõ ai tạo.
+        """
+        timestamp = now_iso()
+        with self._lock, self._conn:
+            self._conn.execute(
+                """INSERT INTO app_users
+                   (user_id, email, display_name, role, status, password_hash, created_at, updated_at, created_by)
+                   VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?)""",
+                (user_id, email.lower().strip(), display_name or email, role, password_hash, timestamp, timestamp, created_by),
+            )
+            self._audit(
+                None,
+                created_by,
+                "user_created",
+                {"user_id": user_id, "email": email.lower().strip(), "role": role},
+                actor_role=actor_role,
+            )
+        return self.get_user(user_id)
+
+    def get_user(self, user_id: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._conn.execute("SELECT * FROM app_users WHERE user_id = ?", (user_id,)).fetchone()
+        return dict(row) if row is not None else None
+
+    def get_user_by_email(self, email: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT * FROM app_users WHERE email = ?", (email.lower().strip(),)
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def list_users(self, *, limit: int = 200, offset: int = 0) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT * FROM app_users ORDER BY created_at ASC LIMIT ? OFFSET ?", (limit, max(offset, 0))
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def update_user(
+        self,
+        user_id: str,
+        *,
+        role: str | None = None,
+        status: str | None = None,
+        display_name: str | None = None,
+        password_hash: str | None = None,
+        actor: str = "system",
+        actor_role: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Đổi vai/trạng thái. Đổi vai hoặc khoá tài khoản thì **thu hồi mọi phiên** của người đó.
+
+        ``actor`` là **mã người thực hiện** thay đổi, không phải người bị đổi — nhật ký phải trả lời
+        được "ai đã cấp quyền cho ai".
+        """
+        fields: list[str] = []
+        params: list[Any] = []
+        for column, value in (
+            ("role", role),
+            ("status", status),
+            ("display_name", display_name),
+            ("password_hash", password_hash),
+        ):
+            if value is not None:
+                fields.append(f"{column} = ?")
+                params.append(value)
+        if not fields:
+            return self.get_user(user_id)
+        fields.append("updated_at = ?")
+        params.append(now_iso())
+        params.append(user_id)
+        with self._lock, self._conn:
+            cur = self._conn.execute(f"UPDATE app_users SET {', '.join(fields)} WHERE user_id = ?", params)
+            if cur.rowcount == 0:
+                return None
+            if role is not None or status is not None:
+                self._conn.execute(
+                    "UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",
+                    (now_iso(), user_id),
+                )
+                # B1.7 mục 3: đổi vai và khoá tài khoản phải để lại vết. Ghi **sau** khi đã thu hồi
+                # phiên, trong cùng giao dịch, để nhật ký không bao giờ nói dối về trạng thái.
+                self._audit(
+                    None,
+                    actor,
+                    "user_role_changed" if role is not None else "user_status_changed",
+                    {"user_id": user_id, "role": role, "status": status},
+                    actor_role=actor_role,
+                )
+        return self.get_user(user_id)
+
+    def issue_token(self, *, user_id: str, raw_token: str, label: str = "", expires_at: str | None = None) -> str:
+        """Lưu **băm** của khoá máy; trả về chính băm đó làm khoá chính."""
+        from src.services.identity import hash_token
+
+        digest = hash_token(raw_token)
+        with self._lock, self._conn:
+            self._conn.execute(
+                """INSERT INTO api_tokens (token_hash, user_id, label, created_at, expires_at, revoked_at)
+                   VALUES (?, ?, ?, ?, ?, NULL)""",
+                (digest, user_id, label, now_iso(), expires_at),
+            )
+        return digest
+
+    def resolve_token(self, raw_token: str) -> dict[str, Any] | None:
+        """Tra tài khoản theo khoá thô; ``None`` khi khoá lạ, đã thu hồi, hết hạn, hoặc tài khoản bị khoá."""
+        from src.services.identity import hash_token
+
+        digest = hash_token(raw_token)
+        with self._lock:
+            row = self._conn.execute(
+                """SELECT t.token_hash, t.user_id, t.expires_at, t.revoked_at,
+                          u.email, u.display_name, u.role, u.status
+                   FROM api_tokens AS t
+                   JOIN app_users AS u ON u.user_id = t.user_id
+                   WHERE t.token_hash = ?""",
+                (digest,),
+            ).fetchone()
+        if row is None or row["revoked_at"] is not None:
+            return None
+        if row["expires_at"] is not None and row["expires_at"] <= now_iso():
+            return None
+        if row["status"] != "active":
+            return None
+        return dict(row)
+
+    def revoke_token(self, raw_token: str) -> bool:
+        from src.services.identity import hash_token
+
+        with self._lock, self._conn:
+            cur = self._conn.execute(
+                "UPDATE api_tokens SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL",
+                (now_iso(), hash_token(raw_token)),
+            )
+            return cur.rowcount > 0
+
     # ----------------------------------------------------------------------------------
     # Sessions
     # ----------------------------------------------------------------------------------
 
-    def create_session(self, user_id: str, role: str, expires_in_seconds: int = 86400) -> str:
+    def create_session(self, user_id: str, role: str, expires_in_seconds: int = 43200) -> str:
+        """Phiên nội bộ, TTL 12 giờ (B1.4). Vai chỉ để đối chiếu — quyền luôn đọc từ ``app_users``."""
         from datetime import timedelta
 
         session_id = f"sess_{uuid4().hex}"
@@ -808,8 +1344,8 @@ class MvpStore:
         expires = created + timedelta(seconds=expires_in_seconds)
         with self._lock, self._conn:
             self._conn.execute(
-                """INSERT INTO sessions (session_id, user_id, role, created_at, expires_at)
-                   VALUES (?, ?, ?, ?, ?)""",
+                """INSERT INTO sessions (session_id, user_id, role, created_at, expires_at, revoked_at)
+                   VALUES (?, ?, ?, ?, ?, NULL)""",
                 (session_id, user_id, role, created.isoformat(), expires.isoformat()),
             )
         return session_id
@@ -817,10 +1353,13 @@ class MvpStore:
     def get_session(self, session_id: str) -> dict[str, Any] | None:
         with self._lock, self._conn:
             row = self._conn.execute(
-                "SELECT session_id, user_id, role, created_at, expires_at FROM sessions WHERE session_id = ?",
+                """SELECT session_id, user_id, role, created_at, expires_at, revoked_at
+                   FROM sessions WHERE session_id = ?""",
                 (session_id,),
             ).fetchone()
             if row is None:
+                return None
+            if row["revoked_at"] is not None:
                 return None
             if row["expires_at"] <= now_iso():
                 self._conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
@@ -833,7 +1372,11 @@ class MvpStore:
                 "expires_at": row["expires_at"],
             }
 
-    def delete_session(self, session_id: str) -> bool:
+    def revoke_session(self, session_id: str) -> bool:
+        """Thu hồi phiên (đăng xuất). Giữ lại bản ghi để nhật ký còn đối chiếu được."""
         with self._lock, self._conn:
-            cur = self._conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
+            cur = self._conn.execute(
+                "UPDATE sessions SET revoked_at = ? WHERE session_id = ? AND revoked_at IS NULL",
+                (now_iso(), session_id),
+            )
             return cur.rowcount > 0

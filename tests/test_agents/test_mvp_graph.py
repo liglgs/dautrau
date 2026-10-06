@@ -478,7 +478,6 @@ def test_all_unknown_scope_is_not_reported_as_mismatch():
         quote="Metformin was associated with lactic acidosis.",
         locator={"start": 0, "end": 44},
         scope=EvidenceScope(population="adults", route="oral"),
-        confidence=0.8,
     )
     result = assess_evidence([evidence], normalized)
     # Không trường nào so khớp được ⇒ chưa đủ căn cứ kết luận "ngoài phạm vi".

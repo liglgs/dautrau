@@ -1,5 +1,9 @@
 # Chạy Người 3 trên code tổng hợp
 
+> **AUTH-01 (2026-10-06):** cầu nối giao diện không còn nhận vai do trình duyệt khai
+> (`X-Vigilens-Role`) và không còn token vai trò phía máy chủ. Đăng nhập bằng email + mật khẩu;
+> tạo tài khoản bằng `scripts/auth_cli.py create-user`.
+
 ## Phụ thuộc và trạng thái
 
 Người 1 cung cấp adapters/parser/snapshot/dictionary từ nguồn; Người 2 cung cấp schema, graph, gateway, budget và review/API; Người 4 dùng các endpoint để hiển thị kết quả. Người 3 có thể kiểm tra dịch vụ bằng fixture, nhưng cần Người 1/2 để nghiệm thu luồng nguồn thật. UI Người 4 dùng để kiểm tra hành trình người dùng; nhãn chuyên môn cần reviewer.
@@ -38,9 +42,8 @@ Các token bên dưới phải khớp token backend của nhóm:
 ```powershell
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = "api"
 $env:VIGILENS_API_BASE = "http://127.0.0.1:8000"
-$env:VIGILENS_INVESTIGATOR_TOKEN = "person3-investigator-demo"
-$env:VIGILENS_REVIEWER_TOKEN = "person3-reviewer-demo"
-npm.cmd --prefix vigilens run dev -- --hostname 127.0.0.1
+cd frontend
+npm.cmd run dev -- --hostname 127.0.0.1
 ```
 
 Mở `http://127.0.0.1:3100/app/investigations`. Ca development đầu tiên dùng `metformin`, `diarrhoea`; scope chỉ nhập khi nhận định xác định các trường đó. Kiểm tra quote/scope trong ma trận → duyệt assessment → continue → kiểm tra dossier → duyệt dossier → export. Thiếu evidence/lỗi extraction phải có gap/reason.

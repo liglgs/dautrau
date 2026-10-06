@@ -1,0 +1,1996 @@
+{
+  "version": "gold-p1-2026-10-06.1",
+  "method_version": "gold-label-match-v1",
+  "generated_at": "2026-10-06T04:26:40+00:00",
+  "status": "candidate_not_gold",
+  "review": {
+    "proposed_by": "machine",
+    "approved_by": null,
+    "approval_required": "dược sĩ lâm sàng hoặc chuyên gia cảnh giác dược",
+    "approval_note": "Mỗi nhãn phải được người duyệt đối chiếu URL nhãn và câu trích trước khi dùng chính thức."
+  },
+  "scope": "Giai đoạn 1: chuẩn vàng ứng viên từ nguồn công khai quốc tế (nhãn FDA/openFDA + thống kê FAERS). Chưa phải chuẩn vàng đã được dược sĩ duyệt.",
+  "spec_file": "data/gold/spec.json",
+  "spec_sha256": "1f83fea8c0050681319b07995ff0394ded2085a8d8c7f2eaf4b527f861c10fd4",
+  "dataset_file": "data/gold/drug-event-pairs.jsonl",
+  "dataset_sha256": "8984b2e98e8b95cdad57644ab95be4c1902e81de53714f9fff21e98552257df0",
+  "counts": {
+    "pairs_total": 300,
+    "label_listed": 159,
+    "label_not_listed": 141,
+    "no_section": 0,
+    "no_label": 0,
+    "listed_ratio": 0.53,
+    "per_status": {
+      "not_listed": 141,
+      "listed": 159
+    },
+    "per_event": {
+      "Gastrointestinal haemorrhage": 30,
+      "Hepatotoxicity": 30,
+      "Acute kidney injury": 30,
+      "Rhabdomyolysis": 30,
+      "Anaphylaxis": 30,
+      "Agranulocytosis": 30,
+      "Pancreatitis": 30,
+      "QT prolongation": 30,
+      "Angioedema": 30,
+      "Stevens-Johnson syndrome": 30
+    },
+    "per_drug": {
+      "acetaminophen": {
+        "not_listed": 6,
+        "listed": 4
+      },
+      "ibuprofen": {
+        "listed": 8,
+        "not_listed": 2
+      },
+      "diclofenac": {
+        "listed": 8,
+        "not_listed": 2
+      },
+      "aspirin": {
+        "not_listed": 10
+      },
+      "metformin": {
+        "not_listed": 8,
+        "listed": 2
+      },
+      "glipizide": {
+        "not_listed": 8,
+        "listed": 2
+      },
+      "atorvastatin": {
+        "not_listed": 3,
+        "listed": 7
+      },
+      "simvastatin": {
+        "not_listed": 3,
+        "listed": 7
+      },
+      "amoxicillin": {
+        "not_listed": 6,
+        "listed": 4
+      },
+      "ceftriaxone": {
+        "not_listed": 5,
+        "listed": 5
+      },
+      "ciprofloxacin": {
+        "listed": 9,
+        "not_listed": 1
+      },
+      "levofloxacin": {
+        "not_listed": 1,
+        "listed": 9
+      },
+      "azithromycin": {
+        "not_listed": 3,
+        "listed": 7
+      },
+      "doxycycline": {
+        "not_listed": 4,
+        "listed": 6
+      },
+      "omeprazole": {
+        "not_listed": 4,
+        "listed": 6
+      },
+      "warfarin": {
+        "listed": 3,
+        "not_listed": 7
+      },
+      "rivaroxaban": {
+        "listed": 7,
+        "not_listed": 3
+      },
+      "clopidogrel": {
+        "listed": 7,
+        "not_listed": 3
+      },
+      "enalapril": {
+        "not_listed": 3,
+        "listed": 7
+      },
+      "losartan": {
+        "not_listed": 6,
+        "listed": 4
+      },
+      "amlodipine": {
+        "not_listed": 7,
+        "listed": 3
+      },
+      "hydrochlorothiazide": {
+        "not_listed": 5,
+        "listed": 5
+      },
+      "furosemide": {
+        "not_listed": 5,
+        "listed": 5
+      },
+      "spironolactone": {
+        "not_listed": 6,
+        "listed": 4
+      },
+      "metoprolol": {
+        "not_listed": 8,
+        "listed": 2
+      },
+      "digoxin": {
+        "not_listed": 10
+      },
+      "carbamazepine": {
+        "not_listed": 3,
+        "listed": 7
+      },
+      "valproic acid": {
+        "not_listed": 5,
+        "listed": 5
+      },
+      "sertraline": {
+        "listed": 10
+      },
+      "allopurinol": {
+        "listed": 6,
+        "not_listed": 4
+      }
+    }
+  },
+  "sources": [
+    {
+      "id": "openfda_label",
+      "name": "openFDA Drug Label API (SPL của FDA)",
+      "url": "https://api.fda.gov/drug/label.json",
+      "human_url": "https://open.fda.gov/apis/drug/label/",
+      "licence": "Dữ liệu công khai của chính phủ Hoa Kỳ (openFDA, không hạn chế tái sử dụng)",
+      "retrieved_with": "GET search=openfda.generic_name:\"<drug>\" AND _exists_:adverse_reactions&limit=25"
+    },
+    {
+      "id": "openfda_event",
+      "name": "openFDA Drug Adverse Event API (FAERS)",
+      "url": "https://api.fda.gov/drug/event.json",
+      "human_url": "https://open.fda.gov/apis/drug/event/",
+      "licence": "Dữ liệu công khai của chính phủ Hoa Kỳ (openFDA, không hạn chế tái sử dụng)",
+      "retrieved_with": "GET search=patient.drug.openfda.generic_name:\"<drug>\" AND patient.reaction.reactionmeddrapt:\"<PT>\"&limit=1"
+    }
+  ],
+  "raw_snapshots": {
+    "directory": "data/gold/raw",
+    "committed": false,
+    "note": "Bản thô không commit vì dung lượng; mỗi bản ghi đã mang URL truy vấn và số liệu để đối chiếu lại.",
+    "files": {
+      "faers__acetaminophen__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "b6099ba84eeef8315fe696824bb6a6e229d0a4f99350c988d116388e625b5064",
+        "retrieved_at": "2026-10-06T04:20:50+00:00"
+      },
+      "faers__acetaminophen__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "0d4928f3ce36a2a73126f3ca3544b1873272668164a99a9364d768f1cbd38c37",
+        "retrieved_at": "2026-10-06T04:20:52+00:00"
+      },
+      "faers__acetaminophen__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\"&limit=1",
+        "sha256": "1d2a2e55a9b60e5c8f2dcfee323d3aef90384d96126d405d5cecf7c9639daaf0",
+        "retrieved_at": "2026-10-06T04:20:48+00:00"
+      },
+      "faers__acetaminophen__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "7d531da8f9a442abf0d3b17415badf51f88daa922f21ae4d23507c78193ced42",
+        "retrieved_at": "2026-10-06T04:25:33+00:00"
+      },
+      "faers__acetaminophen__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "988efea388fd75184de7bff7f61c1cd772d845a584ede86274c1ae181b558fd6",
+        "retrieved_at": "2026-10-06T04:20:54+00:00"
+      },
+      "faers__acetaminophen__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "5c56e15de5b6fba23aaefb16a5ad63e107a312a33de30d33e2dd36e7a4f82295",
+        "retrieved_at": "2026-10-06T04:20:49+00:00"
+      },
+      "faers__acetaminophen__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "7e9362177ab69b021e09ddc06b3892b71ff4741a6cc3d0d5f567f4c3fbbdcbbd",
+        "retrieved_at": "2026-10-06T04:20:49+00:00"
+      },
+      "faers__acetaminophen__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "81cbf0edfd609c00656b059f29deee9da053f209c5da1d5c67992ca91300c618",
+        "retrieved_at": "2026-10-06T04:20:52+00:00"
+      },
+      "faers__acetaminophen__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "18669b6d025901e2cfa5e37eaa607e185763d97dec8bd66c0564ab0f7194cf72",
+        "retrieved_at": "2026-10-06T04:20:53+00:00"
+      },
+      "faers__acetaminophen__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "6b56fce8e0de64157e2349f25f73ca9910df068e735c124ea6016d85d0161418",
+        "retrieved_at": "2026-10-06T04:20:50+00:00"
+      },
+      "faers__acetaminophen__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"acetaminophen\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "820956d9d29f0ddebf95186661865282a1c738c4efe61ba5a484f009ccc0edb0",
+        "retrieved_at": "2026-10-06T04:20:54+00:00"
+      },
+      "faers__allopurinol__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "2a9e8e6b3e6f99e8eff3003a83d2cd92553444cdb92a612a937f6d50dea992ff",
+        "retrieved_at": "2026-10-06T04:24:58+00:00"
+      },
+      "faers__allopurinol__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "4edc64ee1df1c86e55a0d3a5928cdcf9c57bce81b1d3dceb54c97fcab2f2168d",
+        "retrieved_at": "2026-10-06T04:25:00+00:00"
+      },
+      "faers__allopurinol__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\"&limit=1",
+        "sha256": "a4f5fe16405875e0c41d71edf7c0df2bd937328a26c11b937aee8bfa55814cf3",
+        "retrieved_at": "2026-10-06T04:24:56+00:00"
+      },
+      "faers__allopurinol__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "fd3ece4e73ea7a1cb4e0b03d9cc7f8c12cf8d4f99bb6ac896cf9457ff4fb0134",
+        "retrieved_at": "2026-10-06T04:25:51+00:00"
+      },
+      "faers__allopurinol__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "22c692ce0413f95bde41cad2fdf12661f3aa86840cc8f5e75bbbe9582ed0593d",
+        "retrieved_at": "2026-10-06T04:25:02+00:00"
+      },
+      "faers__allopurinol__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "f5f3732ae207a84940295e9de342cee213d8c12795eecb588d0c2d14c49a7d44",
+        "retrieved_at": "2026-10-06T04:24:57+00:00"
+      },
+      "faers__allopurinol__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "07e376df790f4926674b5116d07242c7895e004ad7eaea9495bbd78271efc446",
+        "retrieved_at": "2026-10-06T04:24:58+00:00"
+      },
+      "faers__allopurinol__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "98e75956cb5a6c725695392fe3d01a1f861612b39e6c106a7d4a47f6008e3954",
+        "retrieved_at": "2026-10-06T04:25:01+00:00"
+      },
+      "faers__allopurinol__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "1d46bfe0c25f36210fe5f5165586f3a6888a274b27c478665634929331072738",
+        "retrieved_at": "2026-10-06T04:25:01+00:00"
+      },
+      "faers__allopurinol__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "cc0f35a5e5718bda0dc407488914728aea47fbbe378571a7c9cba61dfd5801fd",
+        "retrieved_at": "2026-10-06T04:24:59+00:00"
+      },
+      "faers__allopurinol__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"allopurinol\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "3421a63cbc162dcec98f35f52b94e51e0db96d625c3c5a8e79c59bf48395ec48",
+        "retrieved_at": "2026-10-06T04:25:03+00:00"
+      },
+      "faers__amlodipine__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "e9983a81f0e632683c07c4f9d05db0bbb342a5e09597ed68192ff82cb216a9a0",
+        "retrieved_at": "2026-10-06T04:23:53+00:00"
+      },
+      "faers__amlodipine__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "9b43f39bd6a8f550715aa2278b1847d754922a175f4bdf3c70b3bee96ddb57be",
+        "retrieved_at": "2026-10-06T04:23:55+00:00"
+      },
+      "faers__amlodipine__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\"&limit=1",
+        "sha256": "6e28eb66fe4bb467f22fcc943bc59cadb9aae89fc2cd9e42513b0130fcb7ef36",
+        "retrieved_at": "2026-10-06T04:23:52+00:00"
+      },
+      "faers__amlodipine__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "be06b0e6320bd4ce69e191003ac5552f9e9e1c0e8a3e54a18037250387b01a3c",
+        "retrieved_at": "2026-10-06T04:25:45+00:00"
+      },
+      "faers__amlodipine__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "9368171f627757141fb8ceb53e192c77aadc426d2a772f1d745d0e622339aa33",
+        "retrieved_at": "2026-10-06T04:23:57+00:00"
+      },
+      "faers__amlodipine__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "8003960566aec5bf545ab3ea5ade43f7e9f9b3ae7181ca9fd4fff2e4cd9b356d",
+        "retrieved_at": "2026-10-06T04:23:52+00:00"
+      },
+      "faers__amlodipine__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "4a51622b4805b23d065e8a7e2cee75fd0ff6ad4a1424b6d4b737f9ed3eafea6c",
+        "retrieved_at": "2026-10-06T04:23:53+00:00"
+      },
+      "faers__amlodipine__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "76d6df7416f70b72a3ae376a1609ed193b042b30f206897fd1605525a9fbb2fa",
+        "retrieved_at": "2026-10-06T04:23:56+00:00"
+      },
+      "faers__amlodipine__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "df7b816bc59330b7c115f602b38a09ff5503beb6cfa9668155a67b6d1546dc93",
+        "retrieved_at": "2026-10-06T04:23:56+00:00"
+      },
+      "faers__amlodipine__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "1efe854cbcde23f186f523da15be7fb79b2e7704d5ba38bd2395c31a80db50a3",
+        "retrieved_at": "2026-10-06T04:23:54+00:00"
+      },
+      "faers__amlodipine__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amlodipine\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "f0aefa4f63221d5fc2f49723e52862344f4e910165c6c34afc997e266edb9511",
+        "retrieved_at": "2026-10-06T04:23:58+00:00"
+      },
+      "faers__amoxicillin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "32e828fd75f9001dd7eb0b9806739008dcaaa532e8f4095e8146e20ea04630cf",
+        "retrieved_at": "2026-10-06T04:22:27+00:00"
+      },
+      "faers__amoxicillin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "6463f12b68a1c1ee5ad91b3ba57083f8fdb7d2dd83997755c1597b66a4f89c45",
+        "retrieved_at": "2026-10-06T04:22:29+00:00"
+      },
+      "faers__amoxicillin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\"&limit=1",
+        "sha256": "c0d7890879539f170dd9fff3c1050ddf88dce8510e71aaf15e92326b339efd7c",
+        "retrieved_at": "2026-10-06T04:22:25+00:00"
+      },
+      "faers__amoxicillin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "f7c0f83c8f93032781e694b7c2f2b865baca6bcb1ea9b09fd372c2ca03926bc9",
+        "retrieved_at": "2026-10-06T04:25:38+00:00"
+      },
+      "faers__amoxicillin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "b28e23cf015cbe45f0f0989bb8ee515c66685693df589c1d3daec435b46ea9ea",
+        "retrieved_at": "2026-10-06T04:22:31+00:00"
+      },
+      "faers__amoxicillin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "b2e9a6c96d12a0e7f89b23ffd6f5f6a497ec0bc76faef904f67e369188fc75da",
+        "retrieved_at": "2026-10-06T04:22:26+00:00"
+      },
+      "faers__amoxicillin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "353da4579a5217324aecaa028dc45414f394246a359d18b5684e05f235897dc4",
+        "retrieved_at": "2026-10-06T04:22:26+00:00"
+      },
+      "faers__amoxicillin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "53b740084490c90a00da0cbb84233ce229e86b73da9d73e4e9c109bbf37e4b82",
+        "retrieved_at": "2026-10-06T04:22:29+00:00"
+      },
+      "faers__amoxicillin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "a50a8d10b1d94c400558bc1d402673af2edd57dc7f0dc2a7f68bd059b2a6c724",
+        "retrieved_at": "2026-10-06T04:22:30+00:00"
+      },
+      "faers__amoxicillin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "8b74427e98dcdbc24a0616dde4675e4d6d70fa179a7b04b842db1b2c3b605d0f",
+        "retrieved_at": "2026-10-06T04:22:28+00:00"
+      },
+      "faers__amoxicillin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"amoxicillin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "f5ba8b743120994104eb361c464b6494b85c3a5750e2ddad181f7b4ec68c1111",
+        "retrieved_at": "2026-10-06T04:22:31+00:00"
+      },
+      "faers__aspirin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "285bf2559e9bc683c4dade203dd4d8eb7a79353bb9164fd982f9440fbe604f21",
+        "retrieved_at": "2026-10-06T04:21:51+00:00"
+      },
+      "faers__aspirin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "b1d0c329e4dc637f0bf8672aaaed7dd3572f7a80879b36c424ad5171d032fb74",
+        "retrieved_at": "2026-10-06T04:21:53+00:00"
+      },
+      "faers__aspirin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\"&limit=1",
+        "sha256": "e8414b4216e0254bfcf8c48a0e57a9a372d537ff7b5562bcb36d6c3cbfe576f0",
+        "retrieved_at": "2026-10-06T04:21:49+00:00"
+      },
+      "faers__aspirin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "b83ad040e24c0cec5ea9ae8e383f2ce241628858c3fc64b4cfeefe064a81d09a",
+        "retrieved_at": "2026-10-06T04:25:35+00:00"
+      },
+      "faers__aspirin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "20aab9b49e95654637b3d52b88e6d669e43867865de42e0b29ee0bfb613981f1",
+        "retrieved_at": "2026-10-06T04:21:55+00:00"
+      },
+      "faers__aspirin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "61b77a53e37cc70ec2d9b8b2ba55a61f5c5765dc9cc1eccbfeb6df35cf785e19",
+        "retrieved_at": "2026-10-06T04:21:50+00:00"
+      },
+      "faers__aspirin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "7f5b6f05682d905f02cfceed1b9462447730144525e8815a34b281905e460365",
+        "retrieved_at": "2026-10-06T04:21:50+00:00"
+      },
+      "faers__aspirin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "38f43283168523f504411a6fbc8445142518cad7ae270f85570c8e629947185b",
+        "retrieved_at": "2026-10-06T04:21:53+00:00"
+      },
+      "faers__aspirin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "219e80a747763d81ce1f80a61213320a3b586e8285e230dd6850e5f9739d0b66",
+        "retrieved_at": "2026-10-06T04:21:54+00:00"
+      },
+      "faers__aspirin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "8fef6ee155c93ad9001beec163d7e6a939eaad3f157bb439d89afcda4721bb60",
+        "retrieved_at": "2026-10-06T04:21:52+00:00"
+      },
+      "faers__aspirin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"aspirin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "66ae8ce5844b1c7cd9d26f4370666eb1874bbbf95a2726059ec7af92e5305541",
+        "retrieved_at": "2026-10-06T04:21:55+00:00"
+      },
+      "faers__atorvastatin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "28fd01263690ad05d0221f4d055d2e587a28973ea85dfdd5e3b2d3c1be54ebbf",
+        "retrieved_at": "2026-10-06T04:22:13+00:00"
+      },
+      "faers__atorvastatin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "518e0880b83a4cf5b72943bec16075a84ad290941e091ad5c58130b3c0885a8c",
+        "retrieved_at": "2026-10-06T04:22:14+00:00"
+      },
+      "faers__atorvastatin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\"&limit=1",
+        "sha256": "57484c4d80d17df4c362794cc3753d8290ac70d38817e202cb66476b02e33901",
+        "retrieved_at": "2026-10-06T04:22:11+00:00"
+      },
+      "faers__atorvastatin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "b5108712dc7cd0807bc2d2f1b4dd01c77466dda63ac08a023b60fe1f59641a74",
+        "retrieved_at": "2026-10-06T04:25:37+00:00"
+      },
+      "faers__atorvastatin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "8e331eaa57940802fa19f454c83467df8994254244c0a8255a6a74b3a5924b49",
+        "retrieved_at": "2026-10-06T04:22:16+00:00"
+      },
+      "faers__atorvastatin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "5f4656fc93efddcae97a01325ae0e6848861a102fbafa192108b88780950063e",
+        "retrieved_at": "2026-10-06T04:22:11+00:00"
+      },
+      "faers__atorvastatin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "9d177f75de5c71a5d33562bf314cae494f5447cdbb8344ebd6f787472d3203cd",
+        "retrieved_at": "2026-10-06T04:22:12+00:00"
+      },
+      "faers__atorvastatin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "e4d8765397b2b1da0fb8b61b5b97359bba77cd65395d5836bdba80c3ab12a258",
+        "retrieved_at": "2026-10-06T04:22:15+00:00"
+      },
+      "faers__atorvastatin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "ecfe11f6ddfc4c692764e25b0b79e8a366385792d4795b7cadd0a535eceebb04",
+        "retrieved_at": "2026-10-06T04:22:16+00:00"
+      },
+      "faers__atorvastatin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "c7297d69c6a02e9df549d5110ab2218e67e17284a6b842892ce413fe20a52a37",
+        "retrieved_at": "2026-10-06T04:22:13+00:00"
+      },
+      "faers__atorvastatin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"atorvastatin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "7c4369112951d7ed7318ac0f3584bd164be3473f0c671a5cc7932383bbbf1f47",
+        "retrieved_at": "2026-10-06T04:22:17+00:00"
+      },
+      "faers__azithromycin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "0df6980013dd28c19d7408faa2d5345c4463517afd3ad36b820b6995dbe86d96",
+        "retrieved_at": "2026-10-06T04:22:56+00:00"
+      },
+      "faers__azithromycin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "dd6eb7a0f1e6d386575edaf5764f9b85813758464e123dc6fd46fecaf6c3c64f",
+        "retrieved_at": "2026-10-06T04:22:58+00:00"
+      },
+      "faers__azithromycin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\"&limit=1",
+        "sha256": "2938a84d59aaaefe5e5e8415010830d491a9650bfd26871534edf545142c6a84",
+        "retrieved_at": "2026-10-06T04:22:54+00:00"
+      },
+      "faers__azithromycin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "580f8472d65d46aa8f7a04f758c6b38f5858a165e05bee2424cebd57be84090b",
+        "retrieved_at": "2026-10-06T04:25:40+00:00"
+      },
+      "faers__azithromycin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "8c4d536426ad937c4616bea9d8a1f42f1add0846a4f98e666c4deb2b142235fa",
+        "retrieved_at": "2026-10-06T04:22:59+00:00"
+      },
+      "faers__azithromycin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "a24f699e2e102731380826c1df018e537d2e1145e9f75e50cb25bd493186050b",
+        "retrieved_at": "2026-10-06T04:22:55+00:00"
+      },
+      "faers__azithromycin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "1eec10dff139e141bde8f483b6dcc4faa58dda99ac88126d9b2eb488560ab82e",
+        "retrieved_at": "2026-10-06T04:22:55+00:00"
+      },
+      "faers__azithromycin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "c758e83094f16fba3419928d47d52f1f481e2ad7d6a3c73d6cce6b283b8400ce",
+        "retrieved_at": "2026-10-06T04:22:58+00:00"
+      },
+      "faers__azithromycin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "864afbbc34aa4d7f74a68fca8f1600ab93a6a4c086cf9b2dc970bec95617475c",
+        "retrieved_at": "2026-10-06T04:22:59+00:00"
+      },
+      "faers__azithromycin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "08fb28b3cc543b619b7ef6c5eeb0b764074f2573866d45c6aa590c02bbea546c",
+        "retrieved_at": "2026-10-06T04:22:56+00:00"
+      },
+      "faers__azithromycin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"azithromycin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "0c0d98004465e19c75d1442235821dbd8caca09e93ae6402075bc36cf66fb6b1",
+        "retrieved_at": "2026-10-06T04:23:00+00:00"
+      },
+      "faers__carbamazepine__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "3ecbb111c165ca4827f53b0dc4f1a82b082e019bdfc288cd1632523ff42a7436",
+        "retrieved_at": "2026-10-06T04:24:37+00:00"
+      },
+      "faers__carbamazepine__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "1a9a6f8e36416019b798dc17677857809290bdef3eaa2e5dc9106c3ef24e7936",
+        "retrieved_at": "2026-10-06T04:24:38+00:00"
+      },
+      "faers__carbamazepine__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\"&limit=1",
+        "sha256": "ada6cbf7b81c0f3e5198342954c3781cdc1802c9162301c9610935e4f78b2cae",
+        "retrieved_at": "2026-10-06T04:24:35+00:00"
+      },
+      "faers__carbamazepine__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "17244b6f805c484b79b868759907c9fe5ff1ed466086a1b66a727a30541e8391",
+        "retrieved_at": "2026-10-06T04:25:49+00:00"
+      },
+      "faers__carbamazepine__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "913478d8e88a367095ae4c357ac76056db225516db316866fa257f4a023f64c6",
+        "retrieved_at": "2026-10-06T04:24:40+00:00"
+      },
+      "faers__carbamazepine__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "0889538e1720a5dcaafd6bfa426e42ddd2192a78f4ff1da7db7730655ce10a1c",
+        "retrieved_at": "2026-10-06T04:24:35+00:00"
+      },
+      "faers__carbamazepine__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "93f31201ea876b1ff198d942d0a8481282605721248a29e7949ee0e8d593b74f",
+        "retrieved_at": "2026-10-06T04:24:36+00:00"
+      },
+      "faers__carbamazepine__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "e552c6c6b465850a9ffd85a7bdbf56d8875f33c1fd1a69caefc1f323311b32b2",
+        "retrieved_at": "2026-10-06T04:24:39+00:00"
+      },
+      "faers__carbamazepine__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "22dec21a6fb012ad1d04c321215bee7327ab017ec194c1b046df57bba13f14c8",
+        "retrieved_at": "2026-10-06T04:24:40+00:00"
+      },
+      "faers__carbamazepine__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "acc55fb518586345677f4f5df94dc8548ff06221ac9f5d1d1d6a60499992ea9a",
+        "retrieved_at": "2026-10-06T04:24:37+00:00"
+      },
+      "faers__carbamazepine__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"carbamazepine\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "3e781d7578ea77793cd9fe6545758ea4352ab48d8273c2f2f3dce0317ec3e1d4",
+        "retrieved_at": "2026-10-06T04:24:41+00:00"
+      },
+      "faers__ceftriaxone__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "42217cb76e8e4962c7134766e7f60c2d561fc8c38e8fe1180c6208703c5f642a",
+        "retrieved_at": "2026-10-06T04:22:34+00:00"
+      },
+      "faers__ceftriaxone__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "949b16add0a8e48d96c5d0015b411d13de26000272d58823aa2640d3e346d7dd",
+        "retrieved_at": "2026-10-06T04:22:36+00:00"
+      },
+      "faers__ceftriaxone__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\"&limit=1",
+        "sha256": "014d1b3a533b7b0fe5a8141b65d73858e4bd7e59442bb8d085dd92b30227148b",
+        "retrieved_at": "2026-10-06T04:22:32+00:00"
+      },
+      "faers__ceftriaxone__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "67e2e5e049b69d4d7893f6f2e3e1f47a753b0719e3f39a89f3e6baa23a670e7f",
+        "retrieved_at": "2026-10-06T04:25:39+00:00"
+      },
+      "faers__ceftriaxone__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "4ac5017f68306dffddf8bdcc24b41e8b2d5773d181fb1e928e68a423ec3b5400",
+        "retrieved_at": "2026-10-06T04:22:38+00:00"
+      },
+      "faers__ceftriaxone__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "3db77e6e69bca9030fb56d2f58ac28405528e35df77546d0c6efd6827fd0dcb5",
+        "retrieved_at": "2026-10-06T04:22:33+00:00"
+      },
+      "faers__ceftriaxone__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "be70f076218345d2d6dc82817fe76a5839e0ecc84f782262f42c6dd842a998f7",
+        "retrieved_at": "2026-10-06T04:22:34+00:00"
+      },
+      "faers__ceftriaxone__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "c5b7934154ad49eafd9e6b492e98953139a82b2248c1e0ab6b5f6979ecf71f5e",
+        "retrieved_at": "2026-10-06T04:22:37+00:00"
+      },
+      "faers__ceftriaxone__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "b1dfda9d78c67514281f6d226ee4bb4a8dd22845fd851f0f26267a6260e5dd4f",
+        "retrieved_at": "2026-10-06T04:22:37+00:00"
+      },
+      "faers__ceftriaxone__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "0b3fd8f29d77f7b659a1e219ff474c4465fca40aa121fa88de1c657268cbc234",
+        "retrieved_at": "2026-10-06T04:22:35+00:00"
+      },
+      "faers__ceftriaxone__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ceftriaxone\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "2b530c5ef4b995a494ee2671dc7a25aecd9844b4e2d0ff90b91ff2e43a39639e",
+        "retrieved_at": "2026-10-06T04:22:38+00:00"
+      },
+      "faers__ciprofloxacin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "93d33400e6bc639c2e6e29699b25fb7b872c3446275e3cfdccce615361916ebd",
+        "retrieved_at": "2026-10-06T04:22:41+00:00"
+      },
+      "faers__ciprofloxacin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "267934f3280d843ad0116704a239268d0a5d63a9863b94c0c411d20ae22b1ab1",
+        "retrieved_at": "2026-10-06T04:22:43+00:00"
+      },
+      "faers__ciprofloxacin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\"&limit=1",
+        "sha256": "d8c70156d6c76ef7de3e4d0a70219bd294748344e8ebe9684c4efa98ab714bbe",
+        "retrieved_at": "2026-10-06T04:22:40+00:00"
+      },
+      "faers__ciprofloxacin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "dd233509296d9b97ce7afc992d92131f584eb3584d1ee9c8d02669c5739470f1",
+        "retrieved_at": "2026-10-06T04:25:39+00:00"
+      },
+      "faers__ciprofloxacin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "b1e5b4b77570351e7c2583edef3c5851740999e5a6a3482dea49d9dae40e8411",
+        "retrieved_at": "2026-10-06T04:22:45+00:00"
+      },
+      "faers__ciprofloxacin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "3057ec5fdfca720458a2c80284f571f6c7e65ffcab43ad3b5a3827fab75e743b",
+        "retrieved_at": "2026-10-06T04:22:40+00:00"
+      },
+      "faers__ciprofloxacin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "d8da59f2f07faf3497a53164d4ddc132566db047a19bd27d826bff56a8470ce4",
+        "retrieved_at": "2026-10-06T04:22:41+00:00"
+      },
+      "faers__ciprofloxacin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "826584261af756eaa3b55fc929799b50659670f295f3a0f0e10d40e816d40d9a",
+        "retrieved_at": "2026-10-06T04:22:44+00:00"
+      },
+      "faers__ciprofloxacin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "aa76243849a12a91e967172a801f5321bfc31d13ad153cb2718aadf773452f43",
+        "retrieved_at": "2026-10-06T04:22:44+00:00"
+      },
+      "faers__ciprofloxacin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "c1746c0137741057cd9f9811c54aaac2000f4358a1ecce863b1b32b3623de460",
+        "retrieved_at": "2026-10-06T04:22:42+00:00"
+      },
+      "faers__ciprofloxacin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ciprofloxacin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "6fe3c7cdd4356746a5c8c490c8ee2532719414533c5884041fb4730d74732e5f",
+        "retrieved_at": "2026-10-06T04:22:46+00:00"
+      },
+      "faers__clopidogrel__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "e62b84fa6ccf0d7214c65d7b7ef0620fbac5edc28959dfe681c82c52137b2e36",
+        "retrieved_at": "2026-10-06T04:23:32+00:00"
+      },
+      "faers__clopidogrel__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "4b59e2abdda7a8f4885aa9913cee62cb1ee45960832eac44189d230c5e418f3b",
+        "retrieved_at": "2026-10-06T04:23:34+00:00"
+      },
+      "faers__clopidogrel__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\"&limit=1",
+        "sha256": "fb75b7159d075f96711a8cd886abb0794350c15432c19d2807b82030685794d5",
+        "retrieved_at": "2026-10-06T04:23:30+00:00"
+      },
+      "faers__clopidogrel__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "13e9e259df1ac72556b6fdecd8cb7a78259c47808f38b23880200faf5c9484da",
+        "retrieved_at": "2026-10-06T04:25:43+00:00"
+      },
+      "faers__clopidogrel__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "17bec5b01f9869865c017dbb6157ee25325cb79b7ca9ec14f0ee4389a7faf662",
+        "retrieved_at": "2026-10-06T04:23:35+00:00"
+      },
+      "faers__clopidogrel__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "c6eaa5f214ae261d8051ae7eedfdcbbe14c498a526246ec3a6bda47aba40c092",
+        "retrieved_at": "2026-10-06T04:23:31+00:00"
+      },
+      "faers__clopidogrel__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "ab5cf1f16b01e4160ada68bd4e74c716a703da125533326b2f6d5c0f806560fb",
+        "retrieved_at": "2026-10-06T04:23:31+00:00"
+      },
+      "faers__clopidogrel__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "1c3fb776b33dcef4cba02d2b245dfafb46af2f9cad29641776b3c0fc7f0c9b58",
+        "retrieved_at": "2026-10-06T04:23:34+00:00"
+      },
+      "faers__clopidogrel__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "f66c220e90102596ad9e78831a86ed1338ca7c12b47da2a3750e10a02e711bdf",
+        "retrieved_at": "2026-10-06T04:23:35+00:00"
+      },
+      "faers__clopidogrel__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "9ea4780b6b0a8ba6476ac26b70667df4629cf76ace2590898a58a4a2da0fc93e",
+        "retrieved_at": "2026-10-06T04:23:32+00:00"
+      },
+      "faers__clopidogrel__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"clopidogrel\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "7bf6204ff9a78e3ffec0e46935a35ab72f4adc04089f4a4d8c92128f43788b5e",
+        "retrieved_at": "2026-10-06T04:23:36+00:00"
+      },
+      "faers__diclofenac__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "bd7375d7a4991d307d54b8f3061e911c10cd1a32e3e6e59b99e965280d51a455",
+        "retrieved_at": "2026-10-06T04:21:44+00:00"
+      },
+      "faers__diclofenac__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "760620f62dade5ab3a8ef15a324fbcd4c1236845cf8cdcfbf498c690866e8e80",
+        "retrieved_at": "2026-10-06T04:21:46+00:00"
+      },
+      "faers__diclofenac__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\"&limit=1",
+        "sha256": "c0982d7c53c90c7f16988bbb3888e104b261d24a96e5a76d65b2364d1a475fee",
+        "retrieved_at": "2026-10-06T04:21:42+00:00"
+      },
+      "faers__diclofenac__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "31370d33c0565a4358f19b4ccad690f94183f9b9c0dadf4df710b530bc0e7503",
+        "retrieved_at": "2026-10-06T04:25:34+00:00"
+      },
+      "faers__diclofenac__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "1e74476cf7a68437ae07a83e554fda008a70692788b098e7bb986d8c08c0a892",
+        "retrieved_at": "2026-10-06T04:21:47+00:00"
+      },
+      "faers__diclofenac__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "6f5c38d6cf27fa59903fc031068f28f076887ee17b0524ef8870da556256e71f",
+        "retrieved_at": "2026-10-06T04:21:43+00:00"
+      },
+      "faers__diclofenac__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "932920b3e6a7d9e7e06f471ef21e5a019097ded8396586dbedec7e6e426aba95",
+        "retrieved_at": "2026-10-06T04:21:43+00:00"
+      },
+      "faers__diclofenac__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "54dbf5272c8b9605acc1e8b65ea5636de449e4aa1df6dadf482a767d89a9be2d",
+        "retrieved_at": "2026-10-06T04:21:46+00:00"
+      },
+      "faers__diclofenac__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "96f4a741ca1cbc4995f60d01d8515a1b316d2582ea0736466e2e0c623bc56107",
+        "retrieved_at": "2026-10-06T04:21:47+00:00"
+      },
+      "faers__diclofenac__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "c23546789e3a191d1d7d63adb77e53aca5f675364a7869ebd988fcae947e9ee4",
+        "retrieved_at": "2026-10-06T04:21:44+00:00"
+      },
+      "faers__diclofenac__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"diclofenac\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "bddd901e55b29b4d5be8d112309affdc2395ad34a4655b75408f73a1771e5d02",
+        "retrieved_at": "2026-10-06T04:21:48+00:00"
+      },
+      "faers__digoxin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "cd232c0e0982c418858373236bd5aafa150249143d1f40b818fc1c247da7a6d2",
+        "retrieved_at": "2026-10-06T04:24:29+00:00"
+      },
+      "faers__digoxin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "9e6ef84d427c94a4f352b02616a7be6072891aa4a4ef14c628b249b38e28bd13",
+        "retrieved_at": "2026-10-06T04:24:31+00:00"
+      },
+      "faers__digoxin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\"&limit=1",
+        "sha256": "add95390cc3f5e2d566b06c7b40d49b14059ec8c0bf7a4007db19984bffb4c6d",
+        "retrieved_at": "2026-10-06T04:24:28+00:00"
+      },
+      "faers__digoxin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "dc155de60b3ae8477f8f49e626e32010e17e16fbf5fc9be7d2b6fcc49baa3b41",
+        "retrieved_at": "2026-10-06T04:25:48+00:00"
+      },
+      "faers__digoxin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "20ab78d26ea5297667232896e21b3bc4946c1b7baaac26044dc72ef2ce691af6",
+        "retrieved_at": "2026-10-06T04:24:33+00:00"
+      },
+      "faers__digoxin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "03e0297494aa1ff0d1c95f1d0775fd53ba382400e28fc1eee3ac765f8bdb7ba8",
+        "retrieved_at": "2026-10-06T04:24:28+00:00"
+      },
+      "faers__digoxin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "83213926f74184833d5ed571affac465e6994e9cb156a500f2b845f528ea726f",
+        "retrieved_at": "2026-10-06T04:24:29+00:00"
+      },
+      "faers__digoxin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "9aa64f6ffd44077a0cbe24eca091e9c078cea77ac46f355047bec7d92c62cf82",
+        "retrieved_at": "2026-10-06T04:24:32+00:00"
+      },
+      "faers__digoxin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "199c37a3ab25f349f5423a47dce1730ad97052e29c6209ae036ee41010cc797d",
+        "retrieved_at": "2026-10-06T04:24:32+00:00"
+      },
+      "faers__digoxin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "cb1fdd1652fd796735b5865e028731e29a57d500722741974a3e67650f54a567",
+        "retrieved_at": "2026-10-06T04:24:30+00:00"
+      },
+      "faers__digoxin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"digoxin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "f3f608ddf0fc1fcd43badb26467ac867ed404187a76ca0c6029e215642181c45",
+        "retrieved_at": "2026-10-06T04:24:34+00:00"
+      },
+      "faers__doxycycline__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "cd4cbf4b1f8db16495aa5d10f0ddc7a4b80c640394ce00fd64c87354316c9e3d",
+        "retrieved_at": "2026-10-06T04:23:03+00:00"
+      },
+      "faers__doxycycline__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "8370e8c0dc11945c6cf0716f8878b78a9540d6253eaf02f18dc9b7fa7e8dcded",
+        "retrieved_at": "2026-10-06T04:23:05+00:00"
+      },
+      "faers__doxycycline__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\"&limit=1",
+        "sha256": "aad2f904286857b742bfa03e2cbf595d6859c739138061143e9c14d5683ee72c",
+        "retrieved_at": "2026-10-06T04:23:01+00:00"
+      },
+      "faers__doxycycline__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "e127b1b89decb37e839f797c41c209f293a34ab8c7eef7145d78bcdd337914bb",
+        "retrieved_at": "2026-10-06T04:25:41+00:00"
+      },
+      "faers__doxycycline__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "e34649a0a62bf0ee4199697d2e93ccb1b7e992a1d75b17162405f929fd43794d",
+        "retrieved_at": "2026-10-06T04:23:07+00:00"
+      },
+      "faers__doxycycline__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "ae42d1891bd5a25b35bcd1aecffd8e3a26023bf31ccff5bd183b2f75289f7f6b",
+        "retrieved_at": "2026-10-06T04:23:02+00:00"
+      },
+      "faers__doxycycline__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "8803bf2373f5949d942d1c88a094d5cd4877ffcc5dadc734c4013ce08f556ad2",
+        "retrieved_at": "2026-10-06T04:23:02+00:00"
+      },
+      "faers__doxycycline__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "469e2e87cb2ac246b6f11f1c5cfed9a00418f4897fe4ca16f9c555d1c2f4982d",
+        "retrieved_at": "2026-10-06T04:23:05+00:00"
+      },
+      "faers__doxycycline__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "436c807b0a88ab8d62435cf8b8a29f4d70802725da8080795b1b178b0e54f8e7",
+        "retrieved_at": "2026-10-06T04:23:06+00:00"
+      },
+      "faers__doxycycline__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "2c39c6c9d2ef970c4db8dee96218b50c5effd72653deae423d0c85e32950ee28",
+        "retrieved_at": "2026-10-06T04:23:04+00:00"
+      },
+      "faers__doxycycline__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"doxycycline\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "4cd61196bc3175b91677b24a0e1c3cba26415af38aceb181962ffb96db43a515",
+        "retrieved_at": "2026-10-06T04:23:07+00:00"
+      },
+      "faers__enalapril__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "4bd1405d9241aa07f30ea630521243ff9276d9594ee0aa5b649068abd0915eeb",
+        "retrieved_at": "2026-10-06T04:23:39+00:00"
+      },
+      "faers__enalapril__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "4e59e82744a15cfa0784a9590d272be84c8dc2d1a5f7229e52f9190606f3c53a",
+        "retrieved_at": "2026-10-06T04:23:41+00:00"
+      },
+      "faers__enalapril__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\"&limit=1",
+        "sha256": "849ea2aef076f7b3f3d46fa7c8e5096b0a43ba8ad763a1938028b6b382a791bb",
+        "retrieved_at": "2026-10-06T04:23:37+00:00"
+      },
+      "faers__enalapril__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "f640f3057b3fd5f4df66d41ff133ce7abd4daba1b343475c684abb2abf565fda",
+        "retrieved_at": "2026-10-06T04:25:44+00:00"
+      },
+      "faers__enalapril__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "de16d0707c6a22f3e5d019a750241d4d742b03fd06df510d2dfa9ba686c38d1a",
+        "retrieved_at": "2026-10-06T04:23:43+00:00"
+      },
+      "faers__enalapril__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "bd7fdaa4d782eead036856948116b9242fbb19ef21a3da96c3d62b5befee07e5",
+        "retrieved_at": "2026-10-06T04:23:38+00:00"
+      },
+      "faers__enalapril__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "ebce706ca1b1d31c15921f0e017d6dc24c245546b9d97057c6fdb24db0ab8f0b",
+        "retrieved_at": "2026-10-06T04:23:38+00:00"
+      },
+      "faers__enalapril__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "cdcf1d07bde998dcafa5fa7034f706cdbd14f9a079670ba3e84a0a631ef92b5e",
+        "retrieved_at": "2026-10-06T04:23:41+00:00"
+      },
+      "faers__enalapril__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "f406fd1d088652afb8ad97f53e4532e731868eaacc477bfbcb6e5f71598af642",
+        "retrieved_at": "2026-10-06T04:23:42+00:00"
+      },
+      "faers__enalapril__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "ab33504452efac50125d47fec0dde21120b25f0e6e42d4fd9c73c3f971ad0047",
+        "retrieved_at": "2026-10-06T04:23:40+00:00"
+      },
+      "faers__enalapril__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"enalapril\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "9381182f3345488659275630dbb15bd35a6a0acb4f84d168260888685cfd396c",
+        "retrieved_at": "2026-10-06T04:23:43+00:00"
+      },
+      "faers__furosemide__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "d37329126b39d05d6fbcb8a066aa25f487055edd28534028b8ae59a6fae006ca",
+        "retrieved_at": "2026-10-06T04:24:08+00:00"
+      },
+      "faers__furosemide__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "03248577204083d79f23f3a41ca5dac340ea056d57ce0d3875c5dbe277013df3",
+        "retrieved_at": "2026-10-06T04:24:10+00:00"
+      },
+      "faers__furosemide__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\"&limit=1",
+        "sha256": "c40fff0b3bd69b063bfe195023abb0d14a4e100b51dbd27eeb019403d9163d9d",
+        "retrieved_at": "2026-10-06T04:24:06+00:00"
+      },
+      "faers__furosemide__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "a87efec5b2ae590a14140f30b18e055e03bd80c487e7dd67c0ef3f087a9b00e4",
+        "retrieved_at": "2026-10-06T04:25:46+00:00"
+      },
+      "faers__furosemide__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "af4731d1e83157d2191ac20f7ce6ce7492ae5812d14fcba6dcd602c5a8a67847",
+        "retrieved_at": "2026-10-06T04:24:11+00:00"
+      },
+      "faers__furosemide__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "5f50d5c1d9dbbbe394907c077eddeb74433098170fb2dbdc8d4b01ebb6ee627e",
+        "retrieved_at": "2026-10-06T04:24:07+00:00"
+      },
+      "faers__furosemide__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "ed24b2a1593df35b0a3a55d9b0ab622b0e364207a5cdb7e856ad7192333a133d",
+        "retrieved_at": "2026-10-06T04:24:07+00:00"
+      },
+      "faers__furosemide__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "32ea0d78b09f0ae1260974c36af8588fd2c9f1473929b5ee07dacfb83c9ab340",
+        "retrieved_at": "2026-10-06T04:24:10+00:00"
+      },
+      "faers__furosemide__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "038ef0d6964f0ec64e9f2d4be4db12e567b97ee00e3c56b6dfbf92e3fbc8352b",
+        "retrieved_at": "2026-10-06T04:24:11+00:00"
+      },
+      "faers__furosemide__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "09ddecfed0ecfa9d4848c31da5a059802431c355a39222271a99a0d4b1f22cc1",
+        "retrieved_at": "2026-10-06T04:24:08+00:00"
+      },
+      "faers__furosemide__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"furosemide\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "037061824cb75673d6a26d88e6e5be7603d1865d61f49e2fd14af3b954148303",
+        "retrieved_at": "2026-10-06T04:24:12+00:00"
+      },
+      "faers__glipizide__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "89059312f90c26367fac4aa0ebbc2254001bb3b63c581b67678c5e876c6004f1",
+        "retrieved_at": "2026-10-06T04:22:05+00:00"
+      },
+      "faers__glipizide__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "0b15b88052a8dc159aaa44e99dfe35dd2b574c6e35ec3b7c1ae463da29e35c60",
+        "retrieved_at": "2026-10-06T04:22:07+00:00"
+      },
+      "faers__glipizide__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\"&limit=1",
+        "sha256": "afbded917d33047522d30d4f396c1267a6153eeaa5f0f713bd7a4cc201f8111e",
+        "retrieved_at": "2026-10-06T04:22:04+00:00"
+      },
+      "faers__glipizide__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "0a92fd6ba0978e073f285d8159267700b76ae1a326cc2fae970e6b44dd2b5072",
+        "retrieved_at": "2026-10-06T04:25:36+00:00"
+      },
+      "faers__glipizide__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "4dfff883cd2f9561106c3a26063d1ed7fb474bddde5789fad1c8daa4b193e733",
+        "retrieved_at": "2026-10-06T04:22:09+00:00"
+      },
+      "faers__glipizide__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "29bcf80f62e8d9b2d54e8db615d51b6657c8dc04734bdbd77cf017b49858fca8",
+        "retrieved_at": "2026-10-06T04:22:04+00:00"
+      },
+      "faers__glipizide__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "e06251e57d1e2a780788d30dad7dc195758d9ed3d28079a795f848d5392edb38",
+        "retrieved_at": "2026-10-06T04:22:05+00:00"
+      },
+      "faers__glipizide__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "8997fc46ad61e24b151d5cde502008424b152f6b70c0d7670e6c4aa087b31ba9",
+        "retrieved_at": "2026-10-06T04:22:08+00:00"
+      },
+      "faers__glipizide__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "033b24154f611c4f487fde29f30914b6ee19c01a56ff6e4da1fc309ea1fd9b77",
+        "retrieved_at": "2026-10-06T04:22:08+00:00"
+      },
+      "faers__glipizide__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "c8ff4c38d4c295e246c312eea59b349c0ec71fd7447fd2bd1149ecfb5faf240b",
+        "retrieved_at": "2026-10-06T04:22:06+00:00"
+      },
+      "faers__glipizide__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"glipizide\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "ee08ed3d03c10d243a8f6d1b57e1e639a8d559c8130945dba326634c9558346b",
+        "retrieved_at": "2026-10-06T04:22:10+00:00"
+      },
+      "faers__hydrochlorothiazide__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "86f1aedc20b99e142e93f9d7ab7061d64e6ef84b44c8ab609e676b2163e34d22",
+        "retrieved_at": "2026-10-06T04:24:01+00:00"
+      },
+      "faers__hydrochlorothiazide__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "f18aef77b9f9848265849cdef63e028ea4eb489a57f2f5eaf86aa953e33f6d9a",
+        "retrieved_at": "2026-10-06T04:24:03+00:00"
+      },
+      "faers__hydrochlorothiazide__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\"&limit=1",
+        "sha256": "591a5350add28c82d9641de80f574d7f9bc1cedc99d5680bbd376098f06a60fe",
+        "retrieved_at": "2026-10-06T04:23:59+00:00"
+      },
+      "faers__hydrochlorothiazide__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "767fc97c154f7cfdba5ee4ae9db7af9b30941269e9da550a779d3a0f44875fda",
+        "retrieved_at": "2026-10-06T04:25:46+00:00"
+      },
+      "faers__hydrochlorothiazide__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "9e94a0226e7c1ec2050e83e73dfa400a657f6fb9062c56512f8baa39b9b16b31",
+        "retrieved_at": "2026-10-06T04:24:04+00:00"
+      },
+      "faers__hydrochlorothiazide__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "2e1d1c014240b53234227c98b4a265f250d6aca024b32108990d131bfbf46069",
+        "retrieved_at": "2026-10-06T04:23:59+00:00"
+      },
+      "faers__hydrochlorothiazide__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "eb2def029a6991b33725a00add438e66e04d4dfc198ce14915328beb2556db72",
+        "retrieved_at": "2026-10-06T04:24:00+00:00"
+      },
+      "faers__hydrochlorothiazide__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "1f6ab26645c17a63f061c1d276727433c00a7182cd4bb556ea49405d3ff3e255",
+        "retrieved_at": "2026-10-06T04:24:03+00:00"
+      },
+      "faers__hydrochlorothiazide__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "5c72db991b8e4adf945f014a8fa295720c7920b341f6804f0798724ed34206e6",
+        "retrieved_at": "2026-10-06T04:24:04+00:00"
+      },
+      "faers__hydrochlorothiazide__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "6aa0b2bbc19f6ae4be55a66046be9be5d4ce3917be7dfad6b0b0293cd76b2929",
+        "retrieved_at": "2026-10-06T04:24:01+00:00"
+      },
+      "faers__hydrochlorothiazide__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"hydrochlorothiazide\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "9d8f5a8d57da848f56b96320c329f9d1d65b2581b37d0206f7d1396c89820729",
+        "retrieved_at": "2026-10-06T04:24:05+00:00"
+      },
+      "faers__ibuprofen__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "4a6cb08db155a6103937b890a97e446fcbd2991ab114c95f6bfac0cb31425df2",
+        "retrieved_at": "2026-10-06T04:21:37+00:00"
+      },
+      "faers__ibuprofen__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "422a10ff0160bc8b2004ad5dc47fcb6be6b11a2c4112a118bb88be62d5779848",
+        "retrieved_at": "2026-10-06T04:21:38+00:00"
+      },
+      "faers__ibuprofen__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\"&limit=1",
+        "sha256": "57b4ac138a13d07c952c8cea70e449eaa1d35f50e241ae4af2f90c1d8a68a93d",
+        "retrieved_at": "2026-10-06T04:21:35+00:00"
+      },
+      "faers__ibuprofen__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "fa0bf4aa581abc5b83b154702fffdb06b9f0038b196de42ed2a0db1637fcb9af",
+        "retrieved_at": "2026-10-06T04:25:34+00:00"
+      },
+      "faers__ibuprofen__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "0e097bbbf391ed2f12b9b73ec215e4941f6b570ecaeabeccc4500d22b2c47b9d",
+        "retrieved_at": "2026-10-06T04:21:40+00:00"
+      },
+      "faers__ibuprofen__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "12c38094bc2206d0328da9274e1ef5ca3f506c08ac336d557868b5991ce457e9",
+        "retrieved_at": "2026-10-06T04:21:35+00:00"
+      },
+      "faers__ibuprofen__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "0e5607948cc7c8c6d90523150918cae4d2c11e36bf66de1b8831fbbbbc6baa1b",
+        "retrieved_at": "2026-10-06T04:21:36+00:00"
+      },
+      "faers__ibuprofen__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "3707279c326bcab254092922dfa3aba2589770326c6743d0fb38b06187f41f6d",
+        "retrieved_at": "2026-10-06T04:21:39+00:00"
+      },
+      "faers__ibuprofen__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "cc2185616f62e40c4e6e3080aced9e214931a9a814eb3d8a70a9186a4553bb91",
+        "retrieved_at": "2026-10-06T04:21:40+00:00"
+      },
+      "faers__ibuprofen__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "75f7f44f30c338941f840336837728fca8432fd8e3c293557dfab5c5546b13bc",
+        "retrieved_at": "2026-10-06T04:21:37+00:00"
+      },
+      "faers__ibuprofen__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"ibuprofen\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "049f0bc820507b017193cec312618c90bde25f19acaa9e468a574e4efd635063",
+        "retrieved_at": "2026-10-06T04:21:41+00:00"
+      },
+      "faers__levofloxacin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "37ef85cd75ee945859ace68fb3dba581dd46b1f2153fb49226be571a11e282c1",
+        "retrieved_at": "2026-10-06T04:22:49+00:00"
+      },
+      "faers__levofloxacin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "c207c3beb6e5139fb980e6ca8996646c2b840757d004e7905fcdb5c0bde086f0",
+        "retrieved_at": "2026-10-06T04:22:50+00:00"
+      },
+      "faers__levofloxacin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\"&limit=1",
+        "sha256": "1fde6d98b39190c96c3c731a641b368289e989ff602f5b2c6ca59f8ff8de115d",
+        "retrieved_at": "2026-10-06T04:22:47+00:00"
+      },
+      "faers__levofloxacin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "694b4959b94ff5dafecdd80e1baabf36b66ee24b08ef02dbacc5430a4d9ac80d",
+        "retrieved_at": "2026-10-06T04:25:40+00:00"
+      },
+      "faers__levofloxacin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "918d3e60786f4284e7dc7ac539a5865d7f0053fc69ff8e0cd036f860a69fc7c0",
+        "retrieved_at": "2026-10-06T04:22:52+00:00"
+      },
+      "faers__levofloxacin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "dc4b093bbccc352f457b34383b5ed39ee56c17b2f52dfc7648484588530ede76",
+        "retrieved_at": "2026-10-06T04:22:47+00:00"
+      },
+      "faers__levofloxacin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "874cbe1884b0db0bcdc4ce1c0f3d9be6cdf1e6f14d07834640543c211ee3c052",
+        "retrieved_at": "2026-10-06T04:22:48+00:00"
+      },
+      "faers__levofloxacin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "77077bcd3041317fe443953391dece8cb93463e8747b365f1e9df1ca731da245",
+        "retrieved_at": "2026-10-06T04:22:51+00:00"
+      },
+      "faers__levofloxacin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "599965f169b55a24785749b6f41d7c46f6f8994849bc1d2e65f682207f6d41f3",
+        "retrieved_at": "2026-10-06T04:22:52+00:00"
+      },
+      "faers__levofloxacin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "13c99ff515046f113b3cec7188fef5a57d103ff542039126d5620953a48999c4",
+        "retrieved_at": "2026-10-06T04:22:49+00:00"
+      },
+      "faers__levofloxacin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"levofloxacin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "3f6784ab1ad5550e975e64414f21a0cefbb5b5133cf7fa62f06ec581aad2a9d2",
+        "retrieved_at": "2026-10-06T04:22:53+00:00"
+      },
+      "faers__losartan__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "87aeedfb4a76512a89df3cdd73b2fd4d3f884402a5e5ae7c99611349cc1562e9",
+        "retrieved_at": "2026-10-06T04:23:46+00:00"
+      },
+      "faers__losartan__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "b9946d1c15c1bad08a571efd3c994bccdaeb331b3e4281b3e619140c43353892",
+        "retrieved_at": "2026-10-06T04:23:48+00:00"
+      },
+      "faers__losartan__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\"&limit=1",
+        "sha256": "80428d74f0b0f268d0e705690549e51d1c907bedd65e8e118f128659a7f66d41",
+        "retrieved_at": "2026-10-06T04:23:44+00:00"
+      },
+      "faers__losartan__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "e4a41cc83000e119ec86fbb5f3f3db90ac01097c1e1bca399278e1e4cc97a980",
+        "retrieved_at": "2026-10-06T04:25:45+00:00"
+      },
+      "faers__losartan__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "fe7f3722dff7997b3003f573cc08412602ca6a2255520bd2def7360ff4f72c7a",
+        "retrieved_at": "2026-10-06T04:23:50+00:00"
+      },
+      "faers__losartan__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "511b0d8617a8c4e38a1890debf6b1c6624b376c1807fc5b1fb8b9fff430d1067",
+        "retrieved_at": "2026-10-06T04:23:45+00:00"
+      },
+      "faers__losartan__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "05e88a5ee2bf360fc9221f278b9c6dda1d503a5c47895dccaa4a1ed7bdafb477",
+        "retrieved_at": "2026-10-06T04:23:46+00:00"
+      },
+      "faers__losartan__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "cb2ebff3e09159fe5f3eb4e78ce32deb8c830030a22137a8821e02b8c6faea90",
+        "retrieved_at": "2026-10-06T04:23:49+00:00"
+      },
+      "faers__losartan__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "6a7c3a4162a9806e538bcb6a49a38c35fbf8fbff04b4bf5d2122042dbcd493a5",
+        "retrieved_at": "2026-10-06T04:23:49+00:00"
+      },
+      "faers__losartan__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "178681beae219d886ff0d20ae80b3ab30856bb7f4877c01b5ac5f6a2d7565a5e",
+        "retrieved_at": "2026-10-06T04:23:47+00:00"
+      },
+      "faers__losartan__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"losartan\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "0f1bb2fb8b7a1b9379e2ed0950b1dc7d56adc78b12f18cdfe9eba2823b0e286b",
+        "retrieved_at": "2026-10-06T04:23:50+00:00"
+      },
+      "faers__metformin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "6b49962709cb99849083c9e7e0274b47705a4a841e2c1986a42f7fb432008fc2",
+        "retrieved_at": "2026-10-06T04:21:58+00:00"
+      },
+      "faers__metformin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "8ebaeb0de6a8ed2a2307743389e4ac78c9399beac03bab90c8e2e66d3fbda28b",
+        "retrieved_at": "2026-10-06T04:22:00+00:00"
+      },
+      "faers__metformin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\"&limit=1",
+        "sha256": "e1bd237489753a5e0dd923046935f2e2bda326773315fb01b72d028e0b8dad4c",
+        "retrieved_at": "2026-10-06T04:21:56+00:00"
+      },
+      "faers__metformin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "05174e592b5c93f215cd2daa02b1d2cd80413097cee7bcdfbdc17da8620e8a83",
+        "retrieved_at": "2026-10-06T04:25:36+00:00"
+      },
+      "faers__metformin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "5185385eae3495982e769e20d592dc7f50c5561710107541ba047706c1fcd609",
+        "retrieved_at": "2026-10-06T04:22:02+00:00"
+      },
+      "faers__metformin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "1d041de4dfc9b5884ca6de42a399b0895cf9903a6f8e94e9fa9a0aba7237adef",
+        "retrieved_at": "2026-10-06T04:21:57+00:00"
+      },
+      "faers__metformin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "11f31efcf1d6dac9e03695cc022b1120e65bff54aa325a5c5bd01d0a69faedd7",
+        "retrieved_at": "2026-10-06T04:21:58+00:00"
+      },
+      "faers__metformin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "1be96dfc5a2a551276674ea4194ce2139e099c3a237c129e467d7a6af4f3c90d",
+        "retrieved_at": "2026-10-06T04:22:01+00:00"
+      },
+      "faers__metformin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "294f26b64fb341bb023f6d849fe3412222608483efae8334c65349fb5abe1371",
+        "retrieved_at": "2026-10-06T04:22:01+00:00"
+      },
+      "faers__metformin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "8bfb2ff483734592c899ea3475ba42b58fed72e140918cd5bbe89462c1abb3a0",
+        "retrieved_at": "2026-10-06T04:21:59+00:00"
+      },
+      "faers__metformin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metformin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "3e138b471345dd3f27d7d7c7e69d6df66968ca6250a3f8524f90be288742694d",
+        "retrieved_at": "2026-10-06T04:22:02+00:00"
+      },
+      "faers__metoprolol__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "305f69bbc257c654bbfbf397f4d29a92311334578a702da828ec469fd78c4653",
+        "retrieved_at": "2026-10-06T04:24:22+00:00"
+      },
+      "faers__metoprolol__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "cd8faa30130248cafdb28a26bcfefbaad7e20eeab50ad1d82f622e541ac292e4",
+        "retrieved_at": "2026-10-06T04:24:24+00:00"
+      },
+      "faers__metoprolol__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\"&limit=1",
+        "sha256": "a56656c38cfb816d39f870dbf8f391b4a829aa0228bb48fcce37cd59547fcfe3",
+        "retrieved_at": "2026-10-06T04:24:20+00:00"
+      },
+      "faers__metoprolol__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "ec7520580eeafecc83541dbcaed77432fb33a28824290b53d258a1de81375fff",
+        "retrieved_at": "2026-10-06T04:25:48+00:00"
+      },
+      "faers__metoprolol__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "bf09fe3b5e217faf82a1aa9e6c6c26c6aa694ade7a980dd202e786434f2581d0",
+        "retrieved_at": "2026-10-06T04:24:26+00:00"
+      },
+      "faers__metoprolol__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "9fd569845faa33b90dd46c2535cc9ff03b9b0e929b99433ea6b88021fb255728",
+        "retrieved_at": "2026-10-06T04:24:21+00:00"
+      },
+      "faers__metoprolol__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "88f501569c619aa596af8330e39d1c0464829d781d43c168c821496ba26dc308",
+        "retrieved_at": "2026-10-06T04:24:22+00:00"
+      },
+      "faers__metoprolol__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "fcfcd6b5a91ba095366e8630211aaba23fa7b597571a8ff78ad0de90fb62c3bc",
+        "retrieved_at": "2026-10-06T04:24:25+00:00"
+      },
+      "faers__metoprolol__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "4d042ef2eff53faebe2999ac23fb7ebec3723df3c3af9db28826e0802d26eb43",
+        "retrieved_at": "2026-10-06T04:24:25+00:00"
+      },
+      "faers__metoprolol__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "b3ec7b269909e9b3e73c92c2af7cc0ce081478d1ddba1d780e8c8e5852240fb6",
+        "retrieved_at": "2026-10-06T04:24:23+00:00"
+      },
+      "faers__metoprolol__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"metoprolol\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "f0b3b34bc2c5e96607e3fcc0f15dacd9efe7a90948c6efa429ce157bb4e5cfd0",
+        "retrieved_at": "2026-10-06T04:24:26+00:00"
+      },
+      "faers__omeprazole__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "7292a4e49051375c7c61f481ac97a827630905805cbc983c0f934a61696ab6a0",
+        "retrieved_at": "2026-10-06T04:23:10+00:00"
+      },
+      "faers__omeprazole__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "d26885731b9e2e70e6d460d65fa0b4dc8f9e9093a87ec5bd6d4c52c1008a5987",
+        "retrieved_at": "2026-10-06T04:23:12+00:00"
+      },
+      "faers__omeprazole__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\"&limit=1",
+        "sha256": "73240b1aa42b7a09c3c16403a075984fd22536cf6df59fad869d425c8613b352",
+        "retrieved_at": "2026-10-06T04:23:08+00:00"
+      },
+      "faers__omeprazole__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "13bf8c2802c62650c17fed11330d01e66ba2165c1c5a445858f26de54f270538",
+        "retrieved_at": "2026-10-06T04:25:42+00:00"
+      },
+      "faers__omeprazole__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "b7e77daa00f9d19a958b0632bd13d09dc2bf0d08cf9e62a51355ae91679cdc9b",
+        "retrieved_at": "2026-10-06T04:23:14+00:00"
+      },
+      "faers__omeprazole__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "3049ab213f37501a5275f960f7355de2b5ea99f4563001ebe79e081b0b2d8cd3",
+        "retrieved_at": "2026-10-06T04:23:09+00:00"
+      },
+      "faers__omeprazole__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "0e90ddf00abfc708e9c017030718770d0f0eea308e27c5f08ab9656575a04b54",
+        "retrieved_at": "2026-10-06T04:23:10+00:00"
+      },
+      "faers__omeprazole__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "c2de15b24c5cc904b8083a1e137e8a884365280f4cd4773b6548afaa9324161b",
+        "retrieved_at": "2026-10-06T04:23:13+00:00"
+      },
+      "faers__omeprazole__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "40dac40e1aa7d14f0092c4f8a04da0fce9ee744ae61f241737bd206fea184c23",
+        "retrieved_at": "2026-10-06T04:23:13+00:00"
+      },
+      "faers__omeprazole__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "ff2157ca7b7b23c0a1688d02815b7baae172ea279b6532dcad0af3c016476a98",
+        "retrieved_at": "2026-10-06T04:23:11+00:00"
+      },
+      "faers__omeprazole__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"omeprazole\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "0de908703d183f71fd14615dd17b95a740f4333bed1fe37eefeb5789cfaea4ed",
+        "retrieved_at": "2026-10-06T04:23:14+00:00"
+      },
+      "faers__rivaroxaban__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "4523fb5de4fc53a5577193110a5870bc8962ad7341d5f34e6167594b37e65a10",
+        "retrieved_at": "2026-10-06T04:23:25+00:00"
+      },
+      "faers__rivaroxaban__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "cd12a6746b2fcb0aa872c98651f83ac887ef311da8fcf21142f3468017b7bb3d",
+        "retrieved_at": "2026-10-06T04:23:26+00:00"
+      },
+      "faers__rivaroxaban__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\"&limit=1",
+        "sha256": "d4d41f560628c8cd5a3e75fc66cd1ed71a2e48a133b68d11d78bac67325d3e47",
+        "retrieved_at": "2026-10-06T04:23:23+00:00"
+      },
+      "faers__rivaroxaban__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "86d3dc8b28b8e553b64f6f0f6df9fd68c9fc3c8b1b014f78632598c302f8d3d6",
+        "retrieved_at": "2026-10-06T04:25:43+00:00"
+      },
+      "faers__rivaroxaban__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "2acca8b09ce317fc7e279c050108fa51b894f8e2f1ac2930409a46b349ffa767",
+        "retrieved_at": "2026-10-06T04:23:28+00:00"
+      },
+      "faers__rivaroxaban__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "63c74b687a31347505d66d648b8030affbcb439454c0fa8d90b83951bc1ae0b1",
+        "retrieved_at": "2026-10-06T04:23:23+00:00"
+      },
+      "faers__rivaroxaban__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "7100a3596d9edefa27a28050d62cb6db7555e7462b2dc87dea2b1f0ecd057bc8",
+        "retrieved_at": "2026-10-06T04:23:24+00:00"
+      },
+      "faers__rivaroxaban__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "5a4fb74b54abe8d8b6a147c18d69a6a38d1bee8d1d4fef4e4e93f7947d1286bc",
+        "retrieved_at": "2026-10-06T04:23:27+00:00"
+      },
+      "faers__rivaroxaban__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "3b922c0c51a68ad70172eb724deec15717bb4ffc0b81a92eb11d8c13431c792b",
+        "retrieved_at": "2026-10-06T04:23:28+00:00"
+      },
+      "faers__rivaroxaban__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "b2080ff50fcd580cc4a074612ef8f973e84c8b6cddee272413445ab7fef37263",
+        "retrieved_at": "2026-10-06T04:23:25+00:00"
+      },
+      "faers__rivaroxaban__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"rivaroxaban\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "810679ebb2d3cd3a07928cfefccaeb1daa2d0e196be3b063a8a65a8058312af2",
+        "retrieved_at": "2026-10-06T04:23:29+00:00"
+      },
+      "faers__sertraline__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "40ae9bdfe2549b122aa4aba46ee75fbd739a8223c26a307a8b160567f4e58b81",
+        "retrieved_at": "2026-10-06T04:24:51+00:00"
+      },
+      "faers__sertraline__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "e19ea67ddeffb02465bf329be23d25c57b46ea9524697161935616e5599eb685",
+        "retrieved_at": "2026-10-06T04:24:53+00:00"
+      },
+      "faers__sertraline__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\"&limit=1",
+        "sha256": "6ce316a02b0d58343e58427ba20d768f2ec703fdbc009b26a3f53231f958f33b",
+        "retrieved_at": "2026-10-06T04:24:49+00:00"
+      },
+      "faers__sertraline__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "40b0533d122bab7920095675b7a19cc7e8d045b968f26feced0d30392dcca2fa",
+        "retrieved_at": "2026-10-06T04:25:50+00:00"
+      },
+      "faers__sertraline__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "3d0f66b1830ab15f3e4b530b04d61308633f9f206ad0b9d080322736a8a31601",
+        "retrieved_at": "2026-10-06T04:24:55+00:00"
+      },
+      "faers__sertraline__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "ba9338b104647d0087234d9656fc655cf4388767b7bcf0d1d9d67d3810057a3b",
+        "retrieved_at": "2026-10-06T04:24:50+00:00"
+      },
+      "faers__sertraline__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "748a19a6d365ecd4cc12dd16211f21be02b6fb237c906e69f7dfc6ad46a95bd8",
+        "retrieved_at": "2026-10-06T04:24:50+00:00"
+      },
+      "faers__sertraline__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "344c6a071a4637ca8ac2db3e8c4871c8ac856d96a47669751fd285d12f9d7444",
+        "retrieved_at": "2026-10-06T04:24:53+00:00"
+      },
+      "faers__sertraline__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "0ad5be956a3af38d4c86b96d4e505125127e15630412a09a74537138446e032a",
+        "retrieved_at": "2026-10-06T04:24:54+00:00"
+      },
+      "faers__sertraline__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "c0af4ea1dc18517ea0b9d3c90952670fd6065e9414fc6f0d775eb72ef0edfe32",
+        "retrieved_at": "2026-10-06T04:24:52+00:00"
+      },
+      "faers__sertraline__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"sertraline\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "4cd61196bc3175b91677b24a0e1c3cba26415af38aceb181962ffb96db43a515",
+        "retrieved_at": "2026-10-06T04:24:55+00:00"
+      },
+      "faers__simvastatin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "27ca0a30c3dabb03fc2535e6fa8c83c420c2ac9b10e8b609ddec0489b110cca6",
+        "retrieved_at": "2026-10-06T04:22:20+00:00"
+      },
+      "faers__simvastatin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "1bca5ae2b5122946916acd7ff5c28df7812245049b067d28f551bfbce724b3bd",
+        "retrieved_at": "2026-10-06T04:22:22+00:00"
+      },
+      "faers__simvastatin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\"&limit=1",
+        "sha256": "143b14514ed50076b1bc34fe97e8135d19ca72aa595770f2a342044c1eb23b73",
+        "retrieved_at": "2026-10-06T04:22:18+00:00"
+      },
+      "faers__simvastatin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "416beb77ce6714a1738ab76acf47e9052e06e4462225f9ebb8374cd285a3936f",
+        "retrieved_at": "2026-10-06T04:25:37+00:00"
+      },
+      "faers__simvastatin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "3f87658a6eb33d9a8073c8e25e85f7defdea06c7559404d012fd847f9216d2ec",
+        "retrieved_at": "2026-10-06T04:22:23+00:00"
+      },
+      "faers__simvastatin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "4b1fc6f3ecd7ffae6ca9404655d81e361548d9b78a42d8d05f45b81e4b4583b5",
+        "retrieved_at": "2026-10-06T04:22:19+00:00"
+      },
+      "faers__simvastatin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "8b6716ba2954d8c67e4b148e75e96a9c4eb4a763fa78424fb69e1553bfdfa28e",
+        "retrieved_at": "2026-10-06T04:22:19+00:00"
+      },
+      "faers__simvastatin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "9a97b76a33d34418a2b1de327116b8e10e0aa929a480cd5fc1045c6cf60dce56",
+        "retrieved_at": "2026-10-06T04:22:22+00:00"
+      },
+      "faers__simvastatin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "98e93fb71320fae8b02271df2e1e0aa1855a25ef083e58de8a5db0e3b2f8a148",
+        "retrieved_at": "2026-10-06T04:22:23+00:00"
+      },
+      "faers__simvastatin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "8987c8c204b5331e01d3ab883e4715e124a1844fb2a3aac397d4e0c74944c180",
+        "retrieved_at": "2026-10-06T04:22:20+00:00"
+      },
+      "faers__simvastatin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"simvastatin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "a8b6bd86365d4572915a9342aa898ccc32e8d26174c8878fbc4c8c4be683ed78",
+        "retrieved_at": "2026-10-06T04:22:24+00:00"
+      },
+      "faers__spironolactone__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "91795fe333ef59326a7296d22baa6851fa0513a457db3b22d9b508fb11af2b38",
+        "retrieved_at": "2026-10-06T04:24:15+00:00"
+      },
+      "faers__spironolactone__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "fa2daee092b047b06dde677347298334627bc90ff218a33491c22e2e21db0efa",
+        "retrieved_at": "2026-10-06T04:24:17+00:00"
+      },
+      "faers__spironolactone__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\"&limit=1",
+        "sha256": "1a97b3802be4aa253d50c09f199669b02aac50bee477556c1afa695b5e89ca5d",
+        "retrieved_at": "2026-10-06T04:24:13+00:00"
+      },
+      "faers__spironolactone__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "26bfe6cc04bc59bf8376baac3dd6689f1aa645070fc33923219b974adf17d8c7",
+        "retrieved_at": "2026-10-06T04:25:47+00:00"
+      },
+      "faers__spironolactone__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "08fe1e53fe48f8bb05548bd2e6cb8b7cd458497bff8e3496af045cfd2fc5a63d",
+        "retrieved_at": "2026-10-06T04:24:19+00:00"
+      },
+      "faers__spironolactone__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "09e906b44ff8c5d5dfd3363dd36cf3524a5452b7f850ec924cb28a43ec3a50db",
+        "retrieved_at": "2026-10-06T04:24:14+00:00"
+      },
+      "faers__spironolactone__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "aa3b5750489777bc583e36268e5ab8a2fd8dd9491d167082af803fc741a3b978",
+        "retrieved_at": "2026-10-06T04:24:14+00:00"
+      },
+      "faers__spironolactone__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "340b9ae543a872a230adec4e5f2c2001ca23e924b66387da1e9fe10178c26e4e",
+        "retrieved_at": "2026-10-06T04:24:17+00:00"
+      },
+      "faers__spironolactone__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "1d1edf2e425616f639c15aeddea243ec604f3037881e0e120d0cbe7c7a3fe805",
+        "retrieved_at": "2026-10-06T04:24:18+00:00"
+      },
+      "faers__spironolactone__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "0510a46bd6e794e958277b1d0dab22ef62e3c8b43c8ed4a3e17e421b3ab10f47",
+        "retrieved_at": "2026-10-06T04:24:16+00:00"
+      },
+      "faers__spironolactone__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"spironolactone\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "17f8e466968024d6c3fc1b3dbbdda84d0405ee8f8807ee8873ac1ae00b730092",
+        "retrieved_at": "2026-10-06T04:24:19+00:00"
+      },
+      "faers__valproic-acid__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "d2eeb3e2b7e52cb9d6a84ecf9f63f167baf0cb1460fabe73a83e5a08fe3fc2f3",
+        "retrieved_at": "2026-10-06T04:24:44+00:00"
+      },
+      "faers__valproic-acid__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "87cfb740eed7001d1a0173bc524703d7ab42f373df925b342c1772eb9a88f094",
+        "retrieved_at": "2026-10-06T04:24:46+00:00"
+      },
+      "faers__valproic-acid__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\"&limit=1",
+        "sha256": "2bd326285b170c574cad14d1502701ee6671dd2f4fc80cf9ef1ae796c85894a9",
+        "retrieved_at": "2026-10-06T04:24:42+00:00"
+      },
+      "faers__valproic-acid__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "38c492f734172af513625174fb922216bb034f4219a8a2b455af32da51a1bf98",
+        "retrieved_at": "2026-10-06T04:25:49+00:00"
+      },
+      "faers__valproic-acid__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "6b1dd82b694329a4a09970cea6bb13521af6592b31b053588442ccd7ae15cf68",
+        "retrieved_at": "2026-10-06T04:24:47+00:00"
+      },
+      "faers__valproic-acid__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "79be4580938405a146dcd878cac14a4e2ed04bb4eb533b4432f2ea813a17ced0",
+        "retrieved_at": "2026-10-06T04:24:43+00:00"
+      },
+      "faers__valproic-acid__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "101076cfaf81e778495a75c9396f376406dccda554461189a3076b9ecba45b86",
+        "retrieved_at": "2026-10-06T04:24:43+00:00"
+      },
+      "faers__valproic-acid__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "6f6d52e2ddf56a1292fe1ed20c1653dc5b77d0b0b943a03b55b4e3a5f5a73099",
+        "retrieved_at": "2026-10-06T04:24:46+00:00"
+      },
+      "faers__valproic-acid__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "d2e76eebccb164cf32c40286acdabc9b9ae6ef6736735434be8a216b57ac6d8d",
+        "retrieved_at": "2026-10-06T04:24:47+00:00"
+      },
+      "faers__valproic-acid__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "13c31c6e4e7ddb542033158d4371ed9504d9f8bd68f1c3421736ad43b76b5bc3",
+        "retrieved_at": "2026-10-06T04:24:44+00:00"
+      },
+      "faers__valproic-acid__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"valproic acid\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "389de295d019f642bb1af3f86680d98ac85816e9364a358f1eea55bf7e2b984d",
+        "retrieved_at": "2026-10-06T04:24:48+00:00"
+      },
+      "faers__warfarin__acute-kidney-injury": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"ACUTE KIDNEY INJURY\"&limit=1",
+        "sha256": "2b0b161595397a0b8dfe7617d4707f17a426cc6295bbfff896eacf84dc03a542",
+        "retrieved_at": "2026-10-06T04:23:17+00:00"
+      },
+      "faers__warfarin__agranulocytosis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"AGRANULOCYTOSIS\"&limit=1",
+        "sha256": "c92d2cdb18fbeb61b3ae1ad41bf04b834c34b5f288e843c028a888f1e30c2731",
+        "retrieved_at": "2026-10-06T04:23:19+00:00"
+      },
+      "faers__warfarin__all": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\"&limit=1",
+        "sha256": "4c27f5e5891ba2d5403eabfecc37f3eba4b501e3e699e4cfa9d4324b8bd27b4d",
+        "retrieved_at": "2026-10-06T04:23:16+00:00"
+      },
+      "faers__warfarin__anaphylaxis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"ANAPHYLACTIC REACTION\"&limit=1",
+        "sha256": "eaf271969b3d2a109c55fe4dda4e16bc3f3ee4461c9913b15207f43f822d39d7",
+        "retrieved_at": "2026-10-06T04:25:42+00:00"
+      },
+      "faers__warfarin__angioedema": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"ANGIOEDEMA\"&limit=1",
+        "sha256": "3dd6715cbdd3bb59ebfbae8cf9f8eb237146b369e41500e7be9e6d019af3d771",
+        "retrieved_at": "2026-10-06T04:23:21+00:00"
+      },
+      "faers__warfarin__gastrointestinal-haemorrhage": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"GASTROINTESTINAL HAEMORRHAGE\"&limit=1",
+        "sha256": "19e90b01fbc088e5c162e365cba724236b1caafd15ae207d7a033f6e6bb5e372",
+        "retrieved_at": "2026-10-06T04:23:16+00:00"
+      },
+      "faers__warfarin__hepatotoxicity": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"HEPATOTOXICITY\"&limit=1",
+        "sha256": "e1a453d505f5f0e941bf075c42742cfec061a42ae3ab2444b17baeaff0c6e296",
+        "retrieved_at": "2026-10-06T04:23:17+00:00"
+      },
+      "faers__warfarin__pancreatitis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"PANCREATITIS\"&limit=1",
+        "sha256": "a5515beb80db08a552919ea591b102b816be87bd8a56f0f625f2fc71bac3438c",
+        "retrieved_at": "2026-10-06T04:23:20+00:00"
+      },
+      "faers__warfarin__qt-prolongation": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"ELECTROCARDIOGRAM QT PROLONGED\"&limit=1",
+        "sha256": "291c4f29cb9cb8757b6a5faf7b3725e9413dfe999ec5c588bcfb37c46d5d7bc3",
+        "retrieved_at": "2026-10-06T04:23:20+00:00"
+      },
+      "faers__warfarin__rhabdomyolysis": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"RHABDOMYOLYSIS\"&limit=1",
+        "sha256": "58b5f73bc85561929b61e67f7cc1e3894920bbe1e64802a6f21663e1fc17071f",
+        "retrieved_at": "2026-10-06T04:23:18+00:00"
+      },
+      "faers__warfarin__stevens-johnson-syndrome": {
+        "url": "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name:\"warfarin\" AND patient.reaction.reactionmeddrapt:\"STEVENS-JOHNSON SYNDROME\"&limit=1",
+        "sha256": "9a33197dcc60599120bc1c2f97eee2d809317be12179239801d5f22f3d4a045b",
+        "retrieved_at": "2026-10-06T04:23:22+00:00"
+      },
+      "label__acetaminophen": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"acetaminophen\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "c709d84edf851e143fde6e0b3212cbb826c35032a800d7dab8a28d6f3e3c09fb",
+        "retrieved_at": "2026-10-06T04:20:48+00:00"
+      },
+      "label__allopurinol": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"allopurinol\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "0df6494d47316a67ee6e2cd64b9852f0ebbbec0732b785a968554b5019401e0d",
+        "retrieved_at": "2026-10-06T04:24:56+00:00"
+      },
+      "label__amlodipine": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"amlodipine\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "4c8f1a85e01200d65a8a00122d1974ca99618d7427d45247306c0ef45b9de91f",
+        "retrieved_at": "2026-10-06T04:23:51+00:00"
+      },
+      "label__amoxicillin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"amoxicillin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "4c95ef29f31517f96bead1974a42835758fb2c9f70cb6d3c562e16c4003f4bed",
+        "retrieved_at": "2026-10-06T04:22:25+00:00"
+      },
+      "label__aspirin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"aspirin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "f93a7ee45a8f7781574e00356b42b52fa5359570bb293a3bf27f109bc9dd727d",
+        "retrieved_at": "2026-10-06T04:21:49+00:00"
+      },
+      "label__atorvastatin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"atorvastatin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "699c6cfa1ca6f1a231bfeefe248445efd405305e3dc6d746bef30c4e5db667fb",
+        "retrieved_at": "2026-10-06T04:22:11+00:00"
+      },
+      "label__azithromycin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"azithromycin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "f7d84f528af841cfed0da0277c9f9e9b054d38a64bf7ac05eb5f8b93a7e58f29",
+        "retrieved_at": "2026-10-06T04:22:54+00:00"
+      },
+      "label__carbamazepine": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"carbamazepine\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "66fc124730be44849b54f8e186ec1176cd11f02792b3459afd30f8944cca8edc",
+        "retrieved_at": "2026-10-06T04:24:35+00:00"
+      },
+      "label__ceftriaxone": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"ceftriaxone\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "4fd695f63c8921d5214538aace5d846204c5b2f9ab5402da6acbd25bd6b804cb",
+        "retrieved_at": "2026-10-06T04:22:32+00:00"
+      },
+      "label__ciprofloxacin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"ciprofloxacin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "7026381f35da9aef7702a09d0cf5d4065dd2dbbd5c7740bda9d31c6dcfaaaa4f",
+        "retrieved_at": "2026-10-06T04:22:39+00:00"
+      },
+      "label__clopidogrel": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"clopidogrel\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "4dede0ea48b0f359149f3e9e37885b7a6266951216a62a11deece1fbe9c092f2",
+        "retrieved_at": "2026-10-06T04:23:30+00:00"
+      },
+      "label__diclofenac": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"diclofenac\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "2f0ee3b8941671a401d10a3bc198e5881d64599063e86980dad23718737447e2",
+        "retrieved_at": "2026-10-06T04:21:42+00:00"
+      },
+      "label__digoxin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"digoxin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "0b0cc37d0d400967f677a790e7178056fb259528f77c24e407f0a141b73aac85",
+        "retrieved_at": "2026-10-06T04:24:27+00:00"
+      },
+      "label__doxycycline": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"doxycycline\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "56571623fded1fe2ea68c50e94bc64d7e75fb09b9a98938068b39af5e2617bdd",
+        "retrieved_at": "2026-10-06T04:23:01+00:00"
+      },
+      "label__enalapril": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"enalapril\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "42687380b0b3c6385797c6b3222db854a89c398919775bd89114d3f9d2433172",
+        "retrieved_at": "2026-10-06T04:23:37+00:00"
+      },
+      "label__furosemide": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"furosemide\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "244c69652489d0deb16ab3a806ef93b5e4e32663809dfc237890911b1ced12f4",
+        "retrieved_at": "2026-10-06T04:24:06+00:00"
+      },
+      "label__glipizide": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"glipizide\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "7b68a0fe45beac09081826be11f7a241ac0f9fbaa1e6d4fb60a23aacc95762b5",
+        "retrieved_at": "2026-10-06T04:22:03+00:00"
+      },
+      "label__hydrochlorothiazide": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"hydrochlorothiazide\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "a12985f5b9cfd60e6a114252ee8ee28729c3466ba445ec6feda37e763028c01c",
+        "retrieved_at": "2026-10-06T04:23:58+00:00"
+      },
+      "label__ibuprofen": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"ibuprofen\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "4cd6b6ad406951e0dae0d64a4d5631f0b9ffefdbd2cd8a0d44a0e4a7d1373d62",
+        "retrieved_at": "2026-10-06T04:21:35+00:00"
+      },
+      "label__levofloxacin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"levofloxacin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "09d22839eb4e953cb5fa23e836e519c3565dbf2d423db6b294759553cdd6f087",
+        "retrieved_at": "2026-10-06T04:22:46+00:00"
+      },
+      "label__losartan": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"losartan\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "0345270175bf01800151070b82b9116404325f4d5370c002ff8197c667f1af47",
+        "retrieved_at": "2026-10-06T04:23:44+00:00"
+      },
+      "label__metformin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"metformin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "a25a168cd1608e2295a5a3e6821b245c2bb737981dc256bcd03dbb1570a15ac1",
+        "retrieved_at": "2026-10-06T04:21:56+00:00"
+      },
+      "label__metoprolol": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"metoprolol\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "d75f925be05c7207f7980154ed322d972a4b7968674fe629cddf8c32d06a7afd",
+        "retrieved_at": "2026-10-06T04:24:20+00:00"
+      },
+      "label__omeprazole": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"omeprazole\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "668cbebb8964dcba9d483fccfb580c9d4cbbd14fc9ea395d9ce0b7402d801fc3",
+        "retrieved_at": "2026-10-06T04:23:08+00:00"
+      },
+      "label__rivaroxaban": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"rivaroxaban\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "f2f9516adbfaafbe95cfce990f84e8fcba3447b5e9e5d1b657811d96ebb816bb",
+        "retrieved_at": "2026-10-06T04:23:23+00:00"
+      },
+      "label__sertraline": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"sertraline\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "bc64fbd70dd120c716a306002bdc476d27a80a61b498a76430a160e6b09a4cd1",
+        "retrieved_at": "2026-10-06T04:24:49+00:00"
+      },
+      "label__simvastatin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"simvastatin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "f58127f2301c0ab039ec9fd55c378dd3b997a372ef2988a677e26e8e31e628a3",
+        "retrieved_at": "2026-10-06T04:22:18+00:00"
+      },
+      "label__spironolactone": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"spironolactone\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "4e27d5b4a9084dd609c348b86ced64995137edf119da019577e4c9762ac9e255",
+        "retrieved_at": "2026-10-06T04:24:13+00:00"
+      },
+      "label__valproic-acid": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"valproic acid\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "727bb8fcbbb17cf05006e118199cc57b0cf7382d7251082d74f55bd88a192ea6",
+        "retrieved_at": "2026-10-06T04:24:42+00:00"
+      },
+      "label__warfarin": {
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name:\"warfarin\" AND _exists_:adverse_reactions&limit=25",
+        "sha256": "953a1e8a1ade7afcb6748c01b06b8600a77e2379de4bbdf626fb230f701c805e",
+        "retrieved_at": "2026-10-06T04:23:15+00:00"
+      }
+    }
+  },
+  "errors": [],
+  "no_result_notes": [],
+  "limitations": [
+    "Nhãn do máy đề xuất, chưa có dược sĩ/chuyên gia cảnh giác dược duyệt (candidate_not_gold).",
+    "Nhãn dương tính là bằng chứng nhãn CÓ nêu tên biến cố, không phải bằng chứng nhân quả.",
+    "Nhãn âm tính chỉ nói biến cố không được nêu trong các mục đã kiểm tra của nhãn đã chọn; không phải bằng chứng thuốc không gây biến cố.",
+    "Chỉ dùng nhãn Hoa Kỳ (FDA SPL); không đối chiếu với tờ hướng dẫn của Việt Nam.",
+    "Số FAERS là báo cáo tự nguyện, có trùng lặp và không có mẫu số; không dùng để tính tỉ lệ.",
+    "Chuỗi MedDRA dùng để truy vấn chưa đối chiếu từ điển MedDRA có bản quyền.",
+    "Bộ dữ liệu là ảnh chụp tại thời điểm lấy: chạy lại sau này có thể ra số FAERS khác."
+  ]
+}

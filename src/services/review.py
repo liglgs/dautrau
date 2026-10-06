@@ -2,7 +2,9 @@
 
 Quy tắc (planMVPfinal §8 M06, docs/mvp-contracts.md mục "Quy tắc vô hiệu hóa"):
 
-  * quyết định của reviewer được lưu **trước** khi áp dụng (audit trail);
+  * quyết định của reviewer được kiểm tra trước, rồi lưu **cùng một giao dịch** với thay đổi
+    (RV-07) — quyết định không hợp lệ không để lại dấu vết, và hai người duyệt cùng lúc thì
+    người sau nhận 409 chứ không ghi đè người trước;
   * ``reviewer_id`` lấy từ token phía server, không bao giờ lấy từ body;
   * sửa claim/scope ⇒ vô hiệu hóa normalization + assessment + dossier;
   * thêm/sửa/xóa bằng chứng ⇒ vô hiệu hóa assessment + dossier;
@@ -13,6 +15,7 @@ Quy tắc (planMVPfinal §8 M06, docs/mvp-contracts.md mục "Quy tắc vô hi�
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from pydantic import ValidationError
@@ -56,11 +59,33 @@ INVALIDATION_TABLE: dict[ReviewAction, tuple[str, ...]] = {
 CLAIM_EDIT_FIELDS = ("drug", "event", "population", "dose", "route", "time_window")
 
 #: Trường được phép sửa trong ``edit_evidence``.
-EVIDENCE_EDIT_FIELDS = ("quote", "stance", "scope", "confidence", "notes")
+EVIDENCE_EDIT_FIELDS = ("quote", "stance", "scope", "notes")
 
 
-def apply_review(store: MvpStore, decision: ReviewDecision) -> ReviewResult:
-    """Áp dụng một quyết định review lên state; trả về kết quả để API hiển thị."""
+@dataclass
+class _Plan:
+    """Mọi thay đổi mà một quyết định sẽ gây ra, tính xong **trước khi ghi bất cứ thứ gì**.
+
+    Nhờ vậy một quyết định không hợp lệ sẽ bị từ chối mà không để lại rác trong nhật ký, và toàn
+    bộ thay đổi được ghi trong một giao dịch duy nhất (RV-07).
+    """
+
+    state: InvestigationState
+    event_kind: str
+    message: str
+    invalidated: list[str] = field(default_factory=list)
+    #: ``(version, status, approved_by, approved_at)`` khi phải đổi trạng thái một phiên bản hồ sơ.
+    dossier_status: tuple[int, ReviewStatus, str | None, datetime | None] | None = None
+    evidence: EvidenceUnit | None = None
+    invalidate_dossiers: bool = False
+
+
+def apply_review(store: MvpStore, decision: ReviewDecision, *, actor_role: str | None = None) -> ReviewResult:
+    """Áp dụng một quyết định review lên state; trả về kết quả để API hiển thị.
+
+    Trình tự: kiểm tra ⇒ tính trước toàn bộ thay đổi ⇒ ghi một lần. Không còn bước ghi nào chạy
+    trước bước kiểm tra, nên quyết định sai không bị lưu lại (RV-07).
+    """
     state = _load_state(store, decision.investigation_id)
 
     if store.get_review_decision(decision.decision_id) is not None:
@@ -82,9 +107,6 @@ def apply_review(store: MvpStore, decision: ReviewDecision) -> ReviewResult:
             {"expected": str(state.checkpoint), "received": str(decision.checkpoint)},
         )
 
-    # Lưu quyết định trước khi áp dụng để không mất audit trail khi bước sau lỗi.
-    store.save_review_decision(decision)
-
     handler = {
         ReviewAction.APPROVE: _approve,
         ReviewAction.REJECT: _reject,
@@ -93,7 +115,22 @@ def apply_review(store: MvpStore, decision: ReviewDecision) -> ReviewResult:
         ReviewAction.EXCLUDE_EVIDENCE: _exclude_evidence,
         ReviewAction.REQUEST_MORE: _request_more,
     }[decision.action]
-    return handler(store, state, decision)
+    plan = handler(store, state, decision)
+
+    saved = store.commit_review(
+        decision,
+        plan.state,
+        expected_version=decision.expected_version,
+        event=(
+            plan.event_kind,
+            f"{decision.action} bởi {decision.reviewer_id}: {decision.reason or 'không kèm lý do'}",
+        ),
+        dossier_status=plan.dossier_status,
+        evidence=plan.evidence,
+        invalidate_dossiers=plan.invalidate_dossiers,
+        actor_role=actor_role,
+    )
+    return _result(saved, decision, plan.message, plan.invalidated)
 
 
 # --------------------------------------------------------------------------------------
@@ -101,7 +138,7 @@ def apply_review(store: MvpStore, decision: ReviewDecision) -> ReviewResult:
 # --------------------------------------------------------------------------------------
 
 
-def _approve(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> ReviewResult:
+def _approve(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> _Plan:
     if decision.checkpoint is CheckpointKind.DOSSIER:
         dossier = store.latest_dossier(state.investigation_id)
         if dossier is None:
@@ -111,71 +148,53 @@ def _approve(store: MvpStore, state: InvestigationState, decision: ReviewDecisio
         report = validate_dossier(dossier, state)
         if report.errors:
             raise dossier_invalid(state.investigation_id, report.errors)
-        approved = store.update_dossier_status(
-            state.investigation_id,
-            dossier.version,
-            ReviewStatus.APPROVED,
-            approved_by=decision.reviewer_id,
-            approved_at=datetime.now(UTC),
+        return _Plan(
+            state=state.model_copy(
+                update={"run_status": RunStatus.COMPLETED, "checkpoint": None, "next_stage": None}
+            ),
+            event_kind="review_approved",
+            message=f"Đã duyệt hồ sơ phiên bản {dossier.version}.",
+            dossier_status=(dossier.version, ReviewStatus.APPROVED, decision.reviewer_id, datetime.now(UTC)),
         )
-        saved = _save(
-            store,
-            state.model_copy(update={"run_status": RunStatus.COMPLETED, "checkpoint": None, "next_stage": None}),
-            decision,
-            "review_approved",
-        )
-        return _result(saved, decision, f"Đã duyệt hồ sơ phiên bản {approved.version}.", [])
 
     # Duyệt kết luận ở checkpoint assessment: hồ sơ vẫn phải được duyệt riêng.
     # Duyệt ở checkpoint normalization chỉ chốt hoạt chất ⇒ quay lại vòng điều tra,
     # không được nhảy thẳng tới hồ sơ khi chưa hề đánh giá bằng chứng.
     next_stage = "build_dossier" if decision.checkpoint is CheckpointKind.ASSESSMENT else "checklist"
-    saved = _save(
-        store,
-        state.model_copy(
+    if next_stage == "build_dossier":
+        message = "Đã duyệt kết luận; hồ sơ chưa được duyệt và cần một quyết định riêng."
+    else:
+        message = "Đã chốt hoạt chất; cần gọi continue để chạy tiếp vòng thu thập bằng chứng."
+    return _Plan(
+        state=state.model_copy(
             update={
                 "run_status": RunStatus.WAITING_FOR_REVIEW,
                 "checkpoint": None,
                 "next_stage": next_stage,
             }
         ),
-        decision,
-        "review_approved",
-    )
-    if next_stage == "build_dossier":
-        return _result(
-            saved,
-            decision,
-            "Đã duyệt kết luận; hồ sơ chưa được duyệt và cần một quyết định riêng.",
-            [],
-        )
-    return _result(
-        saved,
-        decision,
-        "Đã chốt hoạt chất; cần gọi continue để chạy tiếp vòng thu thập bằng chứng.",
-        [],
+        event_kind="review_approved",
+        message=message,
     )
 
 
-def _reject(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> ReviewResult:
-    invalidated = list(INVALIDATION_TABLE[ReviewAction.REJECT])
-    store.invalidate_dossiers(state.investigation_id)
-    saved = _save(
-        store,
-        state.model_copy(
+def _reject(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> _Plan:
+    return _Plan(
+        state=state.model_copy(
             update={
                 "run_status": RunStatus.COMPLETED,
                 "checkpoint": None,
                 "next_stage": None,
             }
         ),
-        decision,
-        "review_rejected",
+        event_kind="review_rejected",
+        message="Đã từ chối; cuộc điều tra không tự chạy lại.",
+        invalidated=list(INVALIDATION_TABLE[ReviewAction.REJECT]),
+        invalidate_dossiers=True,
     )
-    return _result(saved, decision, "Đã từ chối; cuộc điều tra không tự chạy lại.", invalidated)
 
 
-def _edit_claim(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> ReviewResult:
+def _edit_claim(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> _Plan:
     payload = {key: value for key, value in decision.payload.items() if key in CLAIM_EDIT_FIELDS}
     if not payload:
         raise invalid_state(
@@ -185,10 +204,8 @@ def _edit_claim(store: MvpStore, state: InvestigationState, decision: ReviewDeci
     claim = ClaimInput.model_validate({**state.claim.model_dump(), **payload})
     # Claim đổi ⇒ phải chuẩn hoá lại từ đầu; bằng chứng cũ được giữ để kiểm toán nhưng
     # kết luận cũ không còn giá trị.
-    store.invalidate_dossiers(state.investigation_id)
-    saved = _save(
-        store,
-        state.model_copy(
+    return _Plan(
+        state=state.model_copy(
             update={
                 "claim": claim,
                 "normalized_claim": None,
@@ -199,18 +216,14 @@ def _edit_claim(store: MvpStore, state: InvestigationState, decision: ReviewDeci
                 "next_stage": None,
             }
         ),
-        decision,
-        "review_edit_claim",
-    )
-    return _result(
-        saved,
-        decision,
-        "Đã cập nhật claim; cần chuẩn hoá và đánh giá lại trước khi duyệt.",
-        list(INVALIDATION_TABLE[ReviewAction.EDIT_CLAIM]),
+        event_kind="review_edit_claim",
+        message="Đã cập nhật claim; cần chuẩn hoá và đánh giá lại trước khi duyệt.",
+        invalidated=list(INVALIDATION_TABLE[ReviewAction.EDIT_CLAIM]),
+        invalidate_dossiers=True,
     )
 
 
-def _edit_evidence(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> ReviewResult:
+def _edit_evidence(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> _Plan:
     evidence, updates = _target_evidence(state, decision)
     if not updates:
         raise invalid_state(
@@ -266,7 +279,7 @@ def _relocate_quote(
     return quote, QuoteLocator(start=start, end=start + len(quote), section=evidence.locator.section)
 
 
-def _exclude_evidence(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> ReviewResult:
+def _exclude_evidence(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> _Plan:
     evidence, _ = _target_evidence(state, decision)
     excluded = evidence.model_copy(
         update={
@@ -278,26 +291,20 @@ def _exclude_evidence(store: MvpStore, state: InvestigationState, decision: Revi
     return _apply_evidence_change(store, state, decision, excluded, "Đã loại bỏ bằng chứng")
 
 
-def _request_more(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> ReviewResult:
+def _request_more(store: MvpStore, state: InvestigationState, decision: ReviewDecision) -> _Plan:
     # Giữ nguyên toàn bộ budget: chỉ mở lại vòng điều tra.
-    store.invalidate_dossiers(state.investigation_id)
-    saved = _save(
-        store,
-        state.model_copy(
+    return _Plan(
+        state=state.model_copy(
             update={
                 "run_status": RunStatus.WAITING_FOR_REVIEW,
                 "checkpoint": None,
                 "next_stage": "checklist",
             }
         ),
-        decision,
-        "review_request_more",
-    )
-    return _result(
-        saved,
-        decision,
-        "Yêu cầu thu thập thêm; ngân sách giữ nguyên, cần gọi continue để chạy tiếp.",
-        list(INVALIDATION_TABLE[ReviewAction.REQUEST_MORE]),
+        event_kind="review_request_more",
+        message="Yêu cầu thu thập thêm; ngân sách giữ nguyên, cần gọi continue để chạy tiếp.",
+        invalidated=list(INVALIDATION_TABLE[ReviewAction.REQUEST_MORE]),
+        invalidate_dossiers=True,
     )
 
 
@@ -337,13 +344,10 @@ def _apply_evidence_change(
     decision: ReviewDecision,
     edited: EvidenceUnit,
     message: str,
-) -> ReviewResult:
-    store.save_evidence(state.investigation_id, edited)
+) -> _Plan:
     evidence = [edited if item.evidence_id == edited.evidence_id else item for item in state.evidence]
-    store.invalidate_dossiers(state.investigation_id)
-    saved = _save(
-        store,
-        state.model_copy(
+    return _Plan(
+        state=state.model_copy(
             update={
                 "evidence": evidence,
                 "assessment": None,
@@ -353,27 +357,11 @@ def _apply_evidence_change(
                 "next_stage": "checklist",
             }
         ),
-        decision,
-        "review_evidence_changed",
-    )
-    return _result(
-        saved,
-        decision,
-        f"{message} (phiên bản {edited.version}); kết luận và hồ sơ cũ đã bị vô hiệu hóa.",
-        list(INVALIDATION_TABLE[decision.action]),
-    )
-
-
-def _save(
-    store: MvpStore,
-    state: InvestigationState,
-    decision: ReviewDecision,
-    event_kind: str,
-) -> InvestigationState:
-    return store.save_state(
-        state,
-        event=(event_kind, f"{decision.action} bởi {decision.reviewer_id}: {decision.reason or 'không kèm lý do'}"),
-        actor=decision.reviewer_id,
+        event_kind="review_evidence_changed",
+        message=f"{message} (phiên bản {edited.version}); kết luận và hồ sơ cũ đã bị vô hiệu hóa.",
+        invalidated=list(INVALIDATION_TABLE[decision.action]),
+        evidence=edited,
+        invalidate_dossiers=True,
     )
 
 

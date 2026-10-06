@@ -9,7 +9,11 @@ const CHECKS = [
   { name: "Nguồn dữ liệu", state: "chưa nối", note: "Kiểm tra ở /admin/sources" },
   { name: "Hàng đợi chạy agent", state: "chưa nối", note: "Runner trong tiến trình, một cuộc điều tra một lúc" },
   { name: "Cổng LLM", state: "chưa nối", note: "Ngân sách và sổ usage do máy chủ giữ" },
-  { name: "Kho tài liệu", state: "chưa nối", note: "SQLite trong MVP" },
+  {
+    name: "Kho tài liệu (ELT + Postgres + ChromaDB)",
+    state: DATA_MODE === "api" ? "đang dùng" : "chưa nối",
+    note: "Xem /admin/corpus; kho cần docker compose -f docker-compose.elt.yml up -d --wait",
+  },
 ];
 
 export default function AdminSystemPage() {
@@ -39,8 +43,8 @@ export default function AdminSystemPage() {
           <CardTitle>Giới hạn đã biết của MVP</CardTitle>
         </CardHeader>
         <CardBody className="space-y-1.5 text-[13px] text-muted-foreground">
-          <p>Chỉ hai token vai trò dùng chung; chưa có tài khoản, phiên đăng nhập hay CSRF.</p>
-          <p>Chưa có endpoint hủy cuộc điều tra.</p>
+          <p>Xác thực bằng token vai trò (X-API-Token) hoặc phiên đăng nhập qua POST /api/v1/auth/login; thao tác ghi qua cầu nối cùng gốc được kiểm tra Origin.</p>
+          <p>Cuộc điều tra đang chạy hủy được bằng POST /api/v1/investigations/&#123;id&#125;/cancel.</p>
           <p>Một số phản hồi chưa khai báo schema đầy đủ trong OpenAPI.</p>
           <p>Trang này hiển thị {BRAND.name} ở chế độ {DATA_MODE === "api" ? "backend thật" : "dữ liệu minh họa"}.</p>
         </CardBody>

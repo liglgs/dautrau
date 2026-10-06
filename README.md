@@ -102,6 +102,30 @@ flowchart TB
 
 ## 4. Hướng Dẫn Cài Đặt & Khởi Chạy Nhanh
 
+### Kho dữ liệu ELT/RAG (một lệnh cho máy mới)
+
+Ngoài hai ứng dụng trên, repo có kho dữ liệu ELT (PostgreSQL + ChromaDB) cho PubMed/DailyMed/FAERS.
+Trên một máy mới, chạy duy nhất:
+
+```bash
+./scripts/setup_elt.sh          # tạo venv, cài phụ thuộc, dựng PostgreSQL, tải dữ liệu, nạp kho, dựng chỉ mục, kiểm tra
+```
+
+Tùy chọn: `--offline` (không dùng mạng), `--live` (tải thêm từ API nguồn), `--no-rag`, `--reset`, `--skip-install`.
+Kiểm tra lại bất cứ lúc nào bằng `make elt-check`; mô tả dữ liệu nằm trong `docs/data/`;
+tiến độ từng task của vòng hai nằm trong `docs/phan-cong-vong-2/TIEN_DO_THUC_THI.md`.
+
+**Khi hết hạn mức nhúng vector:** bước dựng chỉ mục cần khoá Gemini (8 khoá luân phiên).
+Nếu tất cả khoá đều trả HTTP 429, đặt `RAG_EMBEDDING_PROVIDER=hash` trong `.env` rồi chạy lại
+`./scripts/setup_elt.sh --skip-install`. Chế độ `hash` chạy cục bộ, không cần mạng — chỉ để kiểm tra
+đường ống (kho PostgreSQL, ChromaDB, số đoạn khớp nhau); chất lượng ngữ nghĩa thấp hơn Gemini.
+Chỉ mục sinh bằng `hash` nằm ở bộ sưu tập khác, nên muốn quay lại Gemini thì chạy lại với
+`--reset` (hoặc `python -m scripts.elt.load_chroma --reset-index`).
+
+Các lệnh tiện dụng: `make db-up`, `make db-down`, `make elt-run`, `make elt-docs`, `make dev-api`, `make dev-web`.
+
+---
+
 ### Yêu Cầu Hệ Thống
 - **Python:** 3.11 hoặc mới hơn (khuyên dùng môi trường ảo `.venv`).
 - **Node.js:** 20.x hoặc 24.x (`npm.cmd` trên Windows).
@@ -117,8 +141,7 @@ flowchart TB
 
 # 2. Thiết lập biến môi trường và chạy server Uvicorn (cổng 8000)
 $env:APP_ENV="development"
-$env:INVESTIGATOR_TOKEN="test-investigator-token-12345"
-$env:REVIEWER_TOKEN="test-reviewer-token-12345"
+$env:AUTH_PROVIDER="local"   # Chế độ nội bộ; production chạy Supabase
 $env:MVP_DB_PATH="data/mvp.sqlite3"
 $env:MVP_SOURCE_MODE="fixture"  # Dùng 'live' nếu muốn kết nối nguồn thật
 $env:MVP_SNAPSHOT_ROOT="data/snapshots"
@@ -141,10 +164,8 @@ cd frontend
 npm.cmd ci
 
 # 2. Cấu hình biến môi trường cục bộ (tạo file frontend/.env.local)
-# NEXT_PUBLIC_VIGILENS_AUTH_MODE=session
-# VIGILENS_BACKEND_URL=http://127.0.0.1:8000
-# VIGILENS_INVESTIGATOR_TOKEN=test-investigator-token-12345
-# VIGILENS_REVIEWER_TOKEN=test-reviewer-token-12345
+# NEXT_PUBLIC_VIGILENS_DATA_MODE=api
+# VIGILENS_API_BASE=http://127.0.0.1:8000
 
 # 3. Khởi chạy giao diện (cổng 3100)
 npm.cmd run dev -- -p 3100 -H 127.0.0.1
@@ -159,11 +180,14 @@ Mở trình duyệt tại: **`http://127.0.0.1:3100`**
 Nếu sử dụng Docker Desktop:
 
 ```powershell
-$env:INVESTIGATOR_TOKEN="test-investigator-token-12345"
-$env:REVIEWER_TOKEN="test-reviewer-token-12345"
+# Tài khoản khởi động: bắt buộc, vì cầu nối giao diện không còn nhận vai do trình duyệt khai (AUTH-01).
+$env:INVESTIGATOR_EMAIL="dieutra@benhvien.vn"
+$env:INVESTIGATOR_PASSWORD="doi-mat-khau-nay"
+$env:REVIEWER_EMAIL="duyet@benhvien.vn"
+$env:REVIEWER_PASSWORD="doi-mat-khau-nay"
 docker compose -f docker-compose.mvp.yml up -d --build
 ```
-Hệ thống sẽ tự động khởi tạo backend tại cổng `8000` và frontend tại cổng `3100`.
+Hệ thống sẽ tự động khởi tạo backend tại cổng `8000` và frontend tại cổng `3100`. Container backend chạy `scripts/mvp_seed_users.py` trước khi mở cổng; chạy lại không ghi đè mật khẩu đã đổi. Quản trị là tuỳ chọn: đặt thêm `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
 
 ---
 
@@ -177,8 +201,11 @@ Hệ thống hỗ trợ cấu hình linh hoạt qua biến môi trường hoặc
 |---|:---:|:---:|---|
 | `APP_ENV` | `string` | `development` | Môi trường chạy (`development`, `production`, `test`). |
 | `PORT` | `int` | `8000` | Cổng dịch vụ FastAPI. |
-| `INVESTIGATOR_TOKEN` | `string` | *(Bắt buộc)* | Token bí mật cho vai trò Điều tra viên (`investigator`). |
-| `REVIEWER_TOKEN` | `string` | *(Bắt buộc)* | Token bí mật cho vai trò Thẩm định viên (`reviewer`). |
+| `AUTH_PROVIDER` | `string` | `auto` | Chọn nhà cung cấp danh tính: `auto` (Supabase nếu chạy được, luôn kèm chế độ nội bộ làm đường lùi), `local`, `supabase`, `test`. |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | `string` | *(trống)* | Cấu hình dự án Supabase. Chỉ dùng được khi đã cài `PyJWT` và `cryptography`. |
+| `SESSION_COOKIE_SECURE` | `bool` | `false` | Đặt `true` khi chạy sau HTTPS để cookie phiên có cờ `Secure`. Bắt buộc ở production. |
+| `VIGILENS_ALLOW_LEGACY_TOKENS` | `bool` | `false` | Bật khoá tĩnh cũ. Phải bật **tường minh**; chỉ có tác dụng ngoài production. |
+| `INVESTIGATOR_TOKEN` / `REVIEWER_TOKEN` | `string` | *(trống)* | Khoá tĩnh cũ cho công cụ dòng lệnh. Chỉ chạy khi `VIGILENS_ALLOW_LEGACY_TOKENS=true` **và** `APP_ENV` là `development`/`test`; không dùng để đăng nhập giao diện. |
 | `MVP_DB_PATH` | `string` | `data/mvp.sqlite3` | Đường dẫn tệp cơ sở dữ liệu SQLite lưu trữ trạng thái. |
 | `MVP_SOURCE_MODE` | `string` | `fixture` | Chế độ nguồn dữ liệu: `fixture` (offline demo) hoặc `live` (nguồn thực tế). |
 | `MVP_PUBMED_MODE` | `string` | `local` | Chế độ PubMed: `local` (tìm trên corpus đã import) hoặc `api` (gọi NCBI live). |
@@ -192,10 +219,27 @@ Hệ thống hỗ trợ cấu hình linh hoạt qua biến môi trường hoặc
 
 | Tên biến | Kiểu giá trị | Mặc định | Ý nghĩa & Mô tả |
 |---|:---:|:---:|---|
-| `NEXT_PUBLIC_VIGILENS_AUTH_MODE` | `string` | `session` | Cơ chế xác thực: `session` (cookie HTTP-only an toàn) hoặc `manual_token`. |
-| `VIGILENS_BACKEND_URL` | `string` | `http://127.0.0.1:8000` | URL gốc của dịch vụ backend FastAPI. |
-| `VIGILENS_INVESTIGATOR_TOKEN` | `string` | `test-investigator-token-12345` | Token investigator dùng cho server route proxy. |
-| `VIGILENS_REVIEWER_TOKEN` | `string` | `test-reviewer-token-12345` | Token reviewer dùng cho server route proxy. |
+| `NEXT_PUBLIC_VIGILENS_DATA_MODE` | `string` | `mock` | Nguồn dữ liệu của giao diện: `mock` (dữ liệu mẫu) hoặc `api` (gọi backend thật). |
+| `NEXT_PUBLIC_VIGILENS_API_PREFIX` | `string` | `/api/backend` | Tiền tố cầu nối server route sang backend FastAPI. |
+| `VIGILENS_API_BASE` | `string` | `http://127.0.0.1:8000` | URL gốc của backend FastAPI mà cầu nối `/api/backend/*` gọi tới. |
+| `NEXT_ALLOWED_DEV_ORIGINS` | `string` | *(trống)* | Danh sách host cho phép khi chạy dev server sau proxy công khai (cách nhau dấu phẩy). |
+
+### 3. Cấu Hình Kho Dữ Liệu ELT/RAG (backend, trong `.env`)
+
+Các biến này do `./scripts/setup_elt.sh` ghi vào `.env` nếu còn thiếu; xem thêm `docs/data/cau-truc-kho.md`.
+
+| Tên biến | Kiểu giá trị | Mặc định | Ý nghĩa & Mô tả |
+|---|:---:|:---:|---|
+| `ELT_DATABASE_URL` | `string` | `postgresql+psycopg://medreview:medreview@localhost:5433/vigilens_elt` | Chuỗi kết nối kho PostgreSQL của ELT (cổng 5433, tách khỏi kho VMEC cũ). |
+| `ELT_DB_PORT` | `int` | `5433` | Cổng host của container `vigilens-elt-db`. |
+| `RAG_ENABLED` | `bool` | `true` | Bật/tắt các điểm cuối RAG. |
+| `RAG_CHROMA_DIR` | `string` | `./data/chroma` | Thư mục lưu chỉ mục vector ChromaDB. |
+| `RAG_COLLECTION` | `string` | `vigilens_docs` | Tên bộ sưu tập (tên thật gắn thêm nhà cung cấp và mô hình nhúng). |
+| `RAG_EMBEDDING_PROVIDER` | `string` | `auto` | `auto` / `gemini` / `hash`; dùng `hash` khi hết hạn mức để kiểm tra đường ống ngoại tuyến. |
+| `RAG_EMBEDDING_MODEL` | `string` | `gemini-embedding-001` | Mô hình nhúng (3.072 chiều); đổi mô hình phải dựng lại chỉ mục. |
+| `RAG_TOP_K` | `int` | `6` | Số đoạn trả về mặc định cho mỗi truy vấn tìm kiếm ngữ nghĩa. |
+| `GEMINI_API_KEY` … `GEMINI_API_KEY_8` | `string` | *(trống)* | Các khoá Gemini dùng luân phiên cho nhúng vector và mô hình ngôn ngữ. |
+| `NCBI_API_KEY` | `string` | *(trống)* | Khoá NCBI tuỳ chọn, tăng hạn mức khi tải PubMed. |
 
 ---
 
@@ -215,12 +259,13 @@ Hệ thống hỗ trợ cấu hình linh hoạt qua biến môi trường hoặc
 
 ### Mẫu Gọi API Trực Tiếp (cURL / PowerShell)
 
-Bạn có thể gửi yêu cầu tạo cuộc điều tra qua lệnh sau:
+Bạn có thể gửi yêu cầu tạo cuộc điều tra qua lệnh sau. Khoá máy do `scripts/auth_cli.py issue-token`
+cấp (dạng `vln_...`), hoặc dùng cookie phiên lấy từ `POST /api/v1/auth/login`:
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/v1/investigations" \
   -H "Content-Type: application/json" \
-  -H "X-API-Token: test-investigator-token-12345" \
+  -H "X-API-Token: vln_...khoa-may-do-auth_cli-cap..." \
   -d '{
     "claim_text": "Investigate reported association: lisinopril / cough.",
     "drug": "lisinopril",

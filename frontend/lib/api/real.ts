@@ -1,6 +1,17 @@
 import type { AgentStep, AuditEntry, Cov, CoverageField, EvidenceItem, Gap, Investigation, ReviewAction, SourceId } from "@/lib/types";
 import type { CreateInvestigationInput, DataSource, DossierPayload, TimelinePayload } from "@/lib/api/types";
-import { useAppStore } from "@/lib/store/app-store";
+import type {
+  DrugLookupResult,
+  IngestDocumentInput,
+  IngestDocumentResult,
+  IngestionEventsResult,
+  RagSearchInput,
+  RagSearchResult,
+  WarehouseDocumentDetail,
+  WarehouseDocumentsParams,
+  WarehouseDocumentsResult,
+  WarehouseOverview,
+} from "@/lib/api/types";
 import { BackendError, responseError } from "@/lib/api/errors";
 import { evidenceDetails } from "@/lib/api/evidence-details";
 import { validateClaim } from "@/lib/claim-form";
@@ -25,34 +36,23 @@ export { BackendError } from "@/lib/api/errors";
 
 /**
  * Mọi lời gọi đi qua cầu nối cùng gốc `/api/backend/*` (xem `app/api/backend/[...path]/route.ts`).
- * Token vai trò nằm ở biến môi trường phía máy chủ, không bao giờ vào bundle trình duyệt.
+ *
+ * Danh tính đi bằng cookie phiên HttpOnly (chế độ nội bộ) hoặc header `Authorization` (chế độ
+ * Supabase). Trình duyệt **không** gửi vai, và cầu nối **không** tự chọn vai: AUTH-01 đã gỡ hẳn
+ * đường "trình duyệt khai vai, máy chủ gắn token vai trò". Vai trong `useAppStore` chỉ để ẩn/hiện
+ * giao diện, không phải nguồn quyền.
  */
-export const SESSION_AUTH = process.env.NEXT_PUBLIC_VIGILENS_AUTH_MODE !== "token";
 const API_PREFIX = process.env.NEXT_PUBLIC_VIGILENS_API_PREFIX ?? "/api/backend";
-
-type Role = "investigator" | "reviewer";
-
-/** Vai trò đang chọn trong UI; quyết định token mà cầu nối máy chủ dùng. */
-function currentRole(): Role {
-  try {
-    const role = useAppStore.getState().role;
-    return role === "reviewer" || role === "admin" ? "reviewer" : "investigator";
-  } catch {
-    return "investigator";
-  }
-}
 
 export async function request<T>(
   path: string,
-  options: { method?: string; role?: Role; body?: unknown; headers?: Record<string, string> } = {},
+  options: { method?: string; body?: unknown; headers?: Record<string, string> } = {},
 ): Promise<T> {
-  const role = options.role ?? currentRole();
   let response: Response;
   try { response = await fetch(`${API_PREFIX}${path}`, {
     method: options.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
-      ...(SESSION_AUTH ? {} : { "X-Vigilens-Role": role }),
       ...(options.headers ?? {}),
     },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
@@ -64,7 +64,7 @@ export async function request<T>(
   const text = await response.text();
   const payload = text ? safeJson(text) : null;
   if (!response.ok) {
-    if (response.status === 401 && SESSION_AUTH && typeof window !== "undefined" && !path.includes("/auth/")) window.dispatchEvent(new Event("vigilens-session-expired"));
+    if (response.status === 401 && typeof window !== "undefined" && !path.includes("/auth/")) window.dispatchEvent(new Event("vigilens-session-expired"));
     throw responseError(response.status, text);
   }
   return payload as T;
@@ -104,6 +104,10 @@ interface BackendState {
   source_status?: Record<string, string>;
   counters?: { evidence: number; documents: number; queries: number; gaps: number };
   gaps?: { gap_id: string; description: string; kind?: string; field?: string }[];
+  /** API-04a: tổng thời gian agent đã chạy (ms). */
+  elapsed_ms?: number;
+  /** RT-01: chế độ chạy của lượt này (nguồn/bằng chứng thật hay mẫu). */
+  run_mode?: Record<string, unknown>;
 }
 
 interface BackendLastReview {
@@ -205,6 +209,11 @@ function claimFromBackend(claim: Record<string, unknown> | null | undefined) {
   };
 }
 
+/** API-04b: `hash_status` của backend → nhãn của UI. Giá trị lạ bị coi là "chưa đối chiếu". */
+function hashStatusFromBackend(value: unknown): "verified" | "mismatch" | "unchecked" {
+  return value === "verified" || value === "mismatch" ? value : "unchecked";
+}
+
 const COVERAGE_KEYS = ["drug", "adverseEvent", "population", "dose", "route", "timeWindow"] as const;
 
 /** Normalization is not evidence coverage; fields remain unverified without explicit backend coverage. */
@@ -256,7 +265,8 @@ function toInvestigation(state: BackendState): Investigation {
       steps: budget.steps_used ?? state.step_index ?? 0,
       docs: budget.documents_used ?? counters.documents ?? 0,
       tokens: (budget.input_tokens ?? 0) + (budget.output_tokens ?? 0),
-      elapsedMs: 0,
+      // API-04a: thời gian agent đã chạy thật, backend cộng dồn qua các lượt (không tính lúc chờ duyệt).
+      elapsedMs: typeof state.elapsed_ms === "number" ? state.elapsed_ms : 0,
     },
     runStatus: (state.run_status as Investigation["runStatus"]) ?? "queued",
     assessment: state.assessment
@@ -265,9 +275,12 @@ function toInvestigation(state: BackendState): Investigation {
             Investigation["assessment"]
           >["status"],
           rationale: state.assessment.rationale ?? "",
-          coverage: state.assessment.coverage
-            ? coverageFromBackend(state.assessment.coverage)
-            : coverageFromNormalized(state.normalized_claim),
+          // API-03: ưu tiên báo phủ đếm từ bằng chứng thật; chỉ khi backend chưa có (hồ sơ cũ)
+          // mới tạm suy từ phần chuẩn hoá câu hỏi.
+          coverage:
+            state.assessment.coverage && Object.keys(state.assessment.coverage).length > 0
+              ? coverageFromBackend(state.assessment.coverage)
+              : coverageFromNormalized(state.normalized_claim),
         }
       : undefined,
     reviewState: reviewStateFromBackend(state.review_status),
@@ -363,7 +376,8 @@ export function createApiSource(): DataSource {
   const timelinePending = new Map<string, Promise<TimelinePayload>>();
   return {
     async listInvestigations() {
-      const payload = await request<{ items: BackendListed[] }>(`/api/v1/investigations${SESSION_AUTH && currentRole() === "investigator" ? "?mine_only=true" : ""}`);
+      // Không đoán phạm vi từ vai hiển thị: máy chủ tự giới hạn vai chỉ có quyền `:own`.
+      const payload = await request<{ items: BackendListed[] }>("/api/v1/investigations");
       const items = payload.items.map(listedToInvestigation);
       return { items, source: "api" as const };
     },
@@ -447,7 +461,7 @@ export function createApiSource(): DataSource {
     },
 
     async getDocument(id: string, docId: string) {
-      const payload = await request<{ document: Record<string, unknown> }>(
+      const payload = await request<{ document: Record<string, unknown>; hash_status?: string }>(
         `/api/v1/investigations/${id}/documents/${docId}`,
       );
       const document = payload.document;
@@ -459,7 +473,9 @@ export function createApiSource(): DataSource {
         origin: "auto" as const,
         text: String(document.text ?? ""),
         sha256: String(document.hash ?? ""),
-        hashStatus: "unchecked" as const,
+        // API-04b: backend nói rõ trạng thái bản băm; trước đây giao diện tự gán "unchecked" nên
+        // nhãn "chưa đối chiếu" hiện cả khi tài liệu đã có bản băm gốc để đối chiếu.
+        hashStatus: hashStatusFromBackend(payload.hash_status),
         retrievedAt: String(document.retrieved_at ?? new Date().toISOString()),
         url: document.source_url ? String(document.source_url) : undefined,
         meta: Object.fromEntries(Object.entries((document.metadata ?? {}) as Record<string, unknown>).map(([key, value]) => [key, String(value)])),
@@ -506,7 +522,6 @@ export function createApiSource(): DataSource {
           `/api/v1/investigations/${id}/reviews`,
           {
             method: "POST",
-            role: "reviewer",
             body: {
               decision_id: action.decisionId ?? crypto.randomUUID(),
               action: action.action === "edit" ? "edit_evidence" : action.action === "request_more" ? "request_more" : action.action,
@@ -592,12 +607,12 @@ export function createApiSource(): DataSource {
     async exportDossier(id: string) {
       try {
         const response = await fetch(`${API_PREFIX}/api/v1/investigations/${id}/export`, {
-          headers: SESSION_AUTH ? {} : { "X-Vigilens-Role": currentRole() },
+          headers: {},
           signal: AbortSignal.timeout(30_000),
           cache: "no-store",
         });
         if (!response.ok) {
-          if (response.status === 401 && SESSION_AUTH && typeof window !== "undefined") window.dispatchEvent(new Event("vigilens-session-expired"));
+          if (response.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event("vigilens-session-expired"));
           const text = await response.text();
           const error = responseError(response.status, text);
           return { ok: false, code: error.code, message: error.message };
@@ -606,6 +621,68 @@ export function createApiSource(): DataSource {
       } catch (error) {
         return { ok: false, code: "network_error", message: (error as Error).message };
       }
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Kho bằng chứng (ELT + Postgres + ChromaDB)
+    // -----------------------------------------------------------------------------------
+
+    async lookupDrug(name: string) {
+      return request<DrugLookupResult>(`/api/v1/drugs/lookup?name=${encodeURIComponent(name)}`);
+    },
+
+    async warehouseOverview() {
+      return request<WarehouseOverview>("/api/v1/warehouse/overview");
+    },
+
+    async warehouseDocuments(params: WarehouseDocumentsParams = {}) {
+      const query = new URLSearchParams();
+      if (params.source) query.set("source", params.source);
+      if (params.pairId) query.set("pair_id", params.pairId);
+      if (params.qualityStatus) query.set("quality_status", params.qualityStatus);
+      if (params.limit != null) query.set("limit", String(params.limit));
+      const suffix = query.toString() ? `?${query.toString()}` : "";
+      return request<WarehouseDocumentsResult>(`/api/v1/warehouse/documents${suffix}`);
+    },
+
+    async warehouseDocument(docId: string, previewChars?: number) {
+      // `doc_id` chứa dấu hai chấm (ví dụ `pubmed:39466269:1`) nên phải mã hoá cả đoạn đường dẫn.
+      const suffix = previewChars != null ? `?preview_chars=${previewChars}` : "";
+      return request<WarehouseDocumentDetail>(
+        `/api/v1/warehouse/documents/${encodeURIComponent(docId)}${suffix}`,
+      );
+    },
+
+    async ragSearch(input: RagSearchInput) {
+      return request<RagSearchResult>("/api/v1/rag/search", {
+        method: "POST",
+        body: {
+          query: input.query,
+          ...(input.k != null ? { k: input.k } : {}),
+          ...(input.source ? { source: input.source } : {}),
+          ...(input.pairId ? { pair_id: input.pairId } : {}),
+        },
+      });
+    },
+
+    async ingestionEvents(limit?: number) {
+      const suffix = limit != null ? `?limit=${limit}` : "";
+      return request<IngestionEventsResult>(`/api/v1/ingestion/events${suffix}`);
+    },
+
+    async ingestDocument(input: IngestDocumentInput) {
+      return request<IngestDocumentResult>("/api/v1/ingestion/documents", {
+        method: "POST",
+        body: {
+          source: input.source,
+          source_id: input.source_id,
+          version: input.version,
+          title: input.title,
+          text: input.text,
+          source_url: input.source_url || undefined,
+          metadata: input.metadata,
+        },
+      });
     },
   };
 }
