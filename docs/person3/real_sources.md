@@ -1,5 +1,9 @@
 # Người 3 — chạy với gói nguồn thật ngày 02/10/2026
 
+> **AUTH-01 (2026-10-06):** cầu nối giao diện không còn nhận vai do trình duyệt khai
+> (`X-Vigilens-Role`) và không còn token vai trò phía máy chủ. Đăng nhập bằng email + mật khẩu;
+> tạo tài khoản bằng `scripts/auth_cli.py create-user`.
+
 ## Trạng thái
 
 Đã tiếp nhận `data/mvp-candidates-50-2026-10-02.zip` từ Người 1. Gói có **50 tài liệu**: PubMed 25, DailyMed 10, FAERS 15, thuộc 5 cặp thuốc–biến cố. Đã kiểm tra schema 50 tài liệu, checksum 44 tệp, hash văn bản/raw, ID, hàng review và giới hạn section. Đây là kiểm tra tính toàn vẹn của gói được giao; chưa xác minh độc lập nội dung với website nguồn.
@@ -54,8 +58,6 @@ python scripts/run_person3_corpus.py --family metformin
 ```powershell
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = "api"
 $env:VIGILENS_API_BASE = "http://127.0.0.1:8000"
-$env:VIGILENS_INVESTIGATOR_TOKEN = "person3-investigator-demo"
-$env:VIGILENS_REVIEWER_TOKEN = "person3-reviewer-demo"
 cd frontend
 npm.cmd run dev -- --hostname 127.0.0.1
 ```

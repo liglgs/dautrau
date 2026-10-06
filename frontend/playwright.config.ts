@@ -15,7 +15,6 @@ export default defineConfig({
     env: {
       NEXT_DIST_DIR: ".next/e2e",
       NEXT_PUBLIC_VIGILENS_DATA_MODE: "api",
-      NEXT_PUBLIC_VIGILENS_AUTH_MODE: "token",
     },
   },
 });

@@ -12,7 +12,6 @@ import type {
   WarehouseDocumentsResult,
   WarehouseOverview,
 } from "@/lib/api/types";
-import { useAppStore } from "@/lib/store/app-store";
 import { BackendError, responseError } from "@/lib/api/errors";
 import { evidenceDetails } from "@/lib/api/evidence-details";
 import { validateClaim } from "@/lib/claim-form";
@@ -37,34 +36,23 @@ export { BackendError } from "@/lib/api/errors";
 
 /**
  * Mọi lời gọi đi qua cầu nối cùng gốc `/api/backend/*` (xem `app/api/backend/[...path]/route.ts`).
- * Token vai trò nằm ở biến môi trường phía máy chủ, không bao giờ vào bundle trình duyệt.
+ *
+ * Danh tính đi bằng cookie phiên HttpOnly (chế độ nội bộ) hoặc header `Authorization` (chế độ
+ * Supabase). Trình duyệt **không** gửi vai, và cầu nối **không** tự chọn vai: AUTH-01 đã gỡ hẳn
+ * đường "trình duyệt khai vai, máy chủ gắn token vai trò". Vai trong `useAppStore` chỉ để ẩn/hiện
+ * giao diện, không phải nguồn quyền.
  */
-export const SESSION_AUTH = process.env.NEXT_PUBLIC_VIGILENS_AUTH_MODE !== "token";
 const API_PREFIX = process.env.NEXT_PUBLIC_VIGILENS_API_PREFIX ?? "/api/backend";
-
-type Role = "investigator" | "reviewer";
-
-/** Vai trò đang chọn trong UI; quyết định token mà cầu nối máy chủ dùng. */
-function currentRole(): Role {
-  try {
-    const role = useAppStore.getState().role;
-    return role === "reviewer" || role === "admin" ? "reviewer" : "investigator";
-  } catch {
-    return "investigator";
-  }
-}
 
 export async function request<T>(
   path: string,
-  options: { method?: string; role?: Role; body?: unknown; headers?: Record<string, string> } = {},
+  options: { method?: string; body?: unknown; headers?: Record<string, string> } = {},
 ): Promise<T> {
-  const role = options.role ?? currentRole();
   let response: Response;
   try { response = await fetch(`${API_PREFIX}${path}`, {
     method: options.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
-      ...(SESSION_AUTH ? {} : { "X-Vigilens-Role": role }),
       ...(options.headers ?? {}),
     },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
@@ -76,7 +64,7 @@ export async function request<T>(
   const text = await response.text();
   const payload = text ? safeJson(text) : null;
   if (!response.ok) {
-    if (response.status === 401 && SESSION_AUTH && typeof window !== "undefined" && !path.includes("/auth/")) window.dispatchEvent(new Event("vigilens-session-expired"));
+    if (response.status === 401 && typeof window !== "undefined" && !path.includes("/auth/")) window.dispatchEvent(new Event("vigilens-session-expired"));
     throw responseError(response.status, text);
   }
   return payload as T;
@@ -375,7 +363,8 @@ export function createApiSource(): DataSource {
   const timelinePending = new Map<string, Promise<TimelinePayload>>();
   return {
     async listInvestigations() {
-      const payload = await request<{ items: BackendListed[] }>(`/api/v1/investigations${SESSION_AUTH && currentRole() === "investigator" ? "?mine_only=true" : ""}`);
+      // Không đoán phạm vi từ vai hiển thị: máy chủ tự giới hạn vai chỉ có quyền `:own`.
+      const payload = await request<{ items: BackendListed[] }>("/api/v1/investigations");
       const items = payload.items.map(listedToInvestigation);
       return { items, source: "api" as const };
     },
@@ -518,7 +507,6 @@ export function createApiSource(): DataSource {
           `/api/v1/investigations/${id}/reviews`,
           {
             method: "POST",
-            role: "reviewer",
             body: {
               decision_id: action.decisionId ?? crypto.randomUUID(),
               action: action.action === "edit" ? "edit_evidence" : action.action === "request_more" ? "request_more" : action.action,
@@ -604,12 +592,12 @@ export function createApiSource(): DataSource {
     async exportDossier(id: string) {
       try {
         const response = await fetch(`${API_PREFIX}/api/v1/investigations/${id}/export`, {
-          headers: SESSION_AUTH ? {} : { "X-Vigilens-Role": currentRole() },
+          headers: {},
           signal: AbortSignal.timeout(30_000),
           cache: "no-store",
         });
         if (!response.ok) {
-          if (response.status === 401 && SESSION_AUTH && typeof window !== "undefined") window.dispatchEvent(new Event("vigilens-session-expired"));
+          if (response.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event("vigilens-session-expired"));
           const text = await response.text();
           const error = responseError(response.status, text);
           return { ok: false, code: error.code, message: error.message };
@@ -664,13 +652,12 @@ export function createApiSource(): DataSource {
 
     async ingestionEvents(limit?: number) {
       const suffix = limit != null ? `?limit=${limit}` : "";
-      return request<IngestionEventsResult>(`/api/v1/ingestion/events${suffix}`, { role: "reviewer" });
+      return request<IngestionEventsResult>(`/api/v1/ingestion/events${suffix}`);
     },
 
     async ingestDocument(input: IngestDocumentInput) {
       return request<IngestDocumentResult>("/api/v1/ingestion/documents", {
         method: "POST",
-        role: "reviewer",
         body: {
           source: input.source,
           source_id: input.source_id,

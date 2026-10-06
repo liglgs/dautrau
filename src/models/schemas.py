@@ -185,6 +185,7 @@ class ErrorCode(StrEnum):
     SOURCE_ERROR = "source_error"
     LLM_FORMAT_ERROR = "llm_format_error"
     MODEL_UNAVAILABLE = "model_unavailable"
+    UNAVAILABLE = "unavailable"
 
 
 # --------------------------------------------------------------------------------------

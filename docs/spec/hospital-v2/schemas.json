@@ -1234,7 +1234,8 @@
                 "dossier_invalid",
                 "source_error",
                 "llm_format_error",
-                "model_unavailable"
+                "model_unavailable",
+                "unavailable"
               ]
             },
             "message": {

@@ -9,6 +9,8 @@ Ba điều phải đúng, vì sai một trong ba là hoặc khoá hết người
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -17,6 +19,8 @@ from src.api.auth import LocalProvider, SupabaseProvider, TestProvider, provider
 from src.api.mvp_runtime import configure_mvp, reset_mvp
 from src.config import get_settings
 from src.main import app
+from src.models.schemas import ErrorCode
+from src.services.errors import MvpError
 
 SUPABASE_ENV_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY")
 
@@ -47,14 +51,51 @@ def test_local_is_the_default_without_supabase_url(monkeypatch):
     assert isinstance(provider_chain()[0], LocalProvider)
 
 
-def test_supabase_url_switches_auto_to_supabase(monkeypatch):
-    """Có ``SUPABASE_URL`` ⇒ ``auto`` chọn Supabase thay cho chế độ nội bộ."""
+def test_auto_prefers_supabase_but_keeps_local_as_fallback(monkeypatch):
+    """``auto`` là chế độ chuyển tiếp: Supabase đứng trước, chế độ nội bộ vẫn là đường lùi.
+
+    Nếu ``auto`` bỏ hẳn chế độ nội bộ thì chỉ cần khai ``SUPABASE_URL`` là mọi phiên nội bộ đang
+    chạy bị khoá ra ngoài — đúng thứ đã xảy ra khi thêm biến này vào ``.env``.
+    """
+    monkeypatch.setenv("AUTH_PROVIDER", "auto")
+    monkeypatch.setenv("SUPABASE_URL", "https://vi-du.supabase.co")
+    monkeypatch.setenv("SUPABASE_ANON_KEY", "anon-key")
+    get_settings.cache_clear()
+    monkeypatch.setattr("src.api.auth.supabase_provider_ready", lambda: True)
+    chain = provider_chain()
+    assert isinstance(chain[0], SupabaseProvider)
+    assert any(isinstance(provider, LocalProvider) for provider in chain)
+    assert [provider.name for provider in chain] == ["supabase", "local"]
+
+
+def test_auto_skips_supabase_when_the_library_is_missing(monkeypatch):
+    """Thiếu PyJWT thì ``auto`` dùng chế độ nội bộ, thay vì dựng nhà cung cấp không chạy được."""
     monkeypatch.setenv("AUTH_PROVIDER", "auto")
     monkeypatch.setenv("SUPABASE_URL", "https://vi-du.supabase.co")
     get_settings.cache_clear()
-    chain = provider_chain()
-    assert isinstance(chain[0], SupabaseProvider)
-    assert not any(isinstance(provider, LocalProvider) for provider in chain)
+    monkeypatch.setattr("src.api.auth.supabase_provider_ready", lambda: False)
+    assert [provider.name for provider in provider_chain()] == ["local"]
+
+
+def test_explicit_supabase_mode_is_not_a_fallback(monkeypatch):
+    """Khai thẳng ``supabase`` ⇒ chỉ Supabase; thiếu thư viện là lỗi cấu hình, không hạ cấp."""
+    monkeypatch.setenv("AUTH_PROVIDER", "supabase")
+    monkeypatch.setenv("SUPABASE_URL", "https://vi-du.supabase.co")
+    get_settings.cache_clear()
+    monkeypatch.setattr("src.api.auth.supabase_provider_ready", lambda: False)
+    assert [provider.name for provider in provider_chain()] == ["supabase"]
+
+
+def test_explicit_supabase_mode_reports_the_missing_library(monkeypatch):
+    """Thiếu PyJWT ⇒ 503 nói rõ nguyên nhân, không phải 401 khiến người dùng tưởng sai mật khẩu."""
+    monkeypatch.setenv("AUTH_PROVIDER", "supabase")
+    monkeypatch.setenv("SUPABASE_URL", "https://vi-du.supabase.co")
+    get_settings.cache_clear()
+    monkeypatch.setitem(sys.modules, "jwt", None)
+    with pytest.raises(MvpError) as excinfo:
+        SupabaseProvider()._decode("bat-ky")
+    assert excinfo.value.status == 503
+    assert excinfo.value.code == ErrorCode.UNAVAILABLE
 
 
 def test_explicit_local_ignores_supabase_url(monkeypatch):

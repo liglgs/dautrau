@@ -234,7 +234,9 @@ Tiền tố `/api/v1` (trừ `/health`, `/ready`). Mọi request đọc/ghi đ�
 
 | Header | Ý nghĩa |
 |---|---|
-| `X-API-Token: <token>` | Token vai trò (`INVESTIGATOR_TOKEN` hoặc `REVIEWER_TOKEN` ở `.env`) |
+| `Cookie: session_id=<opaque>` | Phiên đăng nhập email + mật khẩu (chế độ nội bộ). Cầu nối giao diện chuyển tiếp cookie này. |
+| `Authorization: Bearer <access_token>` | Access token Supabase (chế độ Supabase). |
+| `X-API-Token: <vln_...>` | Khoá máy do `scripts/auth_cli.py issue-token` cấp, dành cho công cụ dòng lệnh. |
 | `Authorization: Bearer <token>` | Cách gửi thay thế tương đương |
 | `Idempotency-Key: <key>` | Bắt buộc trên thực tế cho `POST /investigations` và `POST /{id}/continue` để chặn double click |
 

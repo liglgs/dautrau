@@ -52,7 +52,6 @@ vi.mock("@/lib/hooks/use-data", async () => {
 });
 
 vi.mock("@/lib/api/real", () => ({
-  SESSION_AUTH: false,
   request: () => {
     throw new Error("Bài kiểm thử trang không gọi mạng thật");
   },

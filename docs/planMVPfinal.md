@@ -197,6 +197,10 @@ Mọi API có tiền tố `/api/v1`, trừ `/health`. Request ghi có schema và
 | `GET /investigations/{id}/export` | Markdown của version hiện hành đã duyệt |
 | `GET /health` | Kiểm tra backend đang hoạt động |
 
+> **Đã thay thế (AUTH-01, 2026-10-06).** Mô tả dưới đây là thiết kế ban đầu và **không còn đúng**:
+> hai token tĩnh đã bị bỏ khỏi đường đăng nhập giao diện vì chúng cho phép đổi vai bằng một header
+> do trình duyệt khai. Xem `docs/mvp-contracts.md` để biết cơ chế hiện hành.
+
 MVP dùng hai token cấu hình riêng phía server: `INVESTIGATOR_TOKEN` và `REVIEWER_TOKEN`, ánh xạ tới `investigator-local`/`reviewer-local`. UI nhận token qua trường nhập bảo mật và chỉ giữ trong bộ nhớ phiên; không hard-code token hoặc đưa vào bundle/URL. Backend kiểm tra quyền, không chỉ ẩn nút duyệt.
 
 Token chung theo vai trò chỉ phục vụ demo cục bộ, chưa chứng minh danh tính cá nhân hoặc phân quyền tổ chức. Trước khi mở ra Internet, triển khai hệ thống tài khoản/session và HTTPS theo kế hoạch đầy đủ.

@@ -5,7 +5,6 @@ import { ChevronUp, UserCog } from "lucide-react";
 import { ROLE_LABEL, useAppStore } from "@/lib/store/app-store";
 import type { Role } from "@/lib/types";
 import { DATA_MODE } from "@/lib/api";
-import { SESSION_AUTH } from "@/lib/api/real";
 import { cn } from "@/lib/utils";
 
 const ROLES: Role[] = ["visitor", "investigator", "reviewer", "admin"];
@@ -14,7 +13,7 @@ const ROLES: Role[] = ["visitor", "investigator", "reviewer", "admin"];
 export function RoleSwitcher() {
   const { role, setRole, demoMode } = useAppStore();
   const [open, setOpen] = React.useState(false);
-  if (!demoMode || (DATA_MODE === "api" && SESSION_AUTH)) return null;
+  if (!demoMode || DATA_MODE === "api") return null;
   return (
     <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 print:hidden">
       {open ? (

@@ -28,7 +28,7 @@ import {
   Users,
 } from "lucide-react";
 import { DATA_MODE } from "@/lib/api";
-import { request, SESSION_AUTH } from "@/lib/api/real";
+import { request } from "@/lib/api/real";
 import { useQueryClient } from "@tanstack/react-query";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -86,7 +86,7 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const sessionMode = DATA_MODE === "api" && SESSION_AUTH;
+  const sessionMode = DATA_MODE === "api";
   const [sessionReady, setSessionReady] = React.useState(false);
   const [sessionError, setSessionError] = React.useState<string | null>(null);
   // Explicit logout owns navigation until this shell unmounts.

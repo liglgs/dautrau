@@ -7,8 +7,10 @@ Gói này bổ sung môi trường và kiểm tra tự động cho runtime MVP: 
 Bật Docker Desktop. Từ thư mục gốc, tạo token riêng cho hai vai trò trong phiên PowerShell:
 
 ```powershell
-$env:INVESTIGATOR_TOKEN = [guid]::NewGuid().ToString('N')
-$env:REVIEWER_TOKEN = [guid]::NewGuid().ToString('N')
+$env:INVESTIGATOR_EMAIL = "dieutra@benhvien.vn"
+$env:INVESTIGATOR_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:REVIEWER_EMAIL = "duyet@benhvien.vn"
+$env:REVIEWER_PASSWORD = [guid]::NewGuid().ToString('N')
 docker compose -f docker-compose.mvp.yml config --quiet
 docker compose -f docker-compose.mvp.yml up -d --build --wait --wait-timeout 120
 ```
@@ -27,7 +29,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m scripts.mvp_deployment_smoke --output data/deployment-smoke.json
 ```
 
-Giữ `INVESTIGATOR_TOKEN` và `REVIEWER_TOKEN` trong cùng phiên PowerShell, đúng với token đã dùng khi khởi động stack. Smoke đăng nhập hai vai trò qua proxy, giữ cookie riêng và gửi `Origin`, rồi tạo một cuộc điều tra synthetic, chờ assessment, kiểm tra investigator không được duyệt, export bị chặn trước cả hai lần duyệt, approve assessment, continue, approve dossier rồi export Markdown. Mỗi quote được so với `document.text[start:end]`; output ghi ID, số evidence, byte và SHA-256 của export, không ghi token/cookie. Không gọi nguồn hoặc LLM thật; không dùng kết quả này làm benchmark y khoa.
+Giữ `INVESTIGATOR_PASSWORD` và `REVIEWER_PASSWORD` trong cùng phiên PowerShell, đúng với mật khẩu đã dùng khi khởi động stack. Smoke đăng nhập hai vai trò qua proxy, giữ cookie riêng và gửi `Origin`, rồi tạo một cuộc điều tra synthetic, chờ assessment, kiểm tra investigator không được duyệt, export bị chặn trước cả hai lần duyệt, approve assessment, continue, approve dossier rồi export Markdown. Mỗi quote được so với `document.text[start:end]`; output ghi ID, số evidence, byte và SHA-256 của export, không ghi token/cookie. Không gọi nguồn hoặc LLM thật; không dùng kết quả này làm benchmark y khoa.
 
 ## Backup/restore
 

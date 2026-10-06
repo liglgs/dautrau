@@ -22,7 +22,7 @@ from fastapi import APIRouter, Cookie, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.config import get_settings
-from src.models.schemas import InvestigationState
+from src.models.schemas import ErrorCode, InvestigationState
 from src.services.errors import MvpError, forbidden, not_found, unauthorized
 from src.services.identity import (
     ROLE_LABELS,
@@ -191,7 +191,17 @@ class SupabaseProvider:
         return payload
 
     def _decode(self, token: str) -> dict[str, Any]:
-        import jwt  # PyJWT; nhập muộn để chế độ local không cần thư viện này
+        try:
+            import jwt  # PyJWT; nhập muộn để chế độ local không cần thư viện này
+        except ImportError as exc:
+            # Cấu hình sai, không phải token sai: trả 503 để log chỉ đúng nguyên nhân, thay vì
+            # 401 khiến người vận hành tưởng người dùng gõ sai mật khẩu.
+            raise MvpError(
+                503,
+                ErrorCode.UNAVAILABLE,
+                "Chế độ Supabase cần thư viện PyJWT và cryptography nhưng chưa cài.",
+                {"missing": "PyJWT"},
+            ) from exc
 
         settings = get_settings()
         jwks = self._load_jwks()
@@ -290,13 +300,36 @@ class TestProvider:
         return _principal_from_row(user, auth_method="test")
 
 
+def supabase_provider_ready() -> bool:
+    """``True`` khi chế độ Supabase thực sự chạy được (có thư viện và có cấu hình)."""
+    try:
+        import jwt  # noqa: F401  - PyJWT
+    except ImportError:
+        return False
+    settings = get_settings()
+    return bool(settings.supabase_url and settings.supabase_anon_key)
+
+
 def provider_chain() -> list[IdentityProvider]:
-    """Chuỗi nhà cung cấp theo cấu hình. Thử lần lượt; cái đầu tiên xác minh được thì thắng."""
+    """Chuỗi nhà cung cấp theo cấu hình. Thử lần lượt; cái đầu tiên xác minh được thì thắng.
+
+    ``auto`` là chế độ **chuyển tiếp**: Supabase đứng trước, chế độ nội bộ đứng sau làm đường lùi.
+    Nhờ vậy việc thêm ``SUPABASE_URL`` không khoá những người đang dùng phiên nội bộ ra ngoài, mà
+    cũng không cần đổi cấu hình khi cắt hẳn sang Supabase (chỉ cần bỏ ``LocalProvider`` khi hết
+    thời gian chuyển tiếp).
+
+    Chỉ khi khai báo thẳng ``AUTH_PROVIDER=supabase`` thì chế độ nội bộ mới bị loại hẳn — lúc đó
+    thiếu thư viện là lỗi cấu hình, không phải lý do để âm thầm hạ cấp xác thực.
+    """
     settings = get_settings()
     mode = settings.auth_provider
     chain: list[IdentityProvider] = []
-    if mode == "supabase" or (mode == "auto" and settings.supabase_url):
+    if mode == "supabase":
         chain.append(SupabaseProvider())
+    elif mode == "auto":
+        if supabase_provider_ready():
+            chain.append(SupabaseProvider())
+        chain.append(LocalProvider())
     elif mode == "test":
         pass
     else:

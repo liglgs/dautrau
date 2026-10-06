@@ -90,11 +90,12 @@ Muốn bỏ bảy bảng mới (chấp nhận mất dữ liệu DI): `python -m 
 .venv/bin/python -m scripts.elt.check_warehouse
 
 # Tra cứu thuốc qua API
-curl -s -H "X-API-Token: $INVESTIGATOR_TOKEN" \
+# Khoá máy: cấp bằng `python scripts/auth_cli.py issue-token --user-id <id>` (in ra một lần).
+curl -s -H "X-API-Token: $VIGILENS_API_TOKEN" \
   "http://127.0.0.1:8000/api/v1/drugs/lookup?name=ibuprofen"
 
 # Tìm kiếm ngữ nghĩa qua API
-curl -s -H "X-API-Token: $INVESTIGATOR_TOKEN" -H "Content-Type: application/json" \
+curl -s -H "X-API-Token: $VIGILENS_API_TOKEN" -H "Content-Type: application/json" \
   -X POST http://127.0.0.1:8000/api/v1/rag/search \
   -d '{"query":"hạ magnesi do thuốc ức chế bơm proton","k":3}'
 ```

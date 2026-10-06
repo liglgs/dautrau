@@ -10,8 +10,10 @@ Python 3.11+, Node.js 24. Từ thư mục gốc:
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
 # Tạo token riêng cho từng vai trò, chỉ giữ trong phiên PowerShell này.
-$env:INVESTIGATOR_TOKEN = [guid]::NewGuid().ToString('N')
-$env:REVIEWER_TOKEN = [guid]::NewGuid().ToString('N')
+$env:INVESTIGATOR_EMAIL = "dieutra@benhvien.vn"
+$env:INVESTIGATOR_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:REVIEWER_EMAIL = "duyet@benhvien.vn"
+$env:REVIEWER_PASSWORD = [guid]::NewGuid().ToString('N')
 $env:MVP_SOURCE_MODE = 'fixture'
 .\.venv\Scripts\python.exe -m uvicorn src.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
@@ -23,8 +25,6 @@ cd frontend
 npm ci
 $env:NEXT_PUBLIC_VIGILENS_DATA_MODE = 'api'
 $env:VIGILENS_API_BASE = 'http://127.0.0.1:8000'
-$env:VIGILENS_INVESTIGATOR_TOKEN = $env:INVESTIGATOR_TOKEN
-$env:VIGILENS_REVIEWER_TOKEN = $env:REVIEWER_TOKEN
 npm run dev -- --hostname 127.0.0.1
 ```
 

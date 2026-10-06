@@ -3,9 +3,12 @@ import { expect, test } from "@playwright/test";
 
 test("Person 3 graph integrates with claim, evidence, review and export UI", async ({ page, context }, testInfo) => {
   const request = context.request;
-  const login = async (role: string) => {
+  // AUTH-01: đăng nhập thật bằng email + mật khẩu; danh tính nằm trong cookie HttpOnly mà
+  // `context.request` dùng chung, nên không bài nào tự khai vai bằng header nữa.
+  const login = async (role: "investigator" | "reviewer") => {
     await page.goto("/login");
-    await page.getByLabel("Token đăng nhập", { exact: true }).fill(`person4-integration-${role}`);
+    await page.getByLabel("Email", { exact: true }).fill(`person4-integration-${role}@example.test`);
+    await page.getByLabel("Mật khẩu", { exact: true }).fill("person4-integration-password");
     await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
     await expect(page).toHaveURL(/\/app$/);
   };
@@ -25,7 +28,7 @@ test("Person 3 graph integrates with claim, evidence, review and export UI", asy
   const base = new URL(page.url()).pathname;
   const api = `/api/backend/api/v1/investigations/${base.split("/").at(-1)}`;
   const state = async () => {
-    const response = await request.get(api, { headers: { "X-Vigilens-Role": "investigator" } });
+    const response = await request.get(api);
     expect(response.ok()).toBeTruthy();
     return response.json();
   };
@@ -34,7 +37,7 @@ test("Person 3 graph integrates with claim, evidence, review and export UI", asy
   expect((await state()).assessment_status).toBe("supported_for_scope");
 
   await page.goto(`${base}/evidence`);
-  const evidenceResponse = await request.get(`${api}/evidence`, { headers: { "X-Vigilens-Role": "investigator" } });
+  const evidenceResponse = await request.get(`${api}/evidence`);
   const { items } = await evidenceResponse.json();
   expect(items).toHaveLength(2);
   await page.getByRole("button", { name: `[${items[0].evidence_id}]`, exact: true }).first().click();
@@ -61,7 +64,7 @@ test("Person 3 graph integrates with claim, evidence, review and export UI", asy
   await expect.poll(async () => (await state()).checkpoint).toBe("dossier");
   await page.goto(`${base}/dossier`);
   await expect(page.getByRole("button", { name: "Xuất .md", exact: true })).toBeDisabled();
-  const unapproved = await request.get(`${api}/export`, { headers: { "X-Vigilens-Role": "reviewer" } });
+  const unapproved = await request.get(`${api}/export`);
   expect(unapproved.status()).toBe(409);
 
   await role("reviewer");
@@ -88,7 +91,7 @@ test("Person 3 graph integrates with claim, evidence, review and export UI", asy
   expect((await edited).ok()).toBeTruthy();
   await page.goto(`${base}/dossier`);
   await expect(page.getByRole("button", { name: "Xuất .md", exact: true })).toBeDisabled();
-  const invalidated = await request.get(`${api}/export`, { headers: { "X-Vigilens-Role": "reviewer" } });
+  const invalidated = await request.get(`${api}/export`);
   expect(invalidated.status()).toBe(409);
 });
 
@@ -97,14 +100,16 @@ test("cookie session protects workspace, cancel works and expiry keeps return pa
   const request = context.request;
   await page.goto("/app/investigations/new");
   await expect(page).toHaveURL(/\/login\?returnTo=/);
-  await page.getByLabel("Token đăng nhập", { exact: true }).fill("invalid-token");
+  await page.getByLabel("Email", { exact: true }).fill("person4-integration-investigator@example.test");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("mat-khau-sai");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page.getByText("Chưa đăng nhập được", { exact: true })).toBeVisible();
-  await page.getByLabel("Token đăng nhập", { exact: true }).fill("person4-integration-investigator");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("person4-integration-password");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(/\/app\/investigations\/new$/);
   await expect(page.getByRole("button", { name: /Chế độ demo/ })).toHaveCount(0);
   expect((await context.cookies()).find((cookie) => cookie.name === "session_id")?.httpOnly).toBe(true);
+  // Vẫn gửi header vai cũ: cầu nối phải bỏ qua nó và trả về vai của phiên (AUTH-01).
   const me = await request.get("/api/backend/api/v1/auth/me", { headers: { "X-Vigilens-Role": "reviewer" } });
   expect((await me.json()).role).toBe("investigator");
   const crossOrigin = await request.post("/api/backend/api/v1/auth/logout", { headers: { Origin: "https://foreign.example" } });
@@ -120,7 +125,8 @@ test("cookie session protects workspace, cancel works and expiry keeps return pa
   await context.clearCookies();
   await page.reload();
   await expect(page).toHaveURL(new RegExp(`/login\\?returnTo=${encodeURIComponent(destination)}`));
-  await page.getByLabel("Token đăng nhập", { exact: true }).fill("person4-integration-investigator");
+  await page.getByLabel("Email", { exact: true }).fill("person4-integration-investigator@example.test");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("person4-integration-password");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${destination}$`));
   // A polling request can report expiry after logout succeeds but before the
