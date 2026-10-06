@@ -1615,3 +1615,32 @@ def test_a_bundle_entry_that_is_not_an_object_is_dropped_not_fatal():
     assert all(item["bundle_id"] is None for item in dropped)
     assert all(item["violations"] for item in dropped)
     assert all("không phải đối tượng" in item["violations"][0] for item in dropped)
+
+
+def test_a_broken_newest_bundle_reports_itself_instead_of_crashing():
+    """Mục **mới nhất** không phải đối tượng thì phải là lỗi hợp đồng, không phải ``AttributeError``.
+
+    Vòng kiểm thử thứ năm tìm ra khe này: ``_split_older_bundles`` đã kiểm kiểu cho các mục cũ,
+    nhưng ``_require_contract_shaped_bundles`` — chạy trên đúng mục mới nhất — vẫn gọi
+    ``bundle.get("bundle_id")`` trong **chính nhánh báo lỗi**. Không kiểm thì nhánh đó ném
+    ``AttributeError`` và người gọi nhận 500 văn bản trần: hàm sinh ra để chặn 500 lại tự tạo 500.
+    """
+    from src.api.v2_routes import _require_contract_shaped_bundles
+    from src.services.errors import MvpError
+
+    with pytest.raises(MvpError) as caught:
+        _require_contract_shaped_bundles("wi_1", [None])
+    assert caught.value.status == 500
+    assert caught.value.code == ErrorCode.UNAVAILABLE
+    assert caught.value.details["bundle_id"] is None
+    assert caught.value.details["violations"], "phải nói rõ sai ở đâu"
+
+    # Cùng câu trả lời cho các kiểu không phải đối tượng khác, và cho một mục là dict nhưng hỏng.
+    for entry in ("chuỗi", 7, [1, 2], True):
+        with pytest.raises(MvpError) as other:
+            _require_contract_shaped_bundles("wi_1", [entry])
+        assert other.value.details["bundle_id"] is None
+
+    with pytest.raises(MvpError) as broken:
+        _require_contract_shaped_bundles("wi_1", [{"bundle_id": "eb_hong"}])
+    assert broken.value.details["bundle_id"] == "eb_hong"

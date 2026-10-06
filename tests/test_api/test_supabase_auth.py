@@ -27,7 +27,8 @@ from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from httpx import ASGITransport, AsyncClient
 from jwt.algorithms import ECAlgorithm, RSAAlgorithm
 
-from src.api.auth import SupabaseProvider, supabase_provider_ready
+from src.api import auth as auth_module
+from src.api.auth import SupabaseProvider, provider_chain, supabase_provider, supabase_provider_ready
 from src.api.mvp_runtime import configure_mvp, get_mvp_store, reset_mvp
 from src.config import get_settings
 from src.main import app
@@ -48,7 +49,14 @@ def _supabase_settings(monkeypatch):
     monkeypatch.delenv("VIGILENS_TEST_AUTH", raising=False)
     monkeypatch.delenv("APP_ENV", raising=False)
     get_settings.cache_clear()
+    # Nhà cung cấp Supabase nay **dùng chung cho cả tiến trình** (để đệm JWKS và bộ nhớ lần hỏng
+    # không chết theo yêu cầu). Đệm đó phải được xoá giữa các bài, nếu không bài sau thừa hưởng
+    # trạng thái của bài trước và kết quả phụ thuộc thứ tự chạy.
+    auth_module._supabase_provider = None
+    auth_module._supabase_provider_key = None
     yield
+    auth_module._supabase_provider = None
+    auth_module._supabase_provider_key = None
     get_settings.cache_clear()
 
 
@@ -436,3 +444,59 @@ def test_the_jwks_backoff_expires_and_a_good_fetch_clears_it(monkeypatch):
     # Thành công rồi thì chốt tạm biến mất: lần sau lấy từ đệm, không gọi mạng nữa.
     assert provider._load_jwks() == {"keys": []}
     assert len(calls) == 2
+
+
+def test_the_failure_memory_survives_across_requests(monkeypatch):
+    """Bộ nhớ lần hỏng phải nằm ở thực thể **dùng chung**, không phải ở thực thể mỗi yêu cầu một cái.
+
+    Đây là bài khoá lại đúng lỗ mà vòng kiểm thử thứ năm đào ra. Bản vá đầu tiên nhớ lần hỏng trong
+    ``_jwks_error`` — nhưng ``provider_chain()`` được gọi ở **mỗi** yêu cầu và dựng
+    ``SupabaseProvider()`` mới, nên bộ nhớ đó chết ngay khi yêu cầu kết thúc. Đo được qua HTTP thật
+    với ``SUPABASE_URL`` trỏ vào địa chỉ lỗ đen: **10,012 giây**, rồi **10,008**, rồi **10,012** —
+    không giảm chút nào. Hai bài kiểm cũ không bắt được vì chúng tự dựng một thực thể rồi gọi
+    ``_load_jwks()`` hai lần, tức là kiểm chính giả định của người viết mã.
+
+    Vì vậy bài này đi qua ``provider_chain()`` — đúng đường mà yêu cầu thật đi.
+    """
+    import urllib.error
+    import urllib.request
+
+    calls = []
+
+    def failing_urlopen(url, timeout=None):
+        calls.append(url)
+        raise urllib.error.URLError("không tới được")
+
+    monkeypatch.setattr(urllib.request, "urlopen", failing_urlopen)
+
+    first = [item for item in provider_chain() if isinstance(item, SupabaseProvider)]
+    assert len(first) == 1
+    with pytest.raises(urllib.error.URLError):
+        first[0]._load_jwks()
+
+    # Yêu cầu thứ hai: chuỗi nhà cung cấp được dựng lại, nhưng **thực thể Supabase thì không**.
+    second = [item for item in provider_chain() if isinstance(item, SupabaseProvider)]
+    assert len(second) == 1
+    assert second[0] is first[0], "phải dùng chung thực thể, nếu không đệm JWKS chết theo yêu cầu"
+    with pytest.raises(urllib.error.URLError):
+        second[0]._load_jwks()
+
+    assert len(calls) == 1, f"lần hỏng phải được nhớ qua các yêu cầu, đo được {len(calls)} lời gọi mạng"
+
+
+def test_the_shared_provider_is_rebuilt_when_the_config_changes(monkeypatch):
+    """Đổi ``SUPABASE_URL`` phải dựng lại thực thể, không dùng đệm của dự án cũ.
+
+    Không có bài này thì bộ nhớ lần hỏng của dự án A sẽ chặn luôn dự án B trong 30 giây, và đệm
+    JWKS của A sẽ được dùng để xác minh token của B.
+    """
+    monkeypatch.setenv("SUPABASE_URL", "https://du-an-a.supabase.co")
+    get_settings.cache_clear()
+    a = supabase_provider()
+
+    monkeypatch.setenv("SUPABASE_URL", "https://du-an-b.supabase.co")
+    get_settings.cache_clear()
+    b = supabase_provider()
+
+    assert a is not b, "đổi dự án phải dựng lại thực thể"
+    assert supabase_provider() is b, "cùng cấu hình thì phải dùng lại"

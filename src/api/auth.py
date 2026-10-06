@@ -364,6 +364,27 @@ def supabase_provider_ready() -> bool:
     return bool(settings.supabase_url and settings.supabase_anon_key)
 
 
+#: Nhà cung cấp Supabase **dùng chung cho cả tiến trình**. ``provider_chain()`` được gọi ở **mỗi**
+#: yêu cầu, nên nếu dựng thực thể mới tại đây thì đệm JWKS 300 giây và bộ nhớ lần hỏng 30 giây đều
+#: chết theo yêu cầu — cả hai đều vô dụng. Đo được qua HTTP thật với ``SUPABASE_URL`` trỏ vào một
+#: địa chỉ lỗ đen, credential đúng dạng JWT: **10,012 giây**, rồi **10,008**, rồi **10,012** — không
+#: giảm chút nào. Khoá theo cấu hình để đổi ``SUPABASE_URL`` (nhất là trong bài kiểm thử) vẫn dựng
+#: lại từ đầu thay vì dùng đệm cũ.
+_supabase_provider: SupabaseProvider | None = None
+_supabase_provider_key: tuple[str, str] | None = None
+
+
+def supabase_provider() -> SupabaseProvider:
+    """Nhà cung cấp Supabase dùng chung; dựng lại khi cấu hình đổi."""
+    global _supabase_provider, _supabase_provider_key
+    settings = get_settings()
+    key = (settings.supabase_url, settings.supabase_anon_key)
+    if _supabase_provider is None or _supabase_provider_key != key:
+        _supabase_provider = SupabaseProvider()
+        _supabase_provider_key = key
+    return _supabase_provider
+
+
 def provider_chain() -> list[IdentityProvider]:
     """Chuỗi nhà cung cấp theo cấu hình. Thử lần lượt; cái đầu tiên xác minh được thì thắng.
 
@@ -379,10 +400,10 @@ def provider_chain() -> list[IdentityProvider]:
     mode = settings.auth_provider
     chain: list[IdentityProvider] = []
     if mode == "supabase":
-        chain.append(SupabaseProvider())
+        chain.append(supabase_provider())
     elif mode == "auto":
         if supabase_provider_ready():
-            chain.append(SupabaseProvider())
+            chain.append(supabase_provider())
         chain.append(LocalProvider())
     elif mode == "test":
         pass

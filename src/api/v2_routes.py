@@ -405,13 +405,17 @@ def _require_contract_shaped_bundles(work_item_id: str, bundles: list[dict[str, 
     for bundle in bundles:
         violations = contract_violations("EvidenceBundle", bundle)
         if violations:
+            # Mục mới nhất cũng có thể không phải đối tượng. Không kiểm kiểu ở đây thì chính nhánh
+            # báo lỗi này ném ``AttributeError`` và người gọi nhận 500 văn bản trần — tức là cái
+            # hàm này tự tạo ra đúng thứ nó sinh ra để chặn.
+            bundle_id = bundle.get("bundle_id") if isinstance(bundle, dict) else None
             raise MvpError(
                 500,
                 ErrorCode.UNAVAILABLE,
                 "Gói bằng chứng trong kho không khớp hợp đồng nên không trả ra được.",
                 {
                     "work_item_id": work_item_id,
-                    "bundle_id": bundle.get("bundle_id"),
+                    "bundle_id": bundle_id,
                     "violations": violations,
                 },
             )
