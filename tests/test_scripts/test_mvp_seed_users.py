@@ -150,3 +150,18 @@ def test_environment_variable_names_match_the_compose_file(monkeypatch, seeded):
     for prefix, _, _ in _module().ROLES:
         assert f"{prefix}_EMAIL" in compose, prefix
         assert f"{prefix}_PASSWORD" in compose, prefix
+
+
+def test_seeded_accounts_are_not_marked_as_legacy_records(monkeypatch, seeded):
+    """Tài khoản khởi động là bản ghi mới, phải có ``actor_role`` — nếu không, nhật ký dán nhãn
+    ``legacy_actor: true`` lên chúng và người đọc tưởng đây là dữ liệu trước B1."""
+    module = _module()
+    monkeypatch.setenv("MVP_BOOTSTRAP_INVESTIGATOR_EMAIL", "dieu-tra@benhvien.test")
+    monkeypatch.setenv("MVP_BOOTSTRAP_INVESTIGATOR_PASSWORD", "mat-khau-du-dai-01")
+    assert module.main([]) == 0
+
+    rows = [row for row in seeded.list_audit(limit=50) if row["action"] == "user_created"]
+    assert rows, "nạp tài khoản khởi động phải để lại vết"
+    assert all(row["actor_role"] == "bootstrap" for row in rows)
+    assert all(row["legacy_actor"] is False for row in rows)
+    assert all(row["actor"] == "bootstrap" for row in rows)

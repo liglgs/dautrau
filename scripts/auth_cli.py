@@ -133,7 +133,12 @@ def _legacy_rows():
 
     session = SessionLocal()
     try:
-        return [{"id": row.id, "name": row.name, "role": row.role} for row in session.execute(select(User))]
+        # ``session.execute(select(User))`` trả về ``Row`` bọc thực thể (khoá ``"User"``) trong
+        # SQLAlchemy 2.x, nên ``row.id`` ném AttributeError; ``scalars`` trả thẳng thực thể.
+        return [
+            {"id": user.id, "name": user.name, "role": user.role}
+            for user in session.scalars(select(User))
+        ]
     except Exception as exc:  # noqa: BLE001 - thiếu bảng/chưa cấu hình đều quy về một thông báo
         print(f"Không đọc được bảng users của VMEC: {exc.__class__.__name__}: {exc}", file=sys.stderr)
         return None

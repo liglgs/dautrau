@@ -4,13 +4,15 @@ Gói này bổ sung môi trường và kiểm tra tự động cho runtime MVP: 
 
 ## Chạy Docker trên Windows
 
-Bật Docker Desktop. Từ thư mục gốc, tạo mật khẩu riêng cho hai tài khoản khởi tạo trong phiên PowerShell:
+Bật Docker Desktop. Từ thư mục gốc, tạo mật khẩu riêng cho hai tài khoản khởi tạo trong phiên PowerShell.
+`docker-compose.mvp.yml` đọc các biến **phía host** dưới đây rồi truyền vào container dưới tên
+`MVP_BOOTSTRAP_*`:
 
 ```powershell
-$env:MVP_BOOTSTRAP_INVESTIGATOR_EMAIL = "dieutra@benhvien.vn"
-$env:MVP_BOOTSTRAP_INVESTIGATOR_PASSWORD = [guid]::NewGuid().ToString('N')
-$env:MVP_BOOTSTRAP_REVIEWER_EMAIL = "duyet@benhvien.vn"
-$env:MVP_BOOTSTRAP_REVIEWER_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:INVESTIGATOR_EMAIL = "dieutra@benhvien.vn"
+$env:INVESTIGATOR_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:REVIEWER_EMAIL = "duyet@benhvien.vn"
+$env:REVIEWER_PASSWORD = [guid]::NewGuid().ToString('N')
 docker compose -f docker-compose.mvp.yml config --quiet
 docker compose -f docker-compose.mvp.yml up -d --build --wait --wait-timeout 120
 ```

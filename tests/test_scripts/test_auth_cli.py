@@ -198,3 +198,62 @@ def test_create_user_is_audited_with_the_cli_identity(cli_store, capsys):
     assert rows[-1]["actor_role"] == "cli"
     assert rows[-1]["legacy_actor"] is False
     assert rows[-1]["payload"]["user_id"] == "usr_cli"
+
+
+# --------------------------------------------------------------------------------------
+# BUG 1 của vòng kiểm thử: ``_legacy_rows`` đọc sai kiểu đối tượng của SQLAlchemy 2.x
+# --------------------------------------------------------------------------------------
+
+
+def test_legacy_rows_reads_entities_not_wrapped_rows(monkeypatch, capsys):
+    """``session.execute(select(User))`` trả ``Row`` bọc thực thể nên ``row.id`` ném AttributeError.
+
+    Bài này dựng đúng hình dạng của SQLAlchemy 2.x: ``execute`` cho ra đối tượng **không** có
+    thuộc tính ``id`` (chỉ có khoá ``"User"``), còn ``scalars`` cho ra thực thể. Hàm phải dùng
+    đường thứ hai — nếu không, ``migrate-legacy`` chết ngay ở bước đọc và không di trú được gì.
+    """
+    from types import SimpleNamespace
+
+    class FakeRow:
+        """Bắt chước ``Row`` của SQLAlchemy 2.x: chỉ truy cập được qua khoá."""
+
+        def __init__(self, user):
+            self._user = user
+
+        def __getitem__(self, key):
+            assert key == "User"
+            return self._user
+
+    class FakeSession:
+        def __init__(self, users):
+            self._users = users
+            self.closed = False
+
+        def execute(self, _statement):
+            return [FakeRow(user) for user in self._users]
+
+        def scalars(self, _statement):
+            return list(self._users)
+
+        def close(self):
+            self.closed = True
+
+    users = [
+        SimpleNamespace(id="usr_vmec_1", name="Bác sĩ A", role="responder"),
+        SimpleNamespace(id="usr_vmec_2", name="Dược sĩ B", role="clinician"),
+    ]
+    session = FakeSession(users)
+    monkeypatch.setattr("src.db.SessionLocal", lambda: session)
+    monkeypatch.setattr("src.db.User", object())
+    # ``select(User)`` được dựng trước khi phiên giả được dùng, nên chặn luôn ``select``.
+    monkeypatch.setattr("sqlalchemy.select", lambda *_args, **_kwargs: "SELECT-USER")
+
+    from scripts.auth_cli import _legacy_rows
+
+    rows = _legacy_rows()
+    assert rows == [
+        {"id": "usr_vmec_1", "name": "Bác sĩ A", "role": "responder"},
+        {"id": "usr_vmec_2", "name": "Dược sĩ B", "role": "clinician"},
+    ]
+    assert session.closed, "phiên phải được đóng kể cả khi đọc thành công"
+    assert "Không đọc được" not in capsys.readouterr().err

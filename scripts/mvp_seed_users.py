@@ -80,6 +80,7 @@ def main(argv: list[str] | None = None) -> int:
             display_name=email,
             password_hash=hash_password(password),
             created_by="bootstrap",
+            actor_role="bootstrap",
         )
         print(f"Đã tạo {user_id} (vai {role}, email {email}).")
         created += 1

@@ -372,3 +372,16 @@ def test_creating_an_account_is_recorded_with_its_creator(audit_client: AsyncCli
     assert rows and rows[-1]["actor"] == "usr_quan_tri"
     assert rows[-1]["payload"]["user_id"] == "usr_moi"
     assert rows[-1]["payload"]["role"] == "investigator"
+
+
+@pytest.mark.asyncio
+async def test_the_test_provider_labels_its_accounts(audit_client: AsyncClient):
+    """Tài khoản do ``X-Test-User`` dựng ra là bản ghi mới, không được dán nhãn ``legacy_actor``."""
+    response = await audit_client.get("/api/v1/auth/me", headers=_headers("usr_do_test_dung", "reviewer"))
+    assert response.status_code == 200, response.text
+
+    rows = _rows("user_created")
+    assert rows, "TestProvider phải để lại vết khi tự dựng tài khoản"
+    assert rows[-1]["actor"] == "test-provider"
+    assert rows[-1]["actor_role"] == "test"
+    assert rows[-1]["legacy_actor"] is False

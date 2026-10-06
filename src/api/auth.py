@@ -313,6 +313,7 @@ class TestProvider:
                 role=str(role),
                 display_name=user_id,
                 created_by="test-provider",
+                actor_role="test",
             )
         elif role_value and user["role"] != str(role):
             user = store.update_user(user_id, role=str(role), actor="test-provider", actor_role="test")

@@ -52,6 +52,7 @@ def main():
                 display_name=email,
                 password_hash=hash_password(INTEGRATION_PASSWORD),
                 created_by="person4-integration",
+                actor_role="integration",
             )
 
         try:
