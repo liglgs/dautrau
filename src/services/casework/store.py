@@ -30,6 +30,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from src.services.casework.contract import contract_violations
 from src.services.casework.models import (
     EvidenceBundle,
     FollowUp,
@@ -934,10 +935,20 @@ class CaseWorkStore:
             source_errors_json=source_errors,
             limitations_json=limitations,
         )
+        # Soi hợp đồng ngay ở cửa ghi. Tầng đọc cũng soi, nhưng chặn ở đây mới là chặn từ gốc: hàng
+        # đã vào kho thì không có tuyến nào xoá hay thay gói, nên một gói sai lược đồ nằm lại vĩnh
+        # viễn và làm hỏng đường đọc của cả ca bệnh. Gói bằng chứng là tài liệu duy nhất đi thẳng từ
+        # kho ra mà không qua mô hình Pydantic nào, nên hình dạng phải được kiểm bằng chính tệp lược đồ.
+        document = _bundle_document(row)
+        violations = contract_violations("EvidenceBundle", document)
+        if violations:
+            raise invalid_request(
+                "Gói bằng chứng không khớp hợp đồng hospital-v2 nên không ghi được.",
+                {"work_item_id": work_item_id, "bundle_id": bundle_id, "violations": violations},
+            )
         with session_scope(self.engine) as session:
             _ensure_work_item(session, work_item_id)
             self._insert(session, row, key=bundle_id)
-            document = _bundle_document(row)
             self._record_version(
                 session,
                 entity="evidence_bundle",

@@ -5186,7 +5186,7 @@
     },
     "/api/v2/work-items/{work_item_id}": {
       "get": {
-        "description": "Đọc một yêu cầu kèm mọi thứ thuộc về nó, trong một phiên đọc.\n\nGói bằng chứng trong lớp bọc cũng được đối chiếu ``schemas.json`` như ở đường đọc gói riêng:\ncùng một tài liệu thì phải cùng một luật, nếu không thì chỗ dễ lách nhất lại là chỗ ít ai nhìn.",
+        "description": "Đọc một yêu cầu kèm mọi thứ thuộc về nó, trong một phiên đọc.\n\nGói bằng chứng trong lớp bọc cũng được đối chiếu ``schemas.json`` như ở đường đọc gói riêng:\ncùng một tài liệu thì phải cùng một luật, nếu không thì chỗ dễ lách nhất lại là chỗ ít ai nhìn.\nRiêng gói **cũ** hỏng thì bị gỡ ra kèm danh sách ``dropped_evidence_bundles`` chứ không làm đổ\ncả lớp bọc — xem ``_split_older_bundles``.",
         "operationId": "read_work_item_api_v2_work_items__work_item_id__get",
         "parameters": [
           {

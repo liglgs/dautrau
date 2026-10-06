@@ -48,19 +48,17 @@ chúng trong threadpool nên một truy vấn chậm không chặn vòng lặp s
 
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
 from functools import lru_cache
-from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Query, Response
-from jsonschema import Draft202012Validator
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
 
 from src.api.auth import Principal, require_permission
 from src.models.schemas import ErrorCode
+from src.services.casework.contract import contract_violations
 from src.services.casework.store import CaseWorkStore
 from src.services.errors import MvpError, forbidden, invalid_request, not_found
 from src.services.identity import Permission
@@ -71,15 +69,6 @@ router = APIRouter(tags=["v2"])
 
 #: Trần số dòng một trang hàng chờ; chặn ``limit`` lớn làm nghẽn kho.
 MAX_PAGE = 200
-
-#: Lược đồ đóng băng của hợp đồng ``hospital-v2``. Đọc một lần lúc nạp mô-đun: tệp này là hợp đồng,
-#: không phải cấu hình, nên thiếu nó là lỗi dựng chương trình chứ không phải lỗi chạy.
-_CONTRACT_SCHEMAS = json.loads(
-    (Path(__file__).resolve().parents[2] / "docs" / "spec" / "hospital-v2" / "schemas.json").read_text(
-        encoding="utf-8"
-    )
-)
-
 
 # --------------------------------------------------------------------------------------
 # Engine và kho
@@ -407,21 +396,6 @@ def _require_assign_permission(principal: Principal, target: dict[str, Any] | No
         raise forbidden(f"Vai {principal.role} không có quyền queue:assign để giao việc cho người khác.")
 
 
-def _contract_violations(name: str, document: Any) -> list[str]:
-    """Đường dẫn JSON của những chỗ tài liệu sai ``schemas.json``, rỗng nếu khớp.
-
-    ``docs/contracts-hospital-v2.md`` giao cho tầng này việc bảo đảm tài liệu trả ra đúng lược đồ.
-    Gói bằng chứng là chỗ duy nhất tài liệu đi thẳng từ kho ra mà **không** qua một mô hình Pydantic
-    nào, vì hình dạng của nó do bên ghi quyết định — nên đây là chỗ phải soi bằng chính tệp lược đồ.
-    """
-    schema = {"$ref": f"#/$defs/{name}", "$defs": _CONTRACT_SCHEMAS["$defs"]}
-    validator = Draft202012Validator(schema)
-    return [
-        f"{'/'.join(str(part) for part in error.path) or '<gốc>'}: {error.message}"
-        for error in sorted(validator.iter_errors(document), key=lambda item: list(item.path))
-    ]
-
-
 def _require_contract_shaped_bundles(work_item_id: str, bundles: list[dict[str, Any]]) -> None:
     """Chặn không cho gói sai lược đồ ra khỏi hệ thống, dù đi qua đường nào.
 
@@ -429,7 +403,7 @@ def _require_contract_shaped_bundles(work_item_id: str, bundles: list[dict[str, 
     đúng là loại dữ liệu giả mà hợp đồng này sinh ra để chặn.
     """
     for bundle in bundles:
-        violations = _contract_violations("EvidenceBundle", bundle)
+        violations = contract_violations("EvidenceBundle", bundle)
         if violations:
             raise MvpError(
                 500,
@@ -441,6 +415,34 @@ def _require_contract_shaped_bundles(work_item_id: str, bundles: list[dict[str, 
                     "violations": violations,
                 },
             )
+
+
+def _split_older_bundles(
+    work_item_id: str, bundles: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Tách gói cũ hỏng ra khỏi danh sách, nhưng **không** tha cho gói mới nhất.
+
+    Gói mới nhất là câu trả lời cho "bằng chứng nói gì". Gói đó hỏng thì không có gì để trả lời và
+    phải **500** — giữ nguyên tính đóng-an-toàn. Gói cũ hỏng thì khác hẳn: nó là lịch sử, không phải
+    câu trả lời. Trước đây một dòng lịch sử hỏng làm ``GET /work-items/{id}`` trả 500 **vĩnh viễn**
+    kể cả khi gói mới nhất đã đúng, mà không có tuyến nào xoá hay thay gói — hồ sơ mất hẳn chứ không
+    phải chỉ thiếu một mục. Nên gói cũ hỏng bị bỏ ra kèm danh sách nói rõ đã bỏ gì.
+
+    Trả ``(giữ lại, đã bỏ)``. Đã bỏ gồm cả ``violations`` để người vận hành còn biết đường sửa.
+    """
+    if not bundles:
+        return [], []
+    _require_contract_shaped_bundles(work_item_id, bundles[-1:])
+    kept: list[dict[str, Any]] = []
+    dropped: list[dict[str, Any]] = []
+    for bundle in bundles[:-1]:
+        violations = contract_violations("EvidenceBundle", bundle)
+        if violations:
+            dropped.append({"bundle_id": bundle.get("bundle_id"), "violations": violations})
+        else:
+            kept.append(bundle)
+    kept.append(bundles[-1])
+    return kept, dropped
 
 
 def _etag_header(document: dict[str, Any]) -> str:
@@ -574,10 +576,17 @@ def read_work_item(
 
     Gói bằng chứng trong lớp bọc cũng được đối chiếu ``schemas.json`` như ở đường đọc gói riêng:
     cùng một tài liệu thì phải cùng một luật, nếu không thì chỗ dễ lách nhất lại là chỗ ít ai nhìn.
+    Riêng gói **cũ** hỏng thì bị gỡ ra kèm danh sách ``dropped_evidence_bundles`` chứ không làm đổ
+    cả lớp bọc — xem ``_split_older_bundles``.
     """
     document = _read_work_item(store, work_item_id, principal)
     bundle = store.work_item_bundle(document["work_item_id"])
-    _require_contract_shaped_bundles(document["work_item_id"], bundle.get("evidence_bundles") or [])
+    kept, dropped = _split_older_bundles(document["work_item_id"], bundle.get("evidence_bundles") or [])
+    bundle["evidence_bundles"] = kept
+    if dropped:
+        # Nói thẳng ra thay vì im lặng bỏ: người đọc ca phải biết là có gói đã bị gỡ, nếu không thì
+        # một hồ sơ thiếu trông y hệt một hồ sơ đầy.
+        bundle["dropped_evidence_bundles"] = dropped
     return bundle
 
 

@@ -238,8 +238,18 @@ def test_investigation_link_and_evidence_bundle(legacy_db):
     bundle = store.add_evidence_bundle(
         work_item_id,
         investigation_id="INV-abc",
-        items=[{"doc_id": "doc-1", "source": "pubmed", "stance": "supports", "quote": "câu trích dẫn"}],
-        gaps=[{"kind": "no_vietnamese_source", "detail": "chưa có dữ liệu Việt Nam"}],
+        items=[
+            {
+                "evidence_id": "EVI-store-1",
+                "doc_id": "doc-1",
+                "source": "pubmed",
+                "stance": "supports",
+                "quote": "câu trích dẫn",
+                "locator": {"start": 0, "end": 14, "section": "Tóm tắt"},
+                "retrieval": "abstract_only",
+            }
+        ],
+        gaps=[{"kind": "missing_source", "detail": "chưa có dữ liệu Việt Nam"}],
         coverage={
             "documents_retrieved": 12,
             "sources_ok": ["pubmed"],
@@ -252,7 +262,7 @@ def test_investigation_link_and_evidence_bundle(legacy_db):
     )
     assert bundle["items"][0]["doc_id"] == "doc-1"
     assert bundle["coverage"]["documents_retrieved"] == 12
-    assert store.get_evidence_bundle(bundle["bundle_id"])["gaps"][0]["kind"] == "no_vietnamese_source"
+    assert store.get_evidence_bundle(bundle["bundle_id"])["gaps"][0]["kind"] == "missing_source"
 
     with pytest.raises(MvpError) as bad:
         store.add_evidence_bundle(

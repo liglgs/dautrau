@@ -20,8 +20,12 @@ from sqlalchemy import text
 
 from src.api.v2_routes import get_casework_store
 from src.main import app
+from src.models.schemas import ErrorCode
+from src.services.casework.models import EvidenceBundle
 from src.services.casework.store import CaseWorkStore
-from src.services.warehouse.db import get_warehouse_engine
+from src.services.errors import MvpError
+from src.services.warehouse.db import get_warehouse_engine, session_scope
+from src.services.warehouse.models import now
 
 
 def _headers(role: str, user_id: str | None = None) -> dict[str, str]:
@@ -936,6 +940,44 @@ def _bundle(*, items: list[dict[str, Any]], gaps: list[dict[str, Any]]) -> dict[
     }
 
 
+def _seed_unchecked_bundle(
+    store,
+    work_item_id: str,
+    *,
+    items: list[dict[str, Any]],
+    gaps: list[dict[str, Any]],
+    bundle_id: str = "eb_hong",
+) -> str:
+    """Gieo thẳng một gói sai lược đồ, **bỏ qua** cửa ghi của kho.
+
+    Từ khi ``add_evidence_bundle`` tự soi hợp đồng thì không còn gieo được hàng hỏng qua đường
+    công khai. Nhưng hàng hỏng đã lỡ nằm trong kho là chuyện thật — bản ghi cũ, hoặc một bên ghi
+    khác — nên đường đọc vẫn phải được kiểm bằng dữ liệu như thế. Ghi thẳng qua ORM.
+    """
+    row = EvidenceBundle(
+        bundle_id=bundle_id,
+        work_item_id=work_item_id,
+        investigation_id="INV-hong",
+        created_at=now(),
+        claim_json=None,
+        items_json=items,
+        gaps_json=gaps,
+        coverage_json={
+            "documents_retrieved": 1,
+            "sources_ok": ["pubmed"],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": True,
+        },
+        assessment_status="insufficient_evidence",
+        source_errors_json=[],
+        limitations_json=[],
+    )
+    with session_scope(store.engine) as session:
+        session.add(row)
+    return bundle_id
+
+
 _CONTRACT_ITEM = {
     "evidence_id": "EVI-1",
     "doc_id": "PMID-1",
@@ -976,12 +1018,11 @@ async def test_a_bundle_that_breaks_the_contract_is_not_served(v2_client_with_st
     """
     client, store = v2_client_with_store
     created = await _create(client)
-    store.add_evidence_bundle(
+    _seed_unchecked_bundle(
+        store,
         created["work_item_id"],
-        **_bundle(
-            items=[{"evidence_id": "EVI-1", "quote": "Thiếu doc_id, stance, locator, retrieval."}],
-            gaps=[{"reason": "thiếu nhóm chứng"}],
-        ),
+        items=[{"evidence_id": "EVI-1", "quote": "Thiếu doc_id, stance, locator, retrieval."}],
+        gaps=[{"reason": "thiếu nhóm chứng"}],
     )
     response = await client.get(f"/api/v2/work-items/{created['work_item_id']}/evidence-bundle", headers=_headers("investigator"))
     assert response.status_code == 500, response.text
@@ -1188,9 +1229,11 @@ async def test_a_broken_bundle_is_not_served_through_the_work_item_either(v2_cli
     """
     client, store = v2_client_with_store
     created = await _create(client)
-    store.add_evidence_bundle(
+    _seed_unchecked_bundle(
+        store,
         created["work_item_id"],
-        **_bundle(items=[{"evidence_id": "EVI-1", "quote": "Thiếu trường."}], gaps=[{"reason": "thiếu"}]),
+        items=[{"evidence_id": "EVI-1", "quote": "Thiếu trường."}],
+        gaps=[{"reason": "thiếu"}],
     )
     response = await client.get(f"/api/v2/work-items/{created['work_item_id']}", headers=_headers("investigator"))
     assert response.status_code == 500, response.text
@@ -1374,3 +1417,127 @@ async def test_two_decisions_on_a_bundle_do_not_share_a_version(v2_client_with_s
     )
     assert (first["entity_version"], second["entity_version"]) == (1, 2)
     assert second["entity_version"] > first["entity_version"]
+
+
+# ------------------------------------------------------------------ cửa ghi và gói cũ hỏng
+
+
+@pytest.mark.asyncio
+async def test_the_write_gate_refuses_a_bundle_that_breaks_the_contract(v2_client_with_store):
+    """Cửa ghi tự soi hợp đồng: hàng sai không vào được kho thì không có gì phải dọn về sau.
+
+    Không có tuyến nào xoá hay thay gói bằng chứng, nên chặn ở cửa ghi là chặn duy nhất có tác dụng
+    thật. Soi ở cửa đọc là cần nhưng không đủ: nó chỉ phát hiện hàng hỏng, không ngăn được hàng hỏng.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client)
+    with pytest.raises(MvpError) as bad:
+        store.add_evidence_bundle(
+            created["work_item_id"],
+            **_bundle(items=[{"evidence_id": "EVI-1", "quote": "Thiếu trường."}], gaps=[]),
+        )
+    assert bad.value.code == ErrorCode.INVALID_REQUEST
+    assert bad.value.status == 422
+    joined = " ".join(bad.value.details["violations"])
+    assert "items/0" in joined and "doc_id" in joined
+
+    # Và không có gì được ghi lại: kiểm bằng chính kho, không tin lời hứa của mã.
+    assert store.list_evidence_bundles(created["work_item_id"]) == []
+
+
+@pytest.mark.asyncio
+async def test_an_old_broken_bundle_is_dropped_instead_of_killing_the_case(v2_client_with_store):
+    """Gói **cũ** hỏng bị gỡ ra kèm danh sách, thay vì làm cả ca bệnh trả 500 vĩnh viễn.
+
+    Trước đây một dòng lịch sử hỏng làm ``GET /work-items/{id}`` đổ mãi mãi, kể cả khi gói mới nhất
+    đã đúng, và không có đường sửa nào — hồ sơ mất hẳn chứ không phải chỉ thiếu một mục. Gói cũ là
+    lịch sử, không phải câu trả lời, nên nó không được quyền treo cả ca.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client)
+    work_item_id = created["work_item_id"]
+    _seed_unchecked_bundle(
+        store,
+        work_item_id,
+        items=[{"evidence_id": "EVI-1", "quote": "Thiếu doc_id, stance, locator, retrieval."}],
+        gaps=[{"reason": "thiếu nhóm chứng"}],
+        bundle_id="eb_cu_hong",
+    )
+    store.add_evidence_bundle(
+        work_item_id,
+        **_bundle(items=[dict(_CONTRACT_ITEM)], gaps=[{"kind": "missing_evidence", "detail": "Chưa đủ."}]),
+        bundle_id="eb_moi_tot",
+    )
+    # Ép thứ tự thời gian để "mới nhất" là xác định, không phụ thuộc hai bản ghi trùng dấu thời gian.
+    with store.engine.begin() as connection:
+        connection.execute(
+            text("UPDATE evidence_bundles SET created_at = :when WHERE bundle_id = :bundle_id"),
+            {"when": "2026-01-01 00:00:00+00:00", "bundle_id": "eb_cu_hong"},
+        )
+        connection.execute(
+            text("UPDATE evidence_bundles SET created_at = :when WHERE bundle_id = :bundle_id"),
+            {"when": "2026-01-02 00:00:00+00:00", "bundle_id": "eb_moi_tot"},
+        )
+
+    response = await client.get(f"/api/v2/work-items/{work_item_id}", headers=_headers("investigator"))
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert [bundle["bundle_id"] for bundle in body["evidence_bundles"]] == ["eb_moi_tot"]
+    # Nói thẳng ra đã bỏ gì: một hồ sơ thiếu mà im lặng trông y hệt một hồ sơ đầy.
+    assert [item["bundle_id"] for item in body["dropped_evidence_bundles"]] == ["eb_cu_hong"]
+    assert "doc_id" in " ".join(body["dropped_evidence_bundles"][0]["violations"])
+
+    # Đường đọc gói riêng vẫn trả gói mới nhất, không dính gì tới gói cũ hỏng.
+    single = await client.get(
+        f"/api/v2/work-items/{work_item_id}/evidence-bundle", headers=_headers("investigator")
+    )
+    assert single.status_code == 200, single.text
+    assert single.json()["bundle_id"] == "eb_moi_tot"
+
+    # Không có gì bị bỏ thì không được sinh khoá rỗng ra.
+    clean = await _create(client)
+    store.add_evidence_bundle(clean["work_item_id"], **_bundle(items=[dict(_CONTRACT_ITEM)], gaps=[]))
+    envelope = await client.get(
+        f"/api/v2/work-items/{clean['work_item_id']}", headers=_headers("investigator")
+    )
+    assert envelope.status_code == 200
+    assert "dropped_evidence_bundles" not in envelope.json()
+
+
+@pytest.mark.asyncio
+async def test_a_broken_newest_bundle_still_stops_the_read(v2_client_with_store):
+    """Gỡ gói cũ hỏng không được nới thành gỡ luôn gói mới nhất: gói mới nhất là câu trả lời.
+
+    Giữ đúng tính đóng-an-toàn ở chỗ cần: không có gói mới nhất đọc được thì không có gì để trả lời,
+    và trả 500 là đúng hơn trả một hồ sơ trông như đầy.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client)
+    work_item_id = created["work_item_id"]
+    store.add_evidence_bundle(
+        work_item_id,
+        **_bundle(items=[dict(_CONTRACT_ITEM)], gaps=[]),
+        bundle_id="eb_cu_tot",
+    )
+    _seed_unchecked_bundle(
+        store,
+        work_item_id,
+        items=[{"evidence_id": "EVI-2", "quote": "Gói mới nhất bị hỏng."}],
+        gaps=[],
+        bundle_id="eb_moi_hong",
+    )
+    with store.engine.begin() as connection:
+        connection.execute(
+            text("UPDATE evidence_bundles SET created_at = :when WHERE bundle_id = :bundle_id"),
+            {"when": "2026-01-01 00:00:00+00:00", "bundle_id": "eb_cu_tot"},
+        )
+        connection.execute(
+            text("UPDATE evidence_bundles SET created_at = :when WHERE bundle_id = :bundle_id"),
+            {"when": "2026-01-02 00:00:00+00:00", "bundle_id": "eb_moi_hong"},
+        )
+
+    response = await client.get(f"/api/v2/work-items/{work_item_id}", headers=_headers("investigator"))
+    assert response.status_code == 500, response.text
+    body = response.json()
+    assert body["error"]["code"] == "unavailable"
+    assert body["error"]["details"]["bundle_id"] == "eb_moi_hong"
