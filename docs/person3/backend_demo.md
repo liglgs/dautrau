@@ -26,6 +26,7 @@ Trong terminal thứ nhất:
 $env:INVESTIGATOR_TOKEN = "person3-investigator-demo"
 $env:REVIEWER_TOKEN = "person3-reviewer-demo"
 python scripts/run_person3_demo.py
+# Script tự bật VIGILENS_ALLOW_LEGACY_TOKENS=1: đây là đường chạy ngoại tuyến dùng khoá tĩnh cũ.
 ```
 
 Giữ terminal chạy. Backend: `http://127.0.0.1:8000`. Swagger: `http://127.0.0.1:8000/docs`.

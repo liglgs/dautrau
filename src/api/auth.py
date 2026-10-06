@@ -15,6 +15,7 @@ Chuỗi xác thực: ``cookie phiên`` → ``khoá máy (api_tokens)`` → ``kho
 
 from __future__ import annotations
 
+import logging
 import secrets
 from typing import Annotated, Any, Protocol
 
@@ -31,6 +32,11 @@ from src.services.identity import (
     looks_like_token,
     permissions_for,
 )
+
+logger = logging.getLogger(__name__)
+
+#: Cờ một phần tử để chỉ cảnh báo **một lần** cho mỗi tiến trình, không lặp ở mỗi yêu cầu.
+_legacy_warning_emitted = [False]
 
 SESSION_COOKIE_NAME = "session_id"
 
@@ -100,8 +106,8 @@ def _legacy_static_token(token: str) -> Principal | None:
     ``auth_method="legacy_token"`` để nhật ký ghi rõ đây là khoá tạm, không phải danh tính thật.
 
     Hai lớp khoá: môi trường phải là phát triển/kiểm thử **và** ``VIGILENS_ALLOW_LEGACY_TOKENS=1``
-    phải được bật tường minh. Chỉ kiểm tra môi trường là chưa đủ — một bản triển khai quên đặt
-    ``APP_ENV`` sẽ mang mặc định ``development`` và vô tình bật lại khoá dùng chung.
+    phải được bật tường minh. Lớp thứ hai mới là lớp thật sự đóng lỗ hổng: một bản triển khai quên
+    đặt ``APP_ENV`` sẽ mang mặc định ``development``, nên chỉ so sánh tên môi trường là không đủ.
     """
     settings = get_settings()
     if settings.is_production_like or not settings.vigilens_allow_legacy_tokens:
@@ -112,6 +118,16 @@ def _legacy_static_token(token: str) -> Principal | None:
     }
     for role, configured in candidates.items():
         if configured and secrets.compare_digest(token, configured):
+            if not _legacy_warning_emitted[0]:
+                # Khoá dùng chung vừa thật sự xác thực một yêu cầu — người vận hành phải thấy trong log.
+                _legacy_warning_emitted[0] = True
+                logger.warning(
+                    "Khoá tĩnh dùng chung (%s) vừa xác thực một yêu cầu (app_env=%s). "
+                    "Hãy tắt VIGILENS_ALLOW_LEGACY_TOKENS và cấp khoá máy bằng "
+                    "scripts/auth_cli.py issue-token.",
+                    role.value,
+                    settings.app_env,
+                )
             return Principal(
                 user_id=f"legacy-{role.value}",
                 email="",
@@ -211,16 +227,21 @@ class SupabaseProvider:
         # Supabase dùng khoá bất đối xứng (ES256/RS256) từ JWKS. Danh sách thuật toán được chốt
         # theo ``kty`` của khoá **trong JWKS**, không lấy từ ``alg`` trong token: token do người
         # gọi gửi tới, nên để nó chọn thuật toán là tự mở đường cho tấn công đổi thuật toán.
-        if key.get("kty") == "EC":
+        kty = key.get("kty")
+        if kty == "EC":
             from jwt.algorithms import ECAlgorithm
 
             signing_key = ECAlgorithm.from_jwk(key)
             allowed = ["ES256", "ES384", "ES512"]
-        else:
+        elif kty == "RSA":
             from jwt.algorithms import RSAAlgorithm
 
             signing_key = RSAAlgorithm.from_jwk(key)
             allowed = ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512"]
+        else:
+            # Không đoán họ khoá: ``oct``/``OKP`` không phải thứ Supabase phát hành, và coi mọi
+            # giá trị lạ là RSA sẽ biến một cấu hình sai thành một lỗi khó đọc bên trong PyJWT.
+            raise unauthorized(f"Loại khoá ký không hỗ trợ: {kty!r}")
 
         return jwt.decode(
             token,
@@ -294,7 +315,7 @@ class TestProvider:
                 created_by="test-provider",
             )
         elif role_value and user["role"] != str(role):
-            user = store.update_user(user_id, role=str(role))
+            user = store.update_user(user_id, role=str(role), actor="test-provider", actor_role="test")
         if user is None or user["status"] != "active":
             raise unauthorized("Tài khoản thử nghiệm đang bị khoá.")
         return _principal_from_row(user, auth_method="test")

@@ -259,12 +259,13 @@ Các biến này do `./scripts/setup_elt.sh` ghi vào `.env` nếu còn thiếu;
 
 ### Mẫu Gọi API Trực Tiếp (cURL / PowerShell)
 
-Bạn có thể gửi yêu cầu tạo cuộc điều tra qua lệnh sau:
+Bạn có thể gửi yêu cầu tạo cuộc điều tra qua lệnh sau. Khoá máy do `scripts/auth_cli.py issue-token`
+cấp (dạng `vln_...`), hoặc dùng cookie phiên lấy từ `POST /api/v1/auth/login`:
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/v1/investigations" \
   -H "Content-Type: application/json" \
-  -H "X-API-Token: test-investigator-token-12345" \
+  -H "X-API-Token: vln_...khoa-may-do-auth_cli-cap..." \
   -d '{
     "claim_text": "Investigate reported association: lisinopril / cough.",
     "drug": "lisinopril",

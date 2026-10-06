@@ -28,6 +28,8 @@ def main():
     })
     os.environ.setdefault("INVESTIGATOR_TOKEN", "person3-investigator-demo")
     os.environ.setdefault("REVIEWER_TOKEN", "person3-reviewer-demo")
+    # Bản demo ngoại tuyến dùng khoá tĩnh cũ, mà khoá đó mặc định tắt từ B1.7.
+    os.environ.setdefault("VIGILENS_ALLOW_LEGACY_TOKENS", "1")
     try:
         import uvicorn
         from src.main import app

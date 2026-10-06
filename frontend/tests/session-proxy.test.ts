@@ -67,13 +67,23 @@ describe("session gateway", () => {
     const logout = await POST(new NextRequest(`${origin}/api/backend/api/v1/auth/logout`, { method: "POST", headers: { origin } }), context("auth/logout"));
     expect(logout.headers.get("set-cookie")).toContain("Max-Age=0");
   });
+  // The bridge appends `Secure` only over https, so these two cases must use an https request URL —
+  // over http the pre-fix code also returned the cookie untouched and the assertions would pass anyway.
+  const httpsOrigin = "https://preview.example.test";
   it("does not repeat the Secure attribute when the backend already set it", async () => {
-    // The bridge used to append `; Secure` unconditionally on https, producing a duplicate attribute.
     const upstream = new Response('{"logged_out":true}', { headers: { "Set-Cookie": "session_id=abc; HttpOnly; Path=/; Secure" } });
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(upstream));
-    const response = await POST(new NextRequest(`${origin}/api/backend/api/v1/auth/logout`, { method: "POST", headers: { origin } }), context("auth/logout"));
+    const response = await POST(new NextRequest(`${httpsOrigin}/api/backend/api/v1/auth/logout`, { method: "POST", headers: { origin: httpsOrigin } }), context("auth/logout"));
     const cookie = response.headers.get("set-cookie") ?? "";
     expect(cookie.match(/secure/gi) ?? []).toHaveLength(1);
+  });
+  it("adds Secure exactly once when the backend did not set it", async () => {
+    const upstream = new Response('{"logged_out":true}', { headers: { "Set-Cookie": "session_id=abc; HttpOnly; Path=/; SameSite=lax" } });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(upstream));
+    const response = await POST(new NextRequest(`${httpsOrigin}/api/backend/api/v1/auth/logout`, { method: "POST", headers: { origin: httpsOrigin } }), context("auth/logout"));
+    const cookie = response.headers.get("set-cookie") ?? "";
+    expect(cookie.match(/secure/gi) ?? []).toHaveLength(1);
+    expect(cookie).toContain("HttpOnly");
   });
   it("refuses to proxy anything outside /api/v1/*", async () => {
     const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);

@@ -51,6 +51,7 @@ Các báo cáo: `eval/person3/corpus/audit.json`, `offline/report-metformin.json
 $env:INVESTIGATOR_TOKEN = "person3-investigator-demo"
 $env:REVIEWER_TOKEN = "person3-reviewer-demo"
 python scripts/run_person3_corpus.py --family metformin
+# Script tự bật VIGILENS_ALLOW_LEGACY_TOKENS=1: đây là đường chạy ngoại tuyến dùng khoá tĩnh cũ.
 ```
 
 **Terminal UI:** dùng VigiLens hiện có. Nếu UI đã chạy đúng biến môi trường thì giữ terminal đó; nếu cần khởi động lại:

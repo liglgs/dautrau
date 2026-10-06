@@ -22,6 +22,8 @@ if runtime.is_dir():
 
 async def run():
     os.environ.update({"INVESTIGATOR_TOKEN": "corpus-flow-test-investigator", "REVIEWER_TOKEN": "corpus-flow-test-reviewer",
+                       # Khoá tĩnh cũ mặc định tắt (B1.7); bài chạy tại chỗ này bật tường minh.
+                       "VIGILENS_ALLOW_LEGACY_TOKENS": "1",
                        "MVP_EVIDENCE_MODE": "fixture", "LANGSMITH_TRACING": "false", "LANGCHAIN_TRACING_V2": "false"})
     from src.config import get_settings
     get_settings.cache_clear()

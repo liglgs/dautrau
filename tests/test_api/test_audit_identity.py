@@ -15,7 +15,7 @@ from httpx import ASGITransport, AsyncClient
 from src.api.mvp_runtime import configure_mvp, get_mvp_store, reset_mvp
 from src.config import get_settings
 from src.main import app
-from src.models.schemas import CheckpointKind, ClaimInput, RunStatus
+from src.models.schemas import AssessmentStatus, CheckpointKind, ClaimInput, RunStatus
 
 CLAIM = {
     "claim_text": "aspirin gây chảy máu tiêu hoá",
@@ -290,7 +290,41 @@ async def test_exporting_a_dossier_is_recorded(audit_client: AsyncClient, monkey
     exported = _rows("dossier_exported", investigation_id=case_id)
     assert exported and exported[0]["actor"] == "usr_nguoi_xuat"
     assert exported[0]["actor_role"] == "investigator"
-    assert exported[0]["payload"]["bytes"] == len(response.text.encode("utf-8"))
+    payload = exported[0]["payload"]
+    assert payload["bytes"] == len(response.text.encode("utf-8"))
+    # Hai bộ đếm khác nhau phải ghi rõ nhãn: ``state_version`` đếm số lần lưu trạng thái, còn
+    # ``dossier_version`` là bản hồ sơ đã duyệt thật sự rời hệ thống. Gộp chúng vào một khoá
+    # ``dossier_version`` khiến người đọc nhật ký tưởng sai bản hồ sơ nào đã bị tải.
+    assert payload["state_version"] == get_mvp_store().get_state(case_id).version
+    assert payload["dossier_version"] is None  # ca này chưa có hồ sơ duyệt (export bị giả lập)
+
+
+@pytest.mark.asyncio
+async def test_the_export_row_names_the_approved_dossier_revision(audit_client: AsyncClient, monkeypatch):
+    """Có hồ sơ duyệt thì ``dossier_version`` phải là số phiên bản **của hồ sơ**, không phải của ca."""
+    from src.models.schemas import Dossier
+
+    case_id, _ = _seed_case("usr_nguoi_xuat_that")
+    store = get_mvp_store()
+    dossier = Dossier(
+        dossier_id="DOS-1",
+        investigation_id=case_id,
+        version=7,
+        assessment_status=AssessmentStatus.INSUFFICIENT_EVIDENCE,
+        summary="Hồ sơ giả lập cho bài kiểm thử nhãn phiên bản.",
+    )
+    monkeypatch.setattr(store, "approved_dossier", lambda investigation_id: dossier)
+    monkeypatch.setattr(
+        "src.api.investigations.export_markdown",
+        lambda store, investigation_id: f"# Hồ sơ {investigation_id}\n",
+    )
+    response = await audit_client.get(
+        f"/api/v1/investigations/{case_id}/export", headers=_headers("usr_nguoi_xuat_that", "investigator")
+    )
+    assert response.status_code == 200, response.text
+    payload = _rows("dossier_exported", investigation_id=case_id)[0]["payload"]
+    assert payload["dossier_version"] == 7
+    assert payload["state_version"] != 7
 
 
 @pytest.mark.asyncio

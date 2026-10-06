@@ -178,3 +178,23 @@ def test_runs_as_a_file_path_not_only_as_a_module(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "ModuleNotFoundError" not in result.stderr
     assert "app_users" in result.stdout
+
+
+# --------------------------------------------------------------------------------------
+# B1.7 mục 3 — thao tác qua CLI cũng phải truy được ai làm
+# --------------------------------------------------------------------------------------
+
+
+def _rows(store, action: str) -> list[dict]:
+    return [row for row in store.list_audit(limit=500) if row["action"] == action]
+
+
+def test_create_user_is_audited_with_the_cli_identity(cli_store, capsys):
+    """Tài khoản do CLI tạo không được mang nhãn ``legacy_actor`` — đây là bản ghi mới, không phải dữ liệu cũ."""
+    assert _run("create-user", "--user-id", "usr_cli", "--email", "cli@benhvien.test", "--role", "reviewer") == 0
+    rows = _rows(cli_store, "user_created")
+    assert rows, "tạo tài khoản qua CLI phải để lại vết"
+    assert rows[-1]["actor"].startswith("cli:")
+    assert rows[-1]["actor_role"] == "cli"
+    assert rows[-1]["legacy_actor"] is False
+    assert rows[-1]["payload"]["user_id"] == "usr_cli"

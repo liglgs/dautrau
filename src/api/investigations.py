@@ -395,12 +395,19 @@ async def export_dossier(investigation_id: str, store: StoreDep, user: UserDep) 
     state = _state(store, investigation_id)
     require_investigation_access(user, state, "export")
     markdown = export_markdown(store, investigation_id)
-    # B1.7 mục 3: kết xuất hồ sơ cũng là sự kiện phải truy được ai làm.
+    # B1.7 mục 3: kết xuất hồ sơ cũng là sự kiện phải truy được ai làm. Hai số phiên bản phải
+    # ghi rõ nhãn: ``state.version`` đếm số lần lưu trạng thái, còn ``dossier.version`` là bản hồ
+    # sơ thật sự rời hệ thống — trước đây chúng bị gộp thành một khoá ``dossier_version``.
+    dossier = store.approved_dossier(investigation_id)
     store.audit(
         investigation_id,
         actor_for(user),
         "dossier_exported",
-        {"bytes": len(markdown.encode("utf-8")), "dossier_version": state.version},
+        {
+            "bytes": len(markdown.encode("utf-8")),
+            "dossier_version": dossier.version if dossier else None,
+            "state_version": state.version,
+        },
         actor_role=str(user.role),
     )
     return Response(

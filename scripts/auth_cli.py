@@ -21,6 +21,7 @@ Ví dụ::
 from __future__ import annotations
 
 import argparse
+import getpass
 import sys
 from collections import Counter
 from pathlib import Path
@@ -36,6 +37,10 @@ LEGACY_ROLE_MAP = {
     "reviewer": "reviewer",
     "clinician": "reviewer",
 }
+
+#: Ai đã chạy công cụ này. Nhật ký phải trả lời được "ai cấp vai này", mà "system" thì không trả
+#: lời được gì; tên đăng nhập hệ điều hành là thông tin có thật duy nhất ở đây.
+ACTOR = f"cli:{getpass.getuser()}"
 
 
 def _store():
@@ -99,6 +104,7 @@ def cmd_create_user(args: argparse.Namespace) -> int:
         display_name=args.display_name or args.email,
         password_hash=password_hash,
         created_by=args.created_by,
+        actor_role="cli",
     )
     print(f"Đã tạo {args.user_id} (vai {args.role}, email {args.email}).")
     if password_hash is None:
@@ -157,7 +163,7 @@ def cmd_migrate_legacy(args: argparse.Namespace) -> int:
         existing = store.get_user(row["id"])
         if existing is not None:
             if existing["role"] != role and not args.dry_run:
-                store.update_user(row["id"], role=role)
+                store.update_user(row["id"], role=role, actor=ACTOR, actor_role="cli")
                 remapped += 1
             skipped += 1
             continue
@@ -170,7 +176,8 @@ def cmd_migrate_legacy(args: argparse.Namespace) -> int:
             email=f"{row['id']}@di-tru-cho-dat-lai.local",
             role=role,
             display_name=row["name"],
-            created_by="migrate-legacy",
+            created_by=ACTOR,
+            actor_role="cli",
         )
         created += 1
 
@@ -204,7 +211,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     create.add_argument("--display-name", default="")
     create.add_argument("--password", default=None, help="Bỏ trống nếu chỉ dùng khoá máy")
-    create.add_argument("--created-by", default="auth_cli")
+    create.add_argument("--created-by", default=ACTOR, help="Ai cấp tài khoản; ghi vào nhật ký")
     create.set_defaults(func=cmd_create_user)
 
     listing = sub.add_parser("list-users", help="Liệt kê tài khoản và số lượng theo vai")

@@ -200,6 +200,29 @@ async def test_the_legacy_token_works_when_it_is_deliberately_enabled(provider_c
     assert me.json()["auth_method"] == "legacy_token"
 
 
+def test_using_a_legacy_token_is_visible_in_the_log(caplog, monkeypatch):
+    """Khoá dùng chung xác thực được một yêu cầu thì phải để lại cảnh báo, không im lặng."""
+    import logging
+
+    from src.api import auth as auth_module
+    from src.api.auth import _legacy_static_token
+    from src.config import get_settings
+
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("INVESTIGATOR_TOKEN", "khoa-tam")
+    monkeypatch.setenv("VIGILENS_ALLOW_LEGACY_TOKENS", "1")
+    get_settings.cache_clear()
+    auth_module._legacy_warning_emitted[0] = False  # noqa: SLF001 - cờ một lần, phải đặt lại để kiểm
+    try:
+        with caplog.at_level(logging.WARNING, logger="src.api.auth"):
+            assert _legacy_static_token("khoa-tam") is not None
+            assert _legacy_static_token("khong-khop") is None
+        warnings = [r for r in caplog.records if "Khoá tĩnh dùng chung" in r.message]
+        assert len(warnings) == 1, "cảnh báo chỉ một lần cho mỗi tiến trình"
+    finally:
+        get_settings.cache_clear()
+
+
 def test_an_environment_that_is_not_development_is_treated_as_production():
     """``is_production_like`` là chốt chặn cuối: chỉ ``development``/``test`` mới là ngoài production."""
     from src.config import Settings
