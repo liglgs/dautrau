@@ -36,8 +36,8 @@ def configure_mvp(db_path: str | None = None, *, force: bool = False) -> MvpStor
         elif settings.mvp_evidence_mode == "person3":
             from src.services.evidence.integration import make_person3_executor
 
-            if settings.mvp_source_mode != "live":
-                raise ValueError("MVP_EVIDENCE_MODE=person3 requires MVP_SOURCE_MODE=live")
+            if settings.mvp_source_mode not in {"live", "warehouse"}:
+                raise ValueError("MVP_EVIDENCE_MODE=person3 requires MVP_SOURCE_MODE=live or warehouse")
             executor = make_person3_executor(settings.mvp_dictionary_path)
         previous, _store = _store, MvpStore(db_path or settings.mvp_db_path)
         configure_runner(_store, executor=executor, gateway=gateway)

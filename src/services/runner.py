@@ -201,6 +201,19 @@ class InProcessRunner:
                 pubmed_mode=settings.mvp_pubmed_mode,
                 pubmed_corpus_root=settings.mvp_pubmed_corpus_root,
             )
+        elif settings.mvp_source_mode == "warehouse":
+            # Truy hồi bằng chứng từ kho ELT + chỉ mục RAG thay vì gọi mạng.
+            from src.services.sources.warehouse import build_warehouse_adapters
+            from src.services.warehouse.db import get_warehouse_engine
+
+            engine = get_warehouse_engine(settings.elt_database_url)
+            context.source_factory = lambda claim: build_warehouse_adapters(
+                engine=engine,
+                settings=settings,
+                drug=claim.drug_ingredient,
+                event=claim.event_term,
+                max_documents=settings.mvp_source_max_documents,
+            )
         return context
 
     def run(self, investigation_id: str, *, resume: bool = False) -> InvestigationState:

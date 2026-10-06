@@ -29,18 +29,40 @@ def lookup_drug(engine: Engine, name: str, limit: int = 20) -> dict:
     if not needle:
         return {"query": name, "matched": False, "drugs": [], "pairs": [], "documents": {}}
     with read_session(engine) as conn:
-        rows = conn.execute(
-            select(Drug).where(
-                func.lower(Drug.name).contains(needle) | func.lower(Drug.ingredient).contains(needle)
-            ).limit(limit)
-        ).scalars().all()
-        drugs = [{"drug_id": r.drug_id, "name": r.name, "ingredient": r.ingredient,
-                  "verified": bool(r.verified), "aliases": list(r.aliases or [])} for r in rows]
-        pair_rows = conn.execute(
-            select(DrugEventPair).where(func.lower(DrugEventPair.drug_name).contains(needle)).limit(limit)
-        ).scalars().all()
-        pairs = [{"pair_id": p.pair_id, "drug_name": p.drug_name, "event_term": p.event_term,
-                  "status": p.status, "source": p.source} for p in pair_rows]
+        rows = (
+            conn.execute(
+                select(Drug)
+                .where(func.lower(Drug.name).contains(needle) | func.lower(Drug.ingredient).contains(needle))
+                .limit(limit)
+            )
+            .scalars()
+            .all()
+        )
+        drugs = [
+            {
+                "drug_id": r.drug_id,
+                "name": r.name,
+                "ingredient": r.ingredient,
+                "verified": bool(r.verified),
+                "aliases": list(r.aliases or []),
+            }
+            for r in rows
+        ]
+        pair_rows = (
+            conn.execute(select(DrugEventPair).where(func.lower(DrugEventPair.drug_name).contains(needle)).limit(limit))
+            .scalars()
+            .all()
+        )
+        pairs = [
+            {
+                "pair_id": p.pair_id,
+                "drug_name": p.drug_name,
+                "event_term": p.event_term,
+                "status": p.status,
+                "source": p.source,
+            }
+            for p in pair_rows
+        ]
         pair_ids = [p.pair_id for p in pair_rows]
         documents: dict[str, dict] = {}
         if pair_ids:
@@ -62,8 +84,9 @@ def lookup_drug(engine: Engine, name: str, limit: int = 20) -> dict:
 def warehouse_overview(engine: Engine) -> dict:
     with read_session(engine) as conn:
         by_source = conn.execute(
-            select(Document.source, func.count(Document.doc_id), func.max(Document.retrieved_at))
-            .group_by(Document.source)
+            select(Document.source, func.count(Document.doc_id), func.max(Document.retrieved_at)).group_by(
+                Document.source
+            )
         ).all()
         by_status = conn.execute(
             select(Document.quality_status, func.count(Document.doc_id)).group_by(Document.quality_status)
@@ -91,12 +114,14 @@ def warehouse_overview(engine: Engine) -> dict:
                 .where(Document.source == source)
                 .group_by(Document.content_level)
             ).all()
-            sources.append({
-                "source": source,
-                "documents": int(count),
-                "latest_retrieved_at": latest.isoformat() if latest else None,
-                "by_content_level": {level or "unknown": int(n) for level, n in rows},
-            })
+            sources.append(
+                {
+                    "source": source,
+                    "documents": int(count),
+                    "latest_retrieved_at": latest.isoformat() if latest else None,
+                    "by_content_level": {level or "unknown": int(n) for level, n in rows},
+                }
+            )
     return {
         "documents_by_source": sources,
         "documents_by_quality_status": {status: int(count) for status, count in by_status},
@@ -107,8 +132,14 @@ def warehouse_overview(engine: Engine) -> dict:
     }
 
 
-def list_documents(engine: Engine, *, source: str | None = None, pair_id: str | None = None,
-                   quality_status: str | None = None, limit: int = 50) -> list[dict]:
+def list_documents(
+    engine: Engine,
+    *,
+    source: str | None = None,
+    pair_id: str | None = None,
+    quality_status: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
     stmt = select(Document).order_by(Document.retrieved_at.desc(), Document.doc_id).limit(max(1, min(limit, 500)))
     if source:
         stmt = stmt.where(Document.source == source)
@@ -135,6 +166,43 @@ def list_documents(engine: Engine, *, source: str | None = None, pair_id: str | 
     ]
 
 
+def documents_by_ids(engine: Engine, doc_ids: list[str]) -> list[dict]:
+    """Đọc tài liệu **kèm toàn văn** theo danh sách mã, giữ đúng thứ tự đầu vào.
+
+    Dùng cho adapter truy hồi của agent: chỉ mục RAG xếp hạng đoạn, còn nội dung
+    trích dẫn phải lấy từ PostgreSQL — nguồn chuẩn của kho.
+    """
+    wanted = [doc_id for doc_id in dict.fromkeys(doc_ids) if doc_id]
+    if not wanted:
+        return []
+    documents: list[dict] = []
+    with read_session(engine) as conn:
+        rows = conn.execute(select(Document).where(Document.doc_id.in_(wanted))).scalars().all()
+        by_id = {doc.doc_id: doc for doc in rows}
+        for doc_id in wanted:
+            doc = by_id.get(doc_id)
+            if doc is None:
+                continue
+            documents.append(
+                {
+                    "doc_id": doc.doc_id,
+                    "source": doc.source,
+                    "source_id": doc.source_id,
+                    "version": doc.version,
+                    "title": doc.title,
+                    "text": doc.text,
+                    "text_sha256": doc.text_sha256,
+                    "source_url": doc.source_url,
+                    "quality_status": doc.quality_status,
+                    "quality_flags": list(doc.quality_flags or []),
+                    "pair_id": doc.pair_id,
+                    "content_level": doc.content_level,
+                    "sections": [{"title": s.title, "start": s.start, "end": s.end} for s in doc.sections],
+                }
+            )
+    return documents
+
+
 def document_detail(engine: Engine, doc_id: str) -> dict | None:
     with read_session(engine) as conn:
         doc = conn.execute(select(Document).where(Document.doc_id == doc_id)).scalar_one_or_none()
@@ -156,37 +224,59 @@ def document_detail(engine: Engine, doc_id: str) -> dict | None:
             row = conn.execute(select(PubmedRecord).where(PubmedRecord.doc_id == doc_id)).scalar_one_or_none()
             if row:
                 detail["pubmed"] = {
-                    "pmid": row.pmid, "journal": row.journal, "publication_date": row.publication_date,
-                    "publication_types": list(row.publication_types or []), "doi": list(row.doi or []),
-                    "authors": list(row.authors or []), "has_abstract": bool(row.has_abstract),
+                    "pmid": row.pmid,
+                    "journal": row.journal,
+                    "publication_date": row.publication_date,
+                    "publication_types": list(row.publication_types or []),
+                    "doi": list(row.doi or []),
+                    "authors": list(row.authors or []),
+                    "has_abstract": bool(row.has_abstract),
                 }
         elif doc.source == "dailymed":
             row = conn.execute(select(DailymedLabel).where(DailymedLabel.doc_id == doc_id)).scalar_one_or_none()
             if row:
                 detail["dailymed"] = {
-                    "setid": row.setid, "effective_time": row.effective_time,
-                    "published_date": row.published_date, "routes": list(row.routes or []),
-                    "ingredients": list(row.ingredients or []), "n_sections": row.n_sections,
+                    "setid": row.setid,
+                    "effective_time": row.effective_time,
+                    "published_date": row.published_date,
+                    "routes": list(row.routes or []),
+                    "ingredients": list(row.ingredients or []),
+                    "n_sections": row.n_sections,
                 }
         elif doc.source == "faers":
             row = conn.execute(select(FaersReport).where(FaersReport.doc_id == doc_id)).scalar_one_or_none()
             if row:
                 detail["faers"] = {
-                    "safetyreportid": row.safetyreportid, "receivedate": row.receivedate,
-                    "serious": row.serious, "patient_age": row.patient_age,
-                    "patient_sex": row.patient_sex, "n_drugs": row.n_drugs, "n_reactions": row.n_reactions,
-                    "reactions": list(row.reactions or []), "matched_drugs": list(row.matched_drugs or []),
+                    "safetyreportid": row.safetyreportid,
+                    "receivedate": row.receivedate,
+                    "serious": row.serious,
+                    "patient_age": row.patient_age,
+                    "patient_sex": row.patient_sex,
+                    "n_drugs": row.n_drugs,
+                    "n_reactions": row.n_reactions,
+                    "reactions": list(row.reactions or []),
+                    "matched_drugs": list(row.matched_drugs or []),
                 }
     return detail
 
 
 def ingestion_events(engine: Engine, limit: int = 30) -> list[dict]:
     with read_session(engine) as conn:
-        rows = conn.execute(
-            select(IngestionEvent).order_by(IngestionEvent.created_at.desc()).limit(max(1, min(limit, 200)))
-        ).scalars().all()
+        rows = (
+            conn.execute(
+                select(IngestionEvent).order_by(IngestionEvent.created_at.desc()).limit(max(1, min(limit, 200)))
+            )
+            .scalars()
+            .all()
+        )
     return [
-        {"event_id": r.event_id, "kind": r.kind, "status": r.status, "title": r.title,
-         "detail": r.detail, "created_at": r.created_at.isoformat() if r.created_at else None}
+        {
+            "event_id": r.event_id,
+            "kind": r.kind,
+            "status": r.status,
+            "title": r.title,
+            "detail": r.detail,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
         for r in rows
     ]

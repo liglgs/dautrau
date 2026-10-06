@@ -66,7 +66,7 @@ class Settings(BaseSettings):
         "match", "route_mismatch", "missing_scope", "imprecise_null",
         "fake_quote", "contradiction", "ambiguous_brand", "faers_only",
     ] = "match"
-    mvp_source_mode: Literal["fixture", "live"] = "fixture"
+    mvp_source_mode: Literal["fixture", "live", "warehouse"] = "fixture"
     mvp_pubmed_mode: Literal["api", "local"] = "api"
     mvp_pubmed_corpus_root: str = "data/pubmed-local"
     mvp_snapshot_root: str = "data/snapshots"

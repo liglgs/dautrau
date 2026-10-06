@@ -14,6 +14,12 @@ Tài liệu này mô tả **đúng những gì cần cắm vào** để thay moc
 `ctx.adapters` phải có đủ ba khóa `pubmed`, `dailymed`, `faers` (khóa nguồn trùng với
 `SourceDocument.source`). Nếu `ctx.adapters` rỗng và không có `ctx.source_factory`, graph tự dùng `FixtureAdapter` (chế độ demo). Với `MVP_SOURCE_MODE=live`, runner gắn `source_factory` để tạo adapters từ normalized claim. `MVP_PUBMED_MODE=local` chọn corpus PubMed đã import; không tự fallback từ API lỗi.
 
+Với `MVP_SOURCE_MODE=warehouse`, runner gắn `source_factory` dùng `src/services/sources/warehouse.py`:
+ba adapter cùng tên nguồn truy hồi trên kho ELT (chỉ mục RAG xếp hạng, toàn văn đọc từ PostgreSQL).
+Adapter trả `requests_used=0`, giữ provenance trong `SourceDocument.metadata`
+(`retrieval_method`, `chunk_id`, `retrieval_score`, `quality_flags`, `matched_excerpt`) và trả
+`SourceStatus.ERROR` khi chỉ mục thiếu — graph ghi gap thay vì bịa tài liệu.
+
 ## 1. Ví dụ cắm nhanh
 
 Runtime đã ghép Người 3 bằng `MVP_EVIDENCE_MODE=person3` + `MVP_SOURCE_MODE=live`, với `MVP_DICTIONARY_PATH` trỏ dictionary verified. Xem [hướng dẫn](person3/merged_runtime.md). Cấu hình này giữ `source_factory` Người 1 và gọi gateway Người 2; mỗi run/resume được gắn bộ phân tích/hồ sơ mới. Các công cụ patch lịch sử không cần áp dụng lên main tổng hợp.
