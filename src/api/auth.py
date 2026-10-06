@@ -217,9 +217,18 @@ class SupabaseProvider:
             ) from exc
 
         settings = get_settings()
+        # Đọc tiêu đề **trước** khi gọi mạng. Tiêu đề là dữ liệu cục bộ; ``_load_jwks`` là một lời
+        # gọi HTTP có thể chờ tới 10 giây. Ở chế độ ``auto`` nhà cung cấp này đứng **trước** chế độ
+        # nội bộ, nên mọi khoá máy ``vln_...`` cũng đi qua đây trước. Nếu gọi mạng trước thì một
+        # Supabase không tới được sẽ treo mọi yêu cầu mang khoá máy — những yêu cầu không liên quan
+        # gì tới Supabase — thêm 10 giây mỗi lần, vì lần gọi hỏng không được ghi vào đệm.
+        try:
+            header = jwt.get_unverified_header(token)
+        except Exception as exc:  # noqa: BLE001 - token không phải JWT là 401, không phải lỗi cấu hình
+            raise unauthorized("Access token không phải JWT ba phần của Supabase.") from exc
+
         jwks = self._load_jwks()
         keys = {key.get("kid"): key for key in jwks.get("keys", [])}
-        header = jwt.get_unverified_header(token)
         key = keys.get(header.get("kid"))
         if key is None:
             raise unauthorized("Khoá ký của Supabase không nhận ra được.")

@@ -239,6 +239,40 @@ def test_the_jwks_is_fetched_once_and_then_cached(project_key, monkeypatch):
 
 
 # ------------------------------------------------------------------ sẵn sàng và đường HTTP
+def test_a_machine_token_never_triggers_a_jwks_fetch(monkeypatch):
+    """Khoá máy ``vln_...`` không được kéo theo một lời gọi mạng tới Supabase.
+
+    Vì sao quan trọng: ở chế độ ``auto`` nhà cung cấp Supabase đứng **trước** chế độ nội bộ, nên
+    mọi yêu cầu mang khoá máy cũng đi qua nó trước. ``_load_jwks`` có thời gian chờ 10 giây và lần
+    gọi hỏng **không** được ghi vào đệm — nên nếu đọc tiêu đề sau khi gọi mạng thì một Supabase
+    không tới được sẽ treo mọi yêu cầu mang khoá máy thêm 10 giây mỗi lần, dù chúng không liên quan
+    gì tới Supabase. Bài này khoá thứ tự đó lại.
+    """
+    calls = []
+
+    def counting_load(self):
+        calls.append(1)
+        return {"keys": []}
+
+    monkeypatch.setattr(SupabaseProvider, "_load_jwks", counting_load)
+    from src.services.errors import MvpError
+
+    with pytest.raises(MvpError) as bad:
+        SupabaseProvider()._decode("vln_khoa_may_noi_bo")
+    assert bad.value.status == 401
+    assert calls == [], "khoá máy không được kéo theo lời gọi JWKS"
+
+    # Còn token có tiêu đề JWT hợp lệ thì **phải** gọi mạng — nếu không thì chẳng có gì được xác
+    # minh. Dùng token ký bằng khoá đối xứng chỉ để có một JWT đúng dạng; nó sẽ bị từ chối ở bước
+    # tra ``kid``, nhưng phải đi qua được bước đọc tiêu đề trước đã.
+    well_formed = pyjwt.encode(
+        {"sub": "nguoi-1"}, "khoa-doi-xung-du-dai-cho-thu-nghiem-32b", algorithm="HS256", headers={"kid": "khoa-1"}
+    )
+    with pytest.raises(MvpError):
+        SupabaseProvider()._decode(well_formed)
+    assert calls == [1], "token có tiêu đề hợp lệ phải khiến JWKS được nạp"
+
+
 def test_supabase_provider_ready_needs_the_library_and_the_config(monkeypatch):
     """Thiếu cấu hình ⇒ ``auto`` không dựng nhà cung cấp Supabase; có đủ ⇒ dựng."""
     assert supabase_provider_ready() is True
