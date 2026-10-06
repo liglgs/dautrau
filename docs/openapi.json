@@ -290,6 +290,11 @@
           "document": {
             "$ref": "#/components/schemas/SourceDocument"
           },
+          "hash_status": {
+            "default": "unchecked",
+            "title": "Hash Status",
+            "type": "string"
+          },
           "locators": {
             "items": {
               "additionalProperties": true,

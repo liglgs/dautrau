@@ -8,6 +8,11 @@ nhánh ``if`` nào đã chạy. Bộ kiểm thử này khoá hai điều:
   con số đó nữa;
 * ``coverage`` đếm từ bằng chứng **đang hoạt động**, nên nó đổi khi bằng chứng đổi, và nói đúng
   trường nào của câu hỏi chưa có bằng chứng nào chạm tới.
+
+Thứ tự nghiêm trọng ở đây phải khớp cách giao diện tô màu (``COV_LABEL`` trong
+``frontend/components/pv/badges.tsx``): ``missing`` = "Còn thiếu" (đỏ), ``not_specified`` = "Chưa
+nêu" (trung tính). Vì vậy ``missing`` dành cho trường **câu hỏi có nêu** mà chưa bằng chứng nào chạm
+tới — đó mới là khoảng trống thật — còn ``not_specified`` là trường câu hỏi không nêu.
 """
 
 from __future__ import annotations
@@ -32,13 +37,14 @@ def _evidence(
     source: str = "pubmed",
     scope: EvidenceScope | None = None,
     excluded: bool = False,
+    quote: str = "Metformin was associated with lactic acidosis in adults.",
 ) -> EvidenceUnit:
     return EvidenceUnit(
         evidence_id=evidence_id,
         doc_id=f"DOC-{evidence_id}",
         source=source,  # type: ignore[arg-type]
         stance=stance,
-        quote="Metformin was associated with lactic acidosis in adults.",
+        quote=quote,
         locator={"start": 0, "end": 20},
         scope=scope or EvidenceScope(),
         excluded=excluded,
@@ -102,17 +108,26 @@ def test_coverage_covers_exactly_the_fields_the_ui_reads():
     assert set(COVERAGE_FIELDS) == {"drug", "adverseEvent", "population", "dose", "route", "timeWindow"}
 
 
-def test_claim_fields_absent_from_the_question_are_marked_missing():
+def test_a_field_the_question_never_asked_is_not_specified():
+    """Câu hỏi không nêu ⇒ không có gì để phủ, và giao diện hiện nhãn trung tính "Chưa nêu"."""
     result = assess_evidence([_evidence()], _claim())
-    assert result.coverage["population"] == "missing"
-    assert result.coverage["dose"] == "missing"
-    assert result.coverage["route"] == "missing"
-    assert result.coverage["timeWindow"] == "missing"
-
-
-def test_claim_field_with_no_evidence_at_all_is_not_specified():
-    result = assess_evidence([_evidence()], _claim(population="người lớn"))
     assert result.coverage["population"] == "not_specified"
+    assert result.coverage["dose"] == "not_specified"
+    assert result.coverage["route"] == "not_specified"
+    assert result.coverage["timeWindow"] == "not_specified"
+
+
+def test_a_field_the_question_asked_about_with_no_evidence_is_missing():
+    """Đây mới là khoảng trống thật, và giao diện tô đỏ "Còn thiếu"."""
+    result = assess_evidence([_evidence()], _claim(population="người lớn"))
+    assert result.coverage["population"] == "missing"
+
+
+def test_missing_is_reserved_for_gaps_in_what_the_question_asked():
+    """Không được đảo ngược thứ tự nghiêm trọng: trường câu hỏi có nêu phải nặng hơn trường không nêu."""
+    result = assess_evidence([_evidence()], _claim(population="người lớn"))
+    assert result.coverage["population"] == "missing"
+    assert result.coverage["dose"] == "not_specified"
 
 
 def test_claim_field_with_a_matching_evidence_value_is_verified():
@@ -129,18 +144,43 @@ def test_claim_field_with_a_different_evidence_value_is_partial():
     assert result.coverage["population"] == "partial"
 
 
-def test_drug_and_event_are_verified_when_any_evidence_exists():
-    """Mọi bằng chứng đều được truy hồi theo đúng thuốc/biến cố của câu hỏi."""
+def test_drug_and_event_are_verified_when_the_quote_names_them():
     result = assess_evidence([_evidence()], _claim())
     assert result.coverage["drug"] == "verified"
     assert result.coverage["adverseEvent"] == "verified"
+
+
+def test_drug_is_partial_when_the_quote_does_not_name_it():
+    """Truy hồi *theo* thuốc không có nghĩa là trích đoạn *có* thuốc.
+
+    Trước đây trường này được đánh ``verified`` chỉ vì có bằng chứng, tức là lặp lại đúng kiểu
+    nói quá mà API-03 dựng ra để dẹp — chỉ chuyển từ phía câu hỏi sang phía bằng chứng.
+    """
+    result = assess_evidence(
+        [_evidence(quote="This trial examined renal outcomes in older patients.")], _claim()
+    )
+    assert result.coverage["drug"] == "partial"
+    assert result.coverage["adverseEvent"] == "partial"
+
+
+def test_drug_is_verified_when_a_synonym_appears_in_the_quote():
+    result = assess_evidence(
+        [_evidence(quote="Glucophage was associated with lactic acidosis.")],
+        _claim(drug_synonyms=["glucophage"]),
+    )
+    assert result.coverage["drug"] == "verified"
+
+
+def test_drug_mention_check_ignores_case():
+    result = assess_evidence([_evidence(quote="METFORMIN caused lactic acidosis.")], _claim())
+    assert result.coverage["drug"] == "verified"
 
 
 def test_coverage_counts_only_active_evidence():
     """Bằng chứng bị reviewer loại không được tính là đã phủ."""
     excluded = _evidence("EVI-X", scope=EvidenceScope(population="người lớn"), excluded=True)
     result = assess_evidence([excluded], _claim(population="người lớn"))
-    assert result.coverage["population"] == "not_specified"
+    assert result.coverage["population"] == "missing"
 
 
 def test_coverage_changes_when_evidence_changes():
@@ -151,11 +191,33 @@ def test_coverage_changes_when_evidence_changes():
     assert without.coverage != with_match.coverage
 
 
-def test_empty_evidence_marks_every_field_not_specified():
+def test_empty_evidence_keeps_the_question_gap_visible():
+    """Chưa có bằng chứng nào: trường câu hỏi có nêu là thiếu thật, trường không nêu thì thôi."""
     result = assess_evidence([], _claim(population="người lớn"))
     assert result.assessment_status is AssessmentStatus.INSUFFICIENT_EVIDENCE
     assert set(result.coverage) == set(COVERAGE_FIELDS)
-    assert set(result.coverage.values()) == {"not_specified"}
+    assert result.coverage["drug"] == "missing"
+    assert result.coverage["adverseEvent"] == "missing"
+    assert result.coverage["population"] == "missing"
+    assert result.coverage["dose"] == "not_specified"
+    assert result.coverage["route"] == "not_specified"
+    assert result.coverage["timeWindow"] == "not_specified"
+
+
+def test_every_coverage_value_is_one_the_ui_can_render():
+    """Giá trị lạ sẽ rơi vào ``COV_LABEL[undefined]`` và làm vỡ trang."""
+    from src.services.assessment import coverage_from_evidence
+
+    samples = [
+        assess_evidence([], _claim()).coverage,
+        assess_evidence([_evidence()], _claim(population="người lớn", dose="500mg")).coverage,
+        coverage_from_evidence([_evidence(scope=EvidenceScope(route="oral"))], _claim(route="oral")),
+        coverage_from_evidence([_evidence(scope=EvidenceScope(route="tiêm"))], _claim(route="oral")),
+    ]
+    allowed = {"verified", "partial", "missing", "not_specified"}
+    for coverage in samples:
+        assert set(coverage) == set(COVERAGE_FIELDS)
+        assert set(coverage.values()) <= allowed, coverage
 
 
 # ------------------------------------------------------------------- Di trú dữ liệu cũ (EV-07)

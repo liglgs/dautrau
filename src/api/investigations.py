@@ -246,7 +246,7 @@ async def get_document(
         for item in store.list_evidence(investigation_id)
         if item.doc_id == doc_id
     ]
-    return {"document": document.model_dump(), "locators": locators}
+    return {"document": document.model_dump(), "locators": locators, "hash_status": _hash_status(document)}
 
 
 @router.get("/{investigation_id}/dossier", response_model=DossierResponse)
@@ -456,14 +456,13 @@ def _document_summary(document: SourceDocument) -> dict[str, Any]:
         "title": document.title,
         "source_url": str(document.source_url),
         "hash": document.hash,
-        "hash_status": _hash_status(document),
         "retrieved_at": document.retrieved_at.isoformat(),
         "metadata": document.metadata,
     }
 
 
 def _hash_status(document: SourceDocument) -> str:
-    """API-04b: nói thật trạng thái của ``hash`` thay vì luôn trả ``unchecked``.
+    """API-04b: nói thật trạng thái của ``hash`` thay vì để giao diện tự đoán.
 
     ``hash`` được tính trên **phần văn bản đã bóc tách** (``src/services/sources/parser.py``), không
     phải trên byte gốc. Vì vậy:

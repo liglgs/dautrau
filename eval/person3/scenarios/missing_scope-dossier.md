@@ -1,16 +1,16 @@
 > SYNTHETIC DRAFT — chưa duyệt, không phải bằng chứng y khoa.
 
-# Hồ sơ điều tra INV-b1f0cacc7a7d (bản 1)
+# Hồ sơ điều tra INV-98153b1c9549 (bản 1)
 
 > Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.
 
 - Trạng thái duyệt: pending
 - Kết luận trong phạm vi: Chưa đủ bằng chứng để kết luận.
 - Duyệt bởi: chưa duyệt
-- Mã nội dung: 4c144f428d643627352021f64b81026002151b908780a6bb3d7411d3491a0fef
+- Mã nội dung: becac8161cb4b581a14b6abe72e8b27b1ddc9e68eac2718838860f70079b8f6e
 
 Chưa đủ bằng chứng để kết luận.
-Audit: INV-b1f0cacc7a7d / audit_events / review_decisions.
+Audit: INV-98153b1c9549 / audit_events / review_decisions.
 
 ## Claim
 Fictional demo: Drug Alpha and Event Alpha in the stated scope.
@@ -22,6 +22,7 @@ population: adults
 dose: 10 mg/day
 route: oral
 time_window: 30 days
+config: unknown
 
 ## Chiến lược truy xuất
 Sources: pubmed

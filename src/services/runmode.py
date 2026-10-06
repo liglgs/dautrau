@@ -34,7 +34,11 @@ EVIDENCE_FIXTURE = "fixture"
 EVIDENCE_PERSON3_DEMO = "person3_demo"
 EVIDENCE_PERSON3 = "person3"
 
-#: Nguồn thật: có gọi mạng (``live``) hoặc đọc kho ELT thật (``warehouse``).
+#: Giá trị hợp lệ của ``MVP_PUBMED_MODE`` (khớp ``Settings.mvp_pubmed_mode``).
+PUBMED_API = "api"
+PUBMED_LOCAL = "local"
+
+#: Nguồn thật: đọc mạng (``live``) hoặc đọc kho ELT thật (``warehouse``).
 REAL_SOURCES = frozenset({SOURCE_LIVE, SOURCE_WAREHOUSE})
 
 #: Chế độ bằng chứng có gọi mô hình để trích đoạn, thay vì đọc fixture/phát lại.
@@ -42,9 +46,13 @@ MODEL_BACKED_EVIDENCE = frozenset({EVIDENCE_PERSON3})
 
 _SOURCE_LABELS = {
     SOURCE_FIXTURE: "nguồn mẫu (fixture)",
-    SOURCE_LIVE: "nguồn thật qua mạng (PubMed/DailyMed/openFDA)",
+    SOURCE_LIVE: "nguồn thật (PubMed/DailyMed/openFDA)",
     SOURCE_WAREHOUSE: "kho dữ liệu ELT thật",
 }
+
+#: Nhãn riêng cho ``live`` khi PubMed đọc corpus đã nhập thay vì gọi mạng. Gọi chung là "qua mạng"
+#: ở trường hợp này là nói sai: không có yêu cầu HTTP nào ra ngoài.
+_SOURCE_LIVE_LOCAL_PUBMED = "nguồn thật, riêng PubMed đọc corpus đã nhập (không gọi mạng)"
 
 _EVIDENCE_LABELS = {
     EVIDENCE_FIXTURE: "bằng chứng mẫu (fixture)",
@@ -71,8 +79,8 @@ class RunMode(BaseModel):
     synthetic: bool
     #: Câu mô tả một dòng, dùng cho nhật ký và giao diện.
     label: str
-    #: Cảnh báo không chặn chạy nhưng phải hiện cho người đọc (ví dụ: bật mô hình thật nhưng
-    #: chưa cấu hình khoá, nên kết quả sẽ là phát lại).
+    #: Cảnh báo không chặn chạy nhưng phải hiện cho người đọc: chế độ bằng chứng cần mô hình nhưng
+    #: chưa có khoá, hoặc PubMed đang đọc corpus đã nhập thay vì gọi mạng.
     warnings: list[str] = Field(default_factory=list)
 
     def as_event_payload(self) -> dict[str, object]:
@@ -129,6 +137,11 @@ def validate_run_mode(settings: Settings) -> None:
         )
 
 
+def _has_model_key(settings: Settings) -> bool:
+    """Có khoá mô hình nào chưa — không có thì bước trích bằng chứng không thể chạy thật."""
+    return bool(settings.openai_api_key.strip() or settings.gemini_keys)
+
+
 def resolve_run_mode(settings: Settings) -> RunMode:
     """Mô tả chế độ đang chạy; không ném lỗi (dùng cho nhật ký, API và giao diện)."""
     source = settings.mvp_source_mode
@@ -139,16 +152,29 @@ def resolve_run_mode(settings: Settings) -> RunMode:
     model_is_real = evidence in MODEL_BACKED_EVIDENCE
 
     warnings: list[str] = []
-    if evidence in MODEL_BACKED_EVIDENCE and not sources_are_real:
-        warnings.append("Chế độ bằng chứng thật nhưng nguồn chưa phải nguồn thật.")
-    if sources_are_real and evidence == EVIDENCE_FIXTURE:
+    # Hai tổ hợp ``person3 + nguồn mẫu`` và ``nguồn thật + fixture`` từng có nhánh cảnh báo ở đây,
+    # nhưng ``validate_run_mode`` đã ném lỗi trước đó nên chúng không bao giờ chạy tới. Giữ lại chỉ
+    # tạo cảm giác đã kiểm tra mà thực ra không.
+    if model_is_real and not _has_model_key(settings):
+        # Nhãn nói "mô hình trích từ nguồn thật" trong khi không có khoá nào: kết quả sẽ là phát lại.
         warnings.append(
-            "Nguồn thật nhưng bằng chứng mẫu — tổ hợp này bị chặn lúc khởi động."
+            "Chưa cấu hình khoá mô hình (OPENAI_API_KEY/GEMINI_API_KEY): bước trích bằng chứng "
+            "không gọi được mô hình thật, nên kết quả sẽ là phát lại."
         )
+    if source == SOURCE_LIVE and settings.mvp_pubmed_mode == PUBMED_LOCAL:
+        warnings.append(
+            "MVP_PUBMED_MODE=local: PubMed đọc corpus đã nhập trên máy, không gọi mạng. "
+            "Tài liệu vẫn là bản thật đã nhập, nhưng không phải kết quả tìm kiếm trực tiếp."
+        )
+
+    if source == SOURCE_LIVE and settings.mvp_pubmed_mode == PUBMED_LOCAL:
+        source_label = _SOURCE_LIVE_LOCAL_PUBMED
+    else:
+        source_label = _SOURCE_LABELS.get(source, source)
 
     synthetic = not (sources_are_real and evidence_is_real)
     label = (
-        f"{_SOURCE_LABELS.get(source, source)} · {_EVIDENCE_LABELS.get(evidence, evidence)}"
+        f"{source_label} · {_EVIDENCE_LABELS.get(evidence, evidence)}"
         + ("" if model_is_real else " · không gọi mô hình")
     )
     return RunMode(

@@ -40,7 +40,7 @@
       "source_url": "https://example.org/synthetic/person3-demo",
       "text": "Synthetic context: population: adults; dose: 10 mg/day; route: oral; time_window: 30 days; comparator: placebo.\nDrug Alpha increased Event Alpha in a fictional controlled comparison.",
       "hash": "13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7",
-      "retrieved_at": "2026-10-02T09:42:25.987449Z",
+      "retrieved_at": "2026-10-06T11:22:10.771482Z",
       "metadata": {
         "mode": "synthetic"
       }
@@ -52,7 +52,7 @@
     "rationale": "Claim target is ambiguous: ingredient: ingredient_alpha, ingredient_beta",
     "evidence_ids": [],
     "scope_notes": [],
-    "confidence": 0.0
+    "coverage": {}
   },
   "gaps": [
     {
@@ -86,6 +86,6 @@
       "Hồ sơ còn 1 khoảng trống chưa giải quyết."
     ]
   },
-  "dossier_markdown": "# Hồ sơ điều tra INV-8b6bfa184e81 (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Cần người có chuyên môn phân xử.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: 5c5b83f6a04e2cb6e3ce4ed6de9e586a9a8c147371d30495ac98889a81e70857\n\nCần người có chuyên môn phân xử.\nAudit: INV-8b6bfa184e81 / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Brand Ambiguous\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 0/80\n\n\n## Bằng chứng đã truy xuất\nNo usable evidence retrieved.\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nClaim target is ambiguous: ingredient: ingredient_alpha, ingredient_beta\n\n## Kết luận trong phạm vi claim\nCần người có chuyên môn phân xử.\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
+  "dossier_markdown": "# Hồ sơ điều tra INV-4bf3c320f35e (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Cần người có chuyên môn phân xử.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: 81e5b2fe17853d7d0e2ecaa0a7bd8b62b93999c71cc8c4407d9ea6327dc81417\n\nCần người có chuyên môn phân xử.\nAudit: INV-4bf3c320f35e / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Brand Ambiguous\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\nconfig: unknown\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 0/80\n\n\n## Bằng chứng đã truy xuất\nNo usable evidence retrieved.\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nClaim target is ambiguous: ingredient: ingredient_alpha, ingredient_beta\n\n## Kết luận trong phạm vi claim\nCần người có chuyên môn phân xử.\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
   "approved_dossier": false
 }

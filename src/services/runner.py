@@ -69,17 +69,23 @@ class RunContext:
     ) -> InvestigationState:
         """Lưu state sau một node (mặc định kiểm tra phiên bản hiện tại của state)."""
         self.check_cancelled(state.investigation_id)
-        if self.started_at is not None:
-            state = state.model_copy(
-                update={"elapsed_ms": self.base_elapsed_ms + int((time.monotonic() - self.started_at) * 1000)}
-            )
-            self.last_stamped_ms = state.elapsed_ms
+        state = self.stamped(state)
         return self.store.save_state(
             state,
             expected_version=state.version if expected_version is None else expected_version,
             event=event,
             actor=actor,
         )
+
+    def stamped(self, state: InvestigationState) -> InvestigationState:
+        """Gắn thời gian chạy đã cộng dồn vào state (không đổi gì nếu chưa có lượt chạy thật)."""
+        if self.started_at is None:
+            return state
+        stamped = state.model_copy(
+            update={"elapsed_ms": self.base_elapsed_ms + int((time.monotonic() - self.started_at) * 1000)}
+        )
+        self.last_stamped_ms = stamped.elapsed_ms
+        return stamped
 
     def emit(self, investigation_id: str, kind: str, message: str = "", payload: dict[str, Any] | None = None) -> int:
         return self.store.append_event(investigation_id, kind, message, payload)
@@ -236,6 +242,7 @@ class InProcessRunner:
     def run(self, investigation_id: str, *, resume: bool = False) -> InvestigationState:
         """Chạy đồng bộ tới khi dừng (hoàn tất hoặc chờ reviewer)."""
         self.acquire(investigation_id)
+        context: RunContext | None = None
         try:
             state = self.store.get_state(investigation_id)
             if not resume and state.run_status not in (
@@ -294,9 +301,13 @@ class InProcessRunner:
         except InvestigationCancelledError:
             state = self.store.get_state(investigation_id)
             if state.run_status is not RunStatus.CANCELLED:
+                # Huỷ cũng là một lượt đã chạy: thời gian tiêu tốn trước khi huỷ vẫn phải được ghi,
+                # nếu không số đo lại rơi về 0 đúng ở những lượt dài nhất.
+                cancelled = state.model_copy(update={"run_status": RunStatus.CANCELLED})
+                if context is not None:
+                    cancelled = context.stamped(cancelled)
                 state = self.store.save_state(
-                    state.model_copy(update={"run_status": RunStatus.CANCELLED}),
-                    event=("cancelled", "Cuộc điều tra đã dừng lại do người dùng hủy."),
+                    cancelled, event=("cancelled", "Cuộc điều tra đã dừng lại do người dùng hủy.")
                 )
             return state
         except Exception as exc:
@@ -306,7 +317,7 @@ class InProcessRunner:
                 state = self.store.get_state(investigation_id)
                 if state.run_status is RunStatus.CANCELLED:
                     return state
-            self._mark_failed(investigation_id, exc)
+            self._mark_failed(investigation_id, exc, context)
             raise
         finally:
             self._cancelled_ids.discard(investigation_id)
@@ -339,7 +350,9 @@ class InProcessRunner:
         except Exception:  # pragma: no cover - thread nền đã ghi trạng thái failed
             pass
 
-    def _mark_failed(self, investigation_id: str, exc: Exception) -> None:
+    def _mark_failed(
+        self, investigation_id: str, exc: Exception, context: RunContext | None = None
+    ) -> None:
         if isinstance(exc, InvestigationCancelledError):
             return
         try:
@@ -348,10 +361,11 @@ class InProcessRunner:
             return
         if state.run_status is RunStatus.FAILED:
             return
-        self.store.save_state(
-            state.model_copy(update={"run_status": RunStatus.FAILED}),
-            event=("failed", f"Lỗi khi chạy: {exc}"),
-        )
+        failed = state.model_copy(update={"run_status": RunStatus.FAILED})
+        if context is not None:
+            # Lỗi vẫn là một lượt đã chạy: giữ lại thời gian đã tiêu tốn thay vì trả về 0.
+            failed = context.stamped(failed)
+        self.store.save_state(failed, event=("failed", f"Lỗi khi chạy: {exc}"))
 
     # ------------------------------------------------------------------ phục hồi
 

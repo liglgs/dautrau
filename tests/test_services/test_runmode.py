@@ -20,9 +20,21 @@ from src.services.runmode import (
 )
 
 
-def _settings(source: str, evidence: str) -> Settings:
-    """``Settings`` với hai công tắc chế độ, không đọc ``.env`` của máy chạy."""
-    return Settings(_env_file=None, mvp_source_mode=source, mvp_evidence_mode=evidence)
+def _settings(
+    source: str, evidence: str, pubmed: str = "api", *, model_key: str = "khoa-gia-lap"
+) -> Settings:
+    """``Settings`` với hai công tắc chế độ, không đọc ``.env`` của máy chạy.
+
+    Mặc định có khoá mô hình giả để phép thử nói về chế độ, không nói về chuyện thiếu khoá; bài
+    kiểm riêng cho trường hợp thiếu khoá truyền ``model_key=""``.
+    """
+    return Settings(
+        _env_file=None,
+        mvp_source_mode=source,
+        mvp_evidence_mode=evidence,
+        mvp_pubmed_mode=pubmed,
+        openai_api_key=model_key,
+    )
 
 
 @pytest.mark.parametrize(
@@ -115,6 +127,52 @@ def test_get_run_mode_reads_current_settings(monkeypatch):
         assert get_run_mode()["synthetic"] is True
     finally:
         get_settings.cache_clear()
+
+
+def test_local_pubmed_is_not_described_as_network_retrieval():
+    """``MVP_PUBMED_MODE=local`` đọc corpus đã nhập, không gọi mạng — nhãn phải nói đúng."""
+    mode = resolve_run_mode(_settings("live", "person3", pubmed="local"))
+    assert "không gọi mạng" in mode.label
+    assert mode.warnings, "chế độ này phải kèm cảnh báo, không im lặng"
+    assert any("local" in warning for warning in mode.warnings)
+    # Vẫn là dữ liệu thật: tài liệu là bản thật đã nhập, chỉ khác đường lấy.
+    assert mode.synthetic is False
+
+
+def test_network_pubmed_carries_no_warning():
+    mode = resolve_run_mode(_settings("live", "person3", pubmed="api"))
+    assert mode.warnings == []
+    assert "qua mạng" not in mode.label  # nhãn cũ nói "qua mạng" cả khi đọc corpus
+
+
+def test_a_model_backed_mode_without_a_key_says_so():
+    """Nhãn "mô hình trích từ nguồn thật" là nói sai nếu chưa cấu hình khoá nào."""
+    mode = resolve_run_mode(_settings("live", "person3", model_key=""))
+    assert any("khoá" in warning for warning in mode.warnings), mode.warnings
+
+
+def test_a_model_backed_mode_with_a_gemini_key_only_is_fine():
+    mode = resolve_run_mode(
+        Settings(
+            _env_file=None,
+            mvp_source_mode="live",
+            mvp_evidence_mode="person3",
+            openai_api_key="",
+            gemini_api_key="khoa-gemini",
+        )
+    )
+    assert not any("khoá" in warning for warning in mode.warnings), mode.warnings
+
+
+def test_fixture_mode_does_not_ask_for_a_model_key():
+    """Chế độ mẫu không gọi mô hình, nên thiếu khoá không phải là vấn đề."""
+    mode = resolve_run_mode(_settings("fixture", "fixture", model_key=""))
+    assert mode.warnings == []
+
+
+def test_warehouse_mode_is_never_described_as_network():
+    mode = resolve_run_mode(_settings("warehouse", "person3", pubmed="api"))
+    assert "mạng" not in mode.label
 
 
 def test_runner_stamps_run_mode_into_the_running_event(tmp_path):

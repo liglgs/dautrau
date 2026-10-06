@@ -321,8 +321,10 @@ class MvpStore:
                 ("investigations", "state_json", "id"),
                 ("evidence_versions", "payload_json", "id"),
             ):
+                # Quét theo đúng khoá JSON ``"confidence"`` chứ không theo chuỗi trần: nhãn DailyMed
+                # hay có câu "95% confidence interval", và những hàng đó không cần ``json.loads``.
                 rows = self._conn.execute(
-                    f"SELECT {key}, {column} FROM {table} WHERE {column} LIKE '%confidence%'"
+                    f"""SELECT {key}, {column} FROM {table} WHERE {column} LIKE '%"confidence"%'"""
                 ).fetchall()
                 for row in rows:
                     try:

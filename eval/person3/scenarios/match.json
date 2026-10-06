@@ -42,7 +42,7 @@
       "source_url": "https://example.org/synthetic/person3-demo",
       "text": "Synthetic context: population: adults; dose: 10 mg/day; route: oral; time_window: 30 days; comparator: placebo.\nDrug Alpha increased Event Alpha in a fictional controlled comparison.",
       "hash": "13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7",
-      "retrieved_at": "2026-10-02T09:42:25.758273Z",
+      "retrieved_at": "2026-10-06T11:22:10.120581Z",
       "metadata": {
         "mode": "synthetic"
       }
@@ -67,7 +67,6 @@
         "time_window": "30 days",
         "study_type": null
       },
-      "confidence": 0.0,
       "evidence_type": "rct",
       "version": 1,
       "excluded": false,
@@ -81,7 +80,14 @@
       "EV-P3-a717be88db847e2bfb7bfecd"
     ],
     "scope_notes": [],
-    "confidence": 0.0
+    "coverage": {
+      "drug": "verified",
+      "adverseEvent": "partial",
+      "population": "verified",
+      "dose": "verified",
+      "route": "verified",
+      "timeWindow": "verified"
+    }
   },
   "gaps": [],
   "budget": {
@@ -95,7 +101,7 @@
     "documents_used": 1,
     "source_requests": 0,
     "llm_calls": 1,
-    "input_tokens": 179,
+    "input_tokens": 907,
     "output_tokens": 104,
     "reservations": {}
   },
@@ -104,7 +110,7 @@
     "errors": [],
     "warnings": []
   },
-  "dossier_markdown": "# Hồ sơ điều tra INV-1649c90a2b2a (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Có bằng chứng ủng hộ trong đúng phạm vi claim.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: 56cf6c351410242cf9580b2cc4320708d9d9ebcafbe7820411325849a6e7cca2\n\nCó bằng chứng ủng hộ trong đúng phạm vi claim.\nAudit: INV-1649c90a2b2a / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Drug Alpha\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 1/80\n\n\n## Bằng chứng đã truy xuất\nDrug Alpha increased Event Alpha in a fictional controlled comparison.\n\n- [EV-P3-a717be88db847e2bfb7bfecd v1](https://example.org/synthetic/person3-demo) source=SYNTHETIC-DEMO-A v1; sha256=13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7\n\nBằng chứng: EV-P3-a717be88db847e2bfb7bfecd\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nNo recorded gaps.\n\n## Kết luận trong phạm vi claim\nCó bằng chứng ủng hộ trong đúng phạm vi claim.\n\nBằng chứng: EV-P3-a717be88db847e2bfb7bfecd\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
+  "dossier_markdown": "# Hồ sơ điều tra INV-89f7c1aa5772 (bản 1)\n\n> Mẫu dự phòng: hồ sơ luôn được sinh từ dữ liệu đã lưu (không cần LLM), kể cả khi hết ngân sách.\n\n- Trạng thái duyệt: pending\n- Kết luận trong phạm vi: Có bằng chứng ủng hộ trong đúng phạm vi claim.\n- Duyệt bởi: chưa duyệt\n- Mã nội dung: 87f19ad32386cd4650bf8d546be9b3a68c2dae37507a7e98106aac0e77d59785\n\nCó bằng chứng ủng hộ trong đúng phạm vi claim.\nAudit: INV-89f7c1aa5772 / audit_events / review_decisions.\n\n## Claim\nFictional demo: Drug Alpha and Event Alpha in the stated scope.\n\n## Phạm vi áp dụng\ndrug: Drug Alpha\nevent: Event Alpha\npopulation: adults\ndose: 10 mg/day\nroute: oral\ntime_window: 30 days\nconfig: unknown\n\n## Chiến lược truy xuất\nSources: pubmed\nSteps: 0/8\nLLM calls: 1/80\n\n\n## Bằng chứng đã truy xuất\nDrug Alpha increased Event Alpha in a fictional controlled comparison.\n\n- [EV-P3-a717be88db847e2bfb7bfecd v1](https://example.org/synthetic/person3-demo) source=SYNTHETIC-DEMO-A v1; sha256=13cb9c66f503e5da590a2888618461f45230c77f5ba975581c16512c5b3f5ba7\n\nBằng chứng: EV-P3-a717be88db847e2bfb7bfecd\n\n## Phạm vi và mâu thuẫn\nNo comparable contradiction established.\n\n## Khoảng trống bằng chứng\nNo recorded gaps.\n\n## Kết luận trong phạm vi claim\nCó bằng chứng ủng hộ trong đúng phạm vi claim.\n\nBằng chứng: EV-P3-a717be88db847e2bfb7bfecd\n\n- Stop reason: not recorded\n- Semantic interpretation requires reviewer approval.\n",
   "approved_dossier": false,
   "review_demo": {
     "before_approval": false,

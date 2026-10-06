@@ -461,7 +461,7 @@ export function createApiSource(): DataSource {
     },
 
     async getDocument(id: string, docId: string) {
-      const payload = await request<{ document: Record<string, unknown> }>(
+      const payload = await request<{ document: Record<string, unknown>; hash_status?: string }>(
         `/api/v1/investigations/${id}/documents/${docId}`,
       );
       const document = payload.document;
@@ -475,7 +475,7 @@ export function createApiSource(): DataSource {
         sha256: String(document.hash ?? ""),
         // API-04b: backend nói rõ trạng thái bản băm; trước đây giao diện tự gán "unchecked" nên
         // nhãn "chưa đối chiếu" hiện cả khi tài liệu đã có bản băm gốc để đối chiếu.
-        hashStatus: hashStatusFromBackend(document.hash_status),
+        hashStatus: hashStatusFromBackend(payload.hash_status),
         retrievedAt: String(document.retrieved_at ?? new Date().toISOString()),
         url: document.source_url ? String(document.source_url) : undefined,
         meta: Object.fromEntries(Object.entries((document.metadata ?? {}) as Record<string, unknown>).map(([key, value]) => [key, String(value)])),

@@ -87,7 +87,7 @@ def run_scenario(name, folder):
         if normalized.requires_review:
             assessment = AssessmentResult(
                 assessment_status=AssessmentStatus.REQUIRES_HUMAN_REVIEW,
-                rationale="Claim target is ambiguous: " + "; ".join(normalized.ambiguities), confidence=0.0,
+                rationale="Claim target is ambiguous: " + "; ".join(normalized.ambiguities),
             )
             state = store.save_state(state.model_copy(update={
                 "assessment_status": assessment.assessment_status, "assessment": assessment,

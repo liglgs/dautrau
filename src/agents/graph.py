@@ -449,7 +449,6 @@ def _turn_log_payload(state: InvestigationState) -> dict[str, Any]:
     from src.services.runmode import resolve_run_mode
 
     mode = resolve_run_mode(get_settings())
-    budget = state.budget
     return {
         "turn": state.step_index,
         "searched_sources": list(state.searched_sources),
@@ -457,17 +456,10 @@ def _turn_log_payload(state: InvestigationState) -> dict[str, Any]:
         "evidence_active": len(state.active_evidence()),
         "gaps": len(state.gaps),
         "no_progress_streak": state.no_progress_streak,
-        "budget": {
-            "steps_used": budget.steps_used,
-            "max_steps": budget.max_steps,
-            "documents_used": budget.documents_used,
-            "max_documents": budget.max_documents,
-            "source_requests": budget.source_requests,
-            "max_source_requests": budget.max_source_requests,
-            "llm_calls": budget.llm_calls,
-            "input_tokens": budget.input_tokens,
-            "output_tokens": budget.output_tokens,
-        },
+        # Lấy nguyên ``BudgetState.model_dump()`` để trường ngân sách mới tự vào nhật ký, không
+        # phải sửa tay ở đây (bản liệt kê tay trước đây thiếu ``max_llm_calls``,
+        # ``max_input_tokens`` và ``max_output_tokens``).
+        "budget": state.budget.model_dump(),
         "mode": mode.as_event_payload(),
     }
 

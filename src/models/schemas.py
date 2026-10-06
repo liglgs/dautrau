@@ -812,6 +812,9 @@ class DocumentResponse(BaseModel):
 
     document: SourceDocument
     locators: list[dict[str, Any]] = Field(default_factory=list)
+    #: API-04b: trạng thái của ``document.hash``. Giao diện đọc ``hash_status`` từ **phản hồi này**
+    #: (``getDocument`` trong ``frontend/lib/api/real.ts``), không đọc từ danh sách bằng chứng.
+    hash_status: str = "unchecked"
 
 
 class DossierResponse(BaseModel):

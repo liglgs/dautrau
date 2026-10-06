@@ -538,6 +538,34 @@ async def test_evidence_and_document_endpoints(mvp_client):
 
 
 @pytest.mark.asyncio
+async def test_document_detail_reports_hash_status_the_ui_reads(mvp_client):
+    """API-04b: giao diện đọc ``hash_status`` từ chính phản hồi này, không phải từ danh sách bằng chứng.
+
+    Kỳ vọng được suy ra độc lập từ ``metadata.raw_hash`` của tài liệu, nên phép thử không lặp lại
+    chính công thức của mã nguồn.
+    """
+    created = await _create(mvp_client, key="hash-1")
+    investigation_id = created["investigation_id"]
+    await _wait_for_checkpoint(mvp_client, investigation_id)
+
+    evidence = await mvp_client.get(
+        f"/api/v1/investigations/{investigation_id}/evidence", headers=INVESTIGATOR
+    )
+    doc_id = evidence.json()["items"][0]["doc_id"]
+
+    response = await mvp_client.get(
+        f"/api/v1/investigations/{investigation_id}/documents/{doc_id}", headers=INVESTIGATOR
+    )
+    assert response.status_code == 200
+    body = response.json()
+
+    assert "hash_status" in body, "giao diện đọc trường này; thiếu là lại hiện 'chưa đối chiếu' mãi"
+    assert body["hash_status"] in {"verified", "unchecked"}
+    raw_hash = (body["document"].get("metadata") or {}).get("raw_hash")
+    assert body["hash_status"] == ("verified" if raw_hash else "unchecked")
+
+
+@pytest.mark.asyncio
 async def test_document_of_other_investigation_is_404(mvp_client):
     first = await _create(mvp_client, key="doc-1")
     await _wait_for_checkpoint(mvp_client, first["investigation_id"])

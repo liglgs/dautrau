@@ -48,44 +48,73 @@ def _matches_claim_scope(claim: NormalizedClaim, evidence: EvidenceUnit) -> bool
     return any(outcome is ScopeOutcome.MATCH for outcome in outcomes.values())
 
 
+def _quote_mentions(quote: str, term: str | None) -> bool:
+    """Trích đoạn có nhắc tới hạn từ không (không phân biệt hoa/thường)."""
+    if not term or not term.strip():
+        return False
+    return term.strip().casefold() in quote.casefold()
+
+
+def _term_coverage(active: list[EvidenceUnit], terms: list[str]) -> str:
+    """Báo phủ cho ``drug``/``adverseEvent``: kiểm ngay trong trích đoạn, không đoán theo truy hồi.
+
+    Bằng chứng được truy hồi *theo* thuốc/biến cố của câu hỏi, nhưng "tìm theo" không có nghĩa là
+    "trích đoạn có nhắc tới". Người đọc chỉ kiểm chứng được điều nằm trong trích đoạn, nên ở đây
+    đọc thẳng trích đoạn: có nhắc ⇒ ``verified``, không nhắc ⇒ ``partial``.
+    """
+    if not active:
+        return "missing"
+    if any(_quote_mentions(item.quote, term) for item in active for term in terms):
+        return "verified"
+    return "partial"
+
+
 def coverage_from_evidence(active: list[EvidenceUnit], claim: NormalizedClaim) -> dict[str, str]:
     """Báo phủ bằng chứng theo từng trường của câu hỏi (API-03).
 
-    Đếm từ **bằng chứng đang hoạt động**, không phải từ câu hỏi. Giá trị:
+    Đếm từ **bằng chứng đang hoạt động**, không phải từ câu hỏi. Giá trị, theo đúng mức nghiêm
+    trọng mà giao diện đang tô màu (``frontend/components/pv/badges.tsx``):
 
     ``verified``
-        Có bằng chứng khớp trường đó. Với ``drug``/``adverseEvent``: có ít nhất một đơn vị bằng
-        chứng, vì mọi bằng chứng đều được truy hồi theo đúng thuốc/biến cố của câu hỏi.
+        Có bằng chứng khớp trường đó (với ``drug``/``adverseEvent``: trích đoạn có nhắc hạn từ).
     ``partial``
-        Có bằng chứng nêu trường đó nhưng không trường nào khớp.
-    ``not_specified``
-        Câu hỏi có nêu trường đó nhưng chưa bằng chứng nào nói tới.
+        Có bằng chứng nhưng chưa khớp (trích đoạn không nhắc hạn từ, hoặc giá trị phạm vi khác).
     ``missing``
-        Câu hỏi không nêu trường đó.
+        Câu hỏi **có** nêu trường đó nhưng chưa bằng chứng nào chạm tới — đây là khoảng trống thật.
+    ``not_specified``
+        Câu hỏi không nêu trường đó, nên không có gì để phủ.
     """
     if not active:
-        return {field: "not_specified" for field in COVERAGE_FIELDS}
+        # Chưa có bằng chứng nào: trường câu hỏi có nêu là thiếu thật, trường không nêu thì thôi.
+        empty: dict[str, str] = {"drug": "missing", "adverseEvent": "missing"}
+        for key, scope_field in _SCOPE_FIELD.items():
+            value = getattr(claim, scope_field, None)
+            empty[key] = "missing" if value is not None and str(value).strip() else "not_specified"
+        return empty
 
-    coverage: dict[str, str] = {"drug": "verified", "adverseEvent": "verified"}
-    for key in ("population", "dose", "route", "timeWindow"):
-        claim_value = getattr(claim, _SCOPE_FIELD[key], None)
+    # So khớp phạm vi một lần cho mỗi đơn vị bằng chứng rồi tra theo từng trường; trước đây mỗi
+    # cặp (trường, bằng chứng) lại gọi ``compare_scope`` nên tính thừa 4 lần.
+    active_outcomes = [(item, _known_scope_outcomes(claim, item)) for item in active]
+    coverage: dict[str, str] = {
+        "drug": _term_coverage(active, [claim.drug_ingredient, *claim.drug_synonyms]),
+        "adverseEvent": _term_coverage(active, [claim.event_term]),
+    }
+    for key, scope_field in _SCOPE_FIELD.items():
+        claim_value = getattr(claim, scope_field, None)
         if claim_value is None or not str(claim_value).strip():
-            coverage[key] = "missing"
+            coverage[key] = "not_specified"
             continue
         mentioned = False
         matched = False
-        for item in active:
-            evidence_value = getattr(item.scope, _SCOPE_FIELD[key], None)
+        for item, outcomes in active_outcomes:
+            evidence_value = getattr(item.scope, scope_field, None)
             if evidence_value is None or not str(evidence_value).strip():
                 continue
             mentioned = True
-            for comparison in compare_scope(claim, item.scope):
-                if comparison.field == _SCOPE_FIELD[key] and comparison.outcome is ScopeOutcome.MATCH:
-                    matched = True
-                    break
-            if matched:
+            if outcomes.get(scope_field) is ScopeOutcome.MATCH:
+                matched = True
                 break
-        coverage[key] = "verified" if matched else ("partial" if mentioned else "not_specified")
+        coverage[key] = "verified" if matched else ("partial" if mentioned else "missing")
     return coverage
 
 

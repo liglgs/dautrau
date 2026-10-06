@@ -7,6 +7,10 @@ Trước đây:
   kể cả khi tài liệu có sẵn bản băm gốc để đối chiếu.
 
 Bộ kiểm thử này khoá cả hai: trường phải có thật trong phản hồi, và giá trị phải đổi theo dữ liệu.
+
+Giao diện đọc ``hash_status`` từ ``GET /{id}/documents/{doc_id}`` (hàm ``getDocument`` trong
+``frontend/lib/api/real.ts``), nên phép thử ở tầng HTTP nằm trong ``tests/test_api/test_mvp_api.py``
+(``test_document_detail_reports_hash_status_the_ui_reads``); ở đây khoá riêng quy tắc.
 """
 
 from __future__ import annotations
@@ -14,7 +18,9 @@ from __future__ import annotations
 import hashlib
 import time
 
-from src.api.investigations import _document_summary
+import pytest
+
+from src.api.investigations import _hash_status
 from src.models.schemas import SourceDocument
 
 
@@ -36,27 +42,25 @@ def _document(*, metadata: dict | None = None, text: str = "nội dung nguồn")
 
 def test_document_without_a_raw_hash_is_reported_as_unchecked():
     """Nguồn chỉ trả văn bản: bản băm dùng để phát hiện văn bản đổi, không chứng minh gì thêm."""
-    summary = _document_summary(_document())
-    assert summary["hash_status"] == "unchecked"
+    assert _hash_status(_document()) == "unchecked"
 
 
 def test_document_with_a_raw_hash_is_reported_as_verified():
     """Có bản băm gốc ⇒ ta đối chiếu lại được từ chính dữ liệu đang có."""
-    summary = _document_summary(_document(metadata={"raw_hash": "a" * 64, "parsed_hash": "b" * 64}))
-    assert summary["hash_status"] == "verified"
+    document = _document(metadata={"raw_hash": "a" * 64, "parsed_hash": "b" * 64})
+    assert _hash_status(document) == "verified"
 
 
-def test_hash_status_is_never_mismatch_from_the_summary():
+def test_hash_status_is_never_mismatch():
     """Lệch bản băm bị chặn lúc nạp tài liệu, nên API không bao giờ tự bịa ra ``mismatch``."""
-    summary = _document_summary(_document(metadata={"raw_hash": "", "parsed_hash": "b" * 64}))
-    assert summary["hash_status"] == "unchecked"
+    document = _document(metadata={"raw_hash": "", "parsed_hash": "b" * 64})
+    assert _hash_status(document) == "unchecked"
 
 
-def test_summary_still_carries_the_hash_and_metadata():
-    document = _document(metadata={"raw_hash": "a" * 64})
-    summary = _document_summary(document)
-    assert summary["hash"] == document.hash
-    assert summary["metadata"] == document.metadata
+def test_metadata_without_the_key_does_not_crash():
+    """Tài liệu cũ có thể thiếu hẳn khoá ``raw_hash``."""
+    document = _document(metadata={"parsed_hash": "b" * 64})
+    assert _hash_status(document) == "unchecked"
 
 
 # ------------------------------------------------------------------ API-04a: thời gian chạy
@@ -134,3 +138,46 @@ def test_elapsed_time_is_zero_when_the_context_was_not_started_by_the_runner(tmp
     ctx = RunContext(store=store, gateway=None)  # type: ignore[arg-type]
     saved = ctx.save(state, event=("normalize", "Chuẩn hoá xong"))
     assert saved.elapsed_ms == 0
+
+
+def test_elapsed_time_survives_a_failure(tmp_path):
+    """Lượt chạy lỗi vẫn là lượt đã chạy: thời gian đã tiêu không được rơi về 0."""
+    from src.models.schemas import ClaimInput, RunStatus
+    from src.services.runner import InProcessRunner
+    from src.services.store import MvpStore
+
+    store = MvpStore(tmp_path / "api04-loi.sqlite3")
+    state, _ = store.create_investigation(
+        ClaimInput(claim_text="metformin gây lactic acidosis.", drug="metformin", event="lactic acidosis")
+    )
+
+    def executor(current, ctx):
+        time.sleep(0.05)
+        raise RuntimeError("nguồn trả lỗi")
+
+    with pytest.raises(RuntimeError):
+        InProcessRunner(store, executor=executor).run(state.investigation_id)
+    saved = store.get_state(state.investigation_id)
+    assert saved.run_status is RunStatus.FAILED
+    assert saved.elapsed_ms >= 40, saved.elapsed_ms
+
+
+def test_elapsed_time_survives_a_cancellation(tmp_path):
+    """Huỷ giữa chừng cũng phải giữ thời gian đã tiêu, nếu không số đo mất ở đúng lượt dài nhất."""
+    from src.models.schemas import ClaimInput, RunStatus
+    from src.services.runner import InProcessRunner
+    from src.services.store import MvpStore
+
+    store = MvpStore(tmp_path / "api04-huy.sqlite3")
+    state, _ = store.create_investigation(
+        ClaimInput(claim_text="metformin gây lactic acidosis.", drug="metformin", event="lactic acidosis")
+    )
+
+    def executor(current, ctx):
+        time.sleep(0.05)
+        ctx.runner._cancelled_ids.add(current.investigation_id)  # type: ignore[union-attr]
+        return ctx.save(current, event=("step", "bước bị ngắt"))  # ném InvestigationCancelledError
+
+    result = InProcessRunner(store, executor=executor).run(state.investigation_id)
+    assert result.run_status is RunStatus.CANCELLED
+    assert store.get_state(state.investigation_id).elapsed_ms >= 40
