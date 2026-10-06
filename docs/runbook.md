@@ -107,9 +107,27 @@ Rollback local: dừng backend, giữ bản data hiện tại, checkout bản co
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests -q
-.\.venv\Scripts\python.exe -m ruff check src tests scripts/mvp_backup.py scripts/mvp_deployment_smoke.py scripts/smoke_sources.py scripts/import_pubmed.py
+.\.venv\Scripts\python.exe -m ruff check src tests scripts/mvp_backup.py scripts/mvp_deployment_smoke.py scripts/smoke_sources.py scripts/import_pubmed.py scripts/elt scripts/gold
 ```
 
 Test mặc định chặn socket ngoài loopback; live tests phải đánh dấu `live` và chạy chủ động bằng `-m live`. HTTP fixtures dùng `httpx.MockTransport`, không cần API key.
 
 Lockfile được lấy từ bộ dependencies đã chạy test, kiểm tra riêng khả năng resolve cho Python 3.11. Không coi việc có Dockerfile là bằng chứng Docker stack đã chạy thành công. M10 nghiệm thu cuối còn phụ thuộc M04/M08/M09, clone sạch, luồng UI → review → export, bốn demo và báo cáo đánh giá của các thành viên liên quan.
+
+## 6. Lược đồ lát cắt DI (chỉ thêm bảng)
+
+Bảy bảng của lát cắt DI (`work_items`, `investigation_links`, `evidence_bundles`,
+`professional_responses`, `follow_ups`, `version_refs`, `review_refs`) nằm cùng cơ sở dữ liệu kho ELT.
+Bước nâng cấp chỉ **tạo thêm bảng**, không sửa bảng cũ:
+
+```bash
+python -m scripts.elt.migrate_casework --check    # 0 = đủ bảng, 1 = còn thiếu
+python -m scripts.elt.migrate_casework            # tạo bảng còn thiếu, in số dòng trước/sau
+python -m scripts.elt.migrate_casework --rollback --yes   # bỏ bảy bảng DI (mất dữ liệu DI)
+```
+
+Script đếm số dòng của 14 bảng kho trước và sau khi chạy; lệch thì trả mã thoát 1.
+Kiểm thử ngoại tuyến cho lưu trữ và bước nâng cấp: `python -m pytest tests/test_services/test_casework_store.py -q`.
+
+Sao lưu/phục hồi: bảy bảng này nằm trong cùng volume PostgreSQL `elt_postgres_data`, nên quy trình
+`pg_dump`/`pg_restore` của kho áp dụng nguyên vẹn; `--rollback` chỉ dùng khi muốn bỏ hẳn dữ liệu DI.

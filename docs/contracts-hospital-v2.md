@@ -105,3 +105,21 @@ cập nhật `docs/mvp-contracts.md` và bổ sung mô hình Pydantic tương �
 3. **Người 1:** ràng buộc lưu trữ (khoá chính, chỉ mục, xoá mềm) và cách sao lưu/phục hồi theo bảng mới.
 4. **Ai được duyệt:** hợp đồng ghi `ReviewRef.reviewer.role` nhưng chưa chốt ma trận quyền theo vai trò
    (thuộc R2-2-07).
+
+## 8. Ánh xạ lưu trữ (bước 1 đã dựng)
+
+Bảy thực thể của hợp đồng đã có bảng tương ứng trong cùng cơ sở dữ liệu kho ELT
+(`src/services/casework/models.py`), tạo bằng `python -m scripts.elt.migrate_casework`:
+
+| Thực thể hợp đồng | Bảng | Ghi chú |
+|---|---|---|
+| `WorkItem` | `work_items` | `version` + `etag` là khoá lạc quan; ba trạng thái là ba cột riêng |
+| `InvestigationLink` | `investigation_links` | một dòng cho mỗi lần chạy nối vào yêu cầu |
+| `EvidenceBundle` | `evidence_bundles` | bất biến: mỗi lần chạy một dòng, không sửa |
+| `ProfessionalResponse` | `professional_responses` | append-only theo `version`; bản cũ giữ lại với `status=superseded` |
+| `FollowUp` | `follow_ups` | trạng thái `open/in_progress/done/cancelled`, có `closed_at` |
+| `ReviewRef` | `review_refs` | append-only; cập nhật luôn trạng thái của thực thể được duyệt |
+| `VersionRef` | `version_refs` | nhật ký phiên bản kèm ảnh chụp, phục vụ đọc lại lịch sử |
+
+Quy ước: sửa `work_items` mà thiếu `expected_version` hoặc lệch phiên bản thì trả `409 VERSION_CONFLICT`
+và không ghi gì; mọi lần ghi đều thêm một dòng `version_refs`.

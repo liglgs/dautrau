@@ -42,6 +42,9 @@ def get_warehouse_engine(url: str | None = None) -> Engine:
 
 
 def create_schema(engine: Engine) -> None:
+    # Nạp mô-đun bảng lát cắt DI để ``create_all`` thấy chúng (chỉ thêm, không sửa bảng cũ).
+    from src.services.casework import models as _casework_models  # noqa: F401
+
     WarehouseBase.metadata.create_all(engine)
 
 

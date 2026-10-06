@@ -32,6 +32,39 @@ Mã nguồn: `src/services/warehouse/` (mô hình, truy vấn, nạp tay), `src/
 Khoá ngoại: bản ghi con của `documents` xoá theo (`ON DELETE CASCADE`); `documents.pair_id` đặt `NULL` khi cặp bị xoá.
 `documents` có ràng buộc duy nhất trên `(source, source_id, version)`.
 
+### 1.1. Bảng lát cắt DI (yêu cầu → trả lời → theo dõi)
+
+Bảy bảng dưới đây nằm cùng cơ sở dữ liệu, dựng theo hợp đồng `docs/spec/hospital-v2/schemas.json`.
+Chúng **chỉ được thêm**, không sửa bảng kho ở trên.
+
+| Bảng | Khoá chính | Nội dung |
+| --- | --- | --- |
+| `work_items` | `work_item_id` | yêu cầu tra cứu: câu hỏi, phạm vi, ẩn số, ba trạng thái (`work_status`, `run_status`, `review_status`), `version` + `etag` |
+| `investigation_links` | `link_id` | nối yêu cầu với một lần điều tra: mục đích (`initial/additional/recheck/reproduce`), trạng thái, lỗi |
+| `evidence_bundles` | `bundle_id` | gói bằng chứng bất biến của một lần chạy: mục bằng chứng, gap, coverage, lỗi nguồn, giới hạn |
+| `professional_responses` | `response_id` | phiếu trả lời theo phiên bản: `version`, `status`, các mục, `supersedes` |
+| `follow_ups` | `follow_up_id` | việc theo dõi: loại, trạng thái, hạn, người nhận, kết quả |
+| `version_refs` | `id` | nhật ký append-only: mỗi lần ghi một dòng, kèm ảnh chụp và danh sách trường đã đổi |
+| `review_refs` | `review_id` | quyết định duyệt append-only: hành động, người duyệt, trạng thái trước/sau |
+
+Quy ước chống mất dữ liệu:
+
+* Mọi lần sửa `work_items` phải gửi kèm `expected_version`; lệch phiên bản trả `409 VERSION_CONFLICT`
+  và không ghi gì.
+* Mọi lần tạo/sửa đều ghi thêm một dòng `version_refs` (kèm ảnh chụp), nên đọc lại được lịch sử.
+* Phiếu trả lời là append-only theo phiên bản: bản cũ chuyển sang `superseded` nhưng vẫn còn trong bảng.
+* Chỉ nhận các trường trong danh sách trắng; khoá lạ trả `422 INVALID_REQUEST`.
+
+### 1.2. Nâng cấp lược đồ (chỉ thêm bảng)
+
+```bash
+python -m scripts.elt.migrate_casework --check   # mã thoát 1 nếu còn thiếu bảng
+python -m scripts.elt.migrate_casework           # tạo bảy bảng còn thiếu, in số dòng trước/sau
+```
+
+Script đếm số dòng của 14 bảng cũ trước và sau khi chạy; lệch thì báo lỗi và trả mã thoát 1.
+Muốn bỏ bảy bảng mới (chấp nhận mất dữ liệu DI): `python -m scripts.elt.migrate_casework --rollback --yes`.
+
 ## 2. Chỉ mục vector
 
 - Tên bộ sưu tập: `<RAG_COLLECTION>__<provider>__<model>` → `vigilens_docs__gemini__gemini-embedding-001`.
