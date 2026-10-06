@@ -185,6 +185,21 @@ def now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
+def _strip_confidence(node: object) -> bool:
+    """Xoá ``confidence`` khỏi object bằng chứng/kết luận; trả ``True`` nếu có thay đổi."""
+    changed = False
+    if isinstance(node, dict):
+        if "confidence" in node and ("evidence_id" in node or "assessment_status" in node):
+            node.pop("confidence")
+            changed = True
+        for value in node.values():
+            changed = _strip_confidence(value) or changed
+    elif isinstance(node, list):
+        for value in node:
+            changed = _strip_confidence(value) or changed
+    return changed
+
+
 def _hash_request(claim: ClaimInput) -> str:
     import hashlib
 
@@ -287,6 +302,39 @@ class MvpStore:
             self._add_column("review_decisions", "actor_role", "TEXT")
             self._add_column("review_decisions", "result_version", "INTEGER")
             self._add_column("review_decisions", "result_status", "TEXT")
+            self._drop_legacy_confidence()
+
+    def _drop_legacy_confidence(self) -> None:
+        """EV-07: bỏ khoá ``confidence`` còn nằm trong JSON đã ghi của các bản cũ.
+
+        ``EvidenceUnit`` và ``AssessmentResult`` dùng ``extra="forbid"``, nên chỉ cần xoá trường khỏi
+        hợp đồng là mọi hàng cũ mang trường đó **không đọc được nữa** — mỗi cuộc điều tra cũ trả 500.
+        Điểm tin cậy cũ là hằng số viết tay, không phải dữ liệu nghiệp vụ, nên xoá thẳng là an toàn;
+        giữ lại chỉ để đọc thì lại phải nới ``extra`` cho cả hợp đồng mới.
+
+        Chỉ đụng vào khoá ``confidence`` nằm trong object nhận diện được là bằng chứng
+        (``evidence_id``) hoặc kết luận (``assessment_status``), để không xoá nhầm một trường cùng
+        tên nhưng khác nghĩa ở chỗ khác.
+        """
+        with self._lock, self._conn:
+            for table, column, key in (
+                ("investigations", "state_json", "id"),
+                ("evidence_versions", "payload_json", "id"),
+            ):
+                rows = self._conn.execute(
+                    f"SELECT {key}, {column} FROM {table} WHERE {column} LIKE '%confidence%'"
+                ).fetchall()
+                for row in rows:
+                    try:
+                        payload = json.loads(row[column])
+                    except (TypeError, ValueError):
+                        continue
+                    if not _strip_confidence(payload):
+                        continue
+                    self._conn.execute(
+                        f"UPDATE {table} SET {column} = ? WHERE {key} = ?",
+                        (json.dumps(payload, ensure_ascii=False), row[key]),
+                    )
 
     def _add_column(self, table: str, column: str, ddl_type: str) -> None:
         """Thêm cột nếu file SQLite cũ chưa có (idempotent)."""
