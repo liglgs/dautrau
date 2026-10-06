@@ -1,0 +1,446 @@
+{
+  "spec_version": "gold-p1-2026-10-06.1",
+  "generated_at": "2026-10-06",
+  "scope": "Giai đoạn 1: chuẩn vàng ứng viên từ nguồn công khai quốc tế (nhãn FDA/openFDA + thống kê FAERS). Chưa phải chuẩn vàng đã được dược sĩ duyệt.",
+  "notes": [
+    "Máy đề xuất nhãn từ nhãn thuốc gốc (openFDA drug/label, SPL của FDA) và đối chiếu thống kê báo cáo FAERS (openFDA drug/event).",
+    "Mọi nhãn ở đây là 'candidate_not_gold': chưa có dược sĩ/chuyên gia cảnh giác dược duyệt. Chỉ sau khi duyệt mới chuyển sang trạng thái gold.",
+    "Nhãn dương tính nghĩa là biến cố được NÊU TÊN trong một mục an toàn của nhãn đã chọn; đây là bằng chứng nhãn liệt kê, không phải bằng chứng nhân quả.",
+    "Nhãn âm tính nghĩa là biến cố KHÔNG được nêu tên trong các mục đã kiểm tra của nhãn đó; không có nghĩa là thuốc không gây biến cố.",
+    "Số liệu FAERS là số báo cáo tự nguyện khớp truy vấn, không phải tỉ lệ mắc, không chứng minh nhân quả, và có hiện tượng báo cáo trùng lặp.",
+    "Giấy phép nguồn: dữ liệu openFDA (drug/label, drug/event) là dữ liệu công khai của chính phủ Hoa Kỳ, dùng theo điều khoản openFDA (CC0/không hạn chế); DailyMed/SPL là tác phẩm của chính phủ Hoa Kỳ.",
+    "Chuỗi MedDRA trong trường meddra_pt là chuỗi truy vấn do nhóm soạn, KHÔNG đối chiếu với từ điển MedDRA có bản quyền; trường faers.term_observed ghi nhận chuỗi đó có xuất hiện trong dữ liệu FAERS hay không.",
+    "Cặp âm tính không được chọn theo output của hệ thống; chúng sinh tự động từ ma trận 30 hoạt chất × 10 biến cố.",
+    "Chuỗi meddra_pt của biến cố 'Anaphylaxis' đã được sửa từ 'ANAPHYLAXIS' sang 'ANAPHYLACTIC REACTION' sau khi truy vấn thử ngày 2026-10-06 cho thấy chuỗi cũ trả HTTP 404 cho cả 30 hoạt chất.",
+    "Nhãn thuốc phối hợp bị hạ ưu tiên khi chọn nhãn; tên nhãn đã chọn luôn được ghi trong trường label_title để người duyệt kiểm tra."
+  ],
+  "sources": [
+    {
+      "id": "openfda_label",
+      "name": "openFDA Drug Label API (SPL của FDA)",
+      "url": "https://api.fda.gov/drug/label.json",
+      "human_url": "https://open.fda.gov/apis/drug/label/",
+      "licence": "Dữ liệu công khai của chính phủ Hoa Kỳ (openFDA, không hạn chế tái sử dụng)",
+      "retrieved_with": "GET search=openfda.generic_name:\"<drug>\" AND _exists_:adverse_reactions&limit=25"
+    },
+    {
+      "id": "openfda_event",
+      "name": "openFDA Drug Adverse Event API (FAERS)",
+      "url": "https://api.fda.gov/drug/event.json",
+      "human_url": "https://open.fda.gov/apis/drug/event/",
+      "licence": "Dữ liệu công khai của chính phủ Hoa Kỳ (openFDA, không hạn chế tái sử dụng)",
+      "retrieved_with": "GET search=patient.drug.openfda.generic_name:\"<drug>\" AND patient.reaction.reactionmeddrapt:\"<PT>\"&limit=1"
+    }
+  ],
+  "label_rule": {
+    "label_selection": "Trong 25 nhãn đầu tiên khớp truy vấn: ưu tiên nhãn chỉ chứa MỘT hoạt chất (bỏ qua thuốc phối hợp như 'ASPIRIN AND DIPYRIDAMOLE'); nếu không có nhãn một hoạt chất thì dùng toàn bộ. Sau đó chọn nhãn có effective_time lớn nhất; nếu bằng nhau thì chọn set_id nhỏ hơn theo thứ tự từ điển.",
+    "checked_sections": [
+      "boxed_warning",
+      "contraindications",
+      "warnings",
+      "warnings_and_cautions",
+      "precautions",
+      "adverse_reactions"
+    ],
+    "section_priority": [
+      "boxed_warning",
+      "contraindications",
+      "warnings",
+      "warnings_and_cautions",
+      "precautions",
+      "adverse_reactions"
+    ],
+    "match_rule": "So khớp chuỗi không phân biệt hoa thường, cho phép khoảng trắng hoặc gạch nối giữa các từ; ghi lại mục khớp đầu tiên theo section_priority, từ đồng nghĩa khớp và câu chứa nó.",
+    "quote_max_chars": 400,
+    "statuses": {
+      "listed": "Biến cố được nêu tên trong một mục đã kiểm tra của nhãn.",
+      "not_listed": "Nhãn có mục an toàn nhưng không nêu tên biến cố trong các mục đã kiểm tra.",
+      "no_section": "Nhãn không có mục nào trong checked_sections.",
+      "no_label": "Không tìm thấy nhãn khớp truy vấn."
+    }
+  },
+  "split_rule": "Chia theo hoạt chất để tránh rò rỉ: hoạt chất ở vị trí 1, 4, 7, ... (chỉ số 0-based chia hết cho 3) vào test; còn lại vào development.",
+  "drugs": [
+    {
+      "index": 1,
+      "generic_name": "acetaminophen",
+      "vn_name": "paracetamol",
+      "drug_class": "giảm đau - hạ sốt"
+    },
+    {
+      "index": 2,
+      "generic_name": "ibuprofen",
+      "vn_name": "ibuprofen",
+      "drug_class": "NSAID"
+    },
+    {
+      "index": 3,
+      "generic_name": "diclofenac",
+      "vn_name": "diclofenac",
+      "drug_class": "NSAID"
+    },
+    {
+      "index": 4,
+      "generic_name": "aspirin",
+      "vn_name": "acid acetylsalicylic",
+      "drug_class": "NSAID - kháng kết tập tiểu cầu"
+    },
+    {
+      "index": 5,
+      "generic_name": "metformin",
+      "vn_name": "metformin",
+      "drug_class": "hạ đường huyết biguanid"
+    },
+    {
+      "index": 6,
+      "generic_name": "glipizide",
+      "vn_name": "glipizid",
+      "drug_class": "hạ đường huyết sulfonylurea"
+    },
+    {
+      "index": 7,
+      "generic_name": "atorvastatin",
+      "vn_name": "atorvastatin",
+      "drug_class": "statin"
+    },
+    {
+      "index": 8,
+      "generic_name": "simvastatin",
+      "vn_name": "simvastatin",
+      "drug_class": "statin"
+    },
+    {
+      "index": 9,
+      "generic_name": "amoxicillin",
+      "vn_name": "amoxicillin",
+      "drug_class": "kháng sinh beta-lactam"
+    },
+    {
+      "index": 10,
+      "generic_name": "ceftriaxone",
+      "vn_name": "ceftriaxon",
+      "drug_class": "kháng sinh cephalosporin"
+    },
+    {
+      "index": 11,
+      "generic_name": "ciprofloxacin",
+      "vn_name": "ciprofloxacin",
+      "drug_class": "kháng sinh fluoroquinolon"
+    },
+    {
+      "index": 12,
+      "generic_name": "levofloxacin",
+      "vn_name": "levofloxacin",
+      "drug_class": "kháng sinh fluoroquinolon"
+    },
+    {
+      "index": 13,
+      "generic_name": "azithromycin",
+      "vn_name": "azithromycin",
+      "drug_class": "kháng sinh macrolid"
+    },
+    {
+      "index": 14,
+      "generic_name": "doxycycline",
+      "vn_name": "doxycyclin",
+      "drug_class": "kháng sinh tetracyclin"
+    },
+    {
+      "index": 15,
+      "generic_name": "omeprazole",
+      "vn_name": "omeprazol",
+      "drug_class": "ức chế bơm proton"
+    },
+    {
+      "index": 16,
+      "generic_name": "warfarin",
+      "vn_name": "warfarin",
+      "drug_class": "kháng đông vitamin K"
+    },
+    {
+      "index": 17,
+      "generic_name": "rivaroxaban",
+      "vn_name": "rivaroxaban",
+      "drug_class": "kháng đông DOAC"
+    },
+    {
+      "index": 18,
+      "generic_name": "clopidogrel",
+      "vn_name": "clopidogrel",
+      "drug_class": "kháng kết tập tiểu cầu"
+    },
+    {
+      "index": 19,
+      "generic_name": "enalapril",
+      "vn_name": "enalapril",
+      "drug_class": "ức chế men chuyển"
+    },
+    {
+      "index": 20,
+      "generic_name": "losartan",
+      "vn_name": "losartan",
+      "drug_class": "chẹn thụ thể angiotensin II"
+    },
+    {
+      "index": 21,
+      "generic_name": "amlodipine",
+      "vn_name": "amlodipin",
+      "drug_class": "chẹn kênh calci"
+    },
+    {
+      "index": 22,
+      "generic_name": "hydrochlorothiazide",
+      "vn_name": "hydroclorothiazid",
+      "drug_class": "lợi tiểu thiazid"
+    },
+    {
+      "index": 23,
+      "generic_name": "furosemide",
+      "vn_name": "furosemid",
+      "drug_class": "lợi tiểu quai"
+    },
+    {
+      "index": 24,
+      "generic_name": "spironolactone",
+      "vn_name": "spironolacton",
+      "drug_class": "lợi tiểu giữ kali"
+    },
+    {
+      "index": 25,
+      "generic_name": "metoprolol",
+      "vn_name": "metoprolol",
+      "drug_class": "chẹn beta"
+    },
+    {
+      "index": 26,
+      "generic_name": "digoxin",
+      "vn_name": "digoxin",
+      "drug_class": "glycosid trợ tim"
+    },
+    {
+      "index": 27,
+      "generic_name": "carbamazepine",
+      "vn_name": "carbamazepin",
+      "drug_class": "chống động kinh"
+    },
+    {
+      "index": 28,
+      "generic_name": "valproic acid",
+      "vn_name": "acid valproic",
+      "drug_class": "chống động kinh"
+    },
+    {
+      "index": 29,
+      "generic_name": "sertraline",
+      "vn_name": "sertralin",
+      "drug_class": "chống trầm cảm SSRI"
+    },
+    {
+      "index": 30,
+      "generic_name": "allopurinol",
+      "vn_name": "allopurinol",
+      "drug_class": "hạ acid uric"
+    }
+  ],
+  "reserve_drugs": [
+    {
+      "generic_name": "methotrexate",
+      "vn_name": "methotrexat",
+      "drug_class": "chống viêm - ức chế miễn dịch"
+    },
+    {
+      "generic_name": "levothyroxine",
+      "vn_name": "levothyroxin",
+      "drug_class": "hormon tuyến giáp"
+    },
+    {
+      "generic_name": "prednisolone",
+      "vn_name": "prednisolon",
+      "drug_class": "corticoid"
+    },
+    {
+      "generic_name": "tramadol",
+      "vn_name": "tramadol",
+      "drug_class": "giảm đau opioid"
+    },
+    {
+      "generic_name": "amitriptyline",
+      "vn_name": "amitriptylin",
+      "drug_class": "chống trầm cảm ba vòng"
+    },
+    {
+      "generic_name": "isoniazid",
+      "vn_name": "isoniazid",
+      "drug_class": "kháng lao"
+    },
+    {
+      "generic_name": "pyrazinamide",
+      "vn_name": "pyrazinamid",
+      "drug_class": "kháng lao"
+    },
+    {
+      "generic_name": "ethambutol",
+      "vn_name": "ethambutol",
+      "drug_class": "kháng lao"
+    },
+    {
+      "generic_name": "colchicine",
+      "vn_name": "colchicin",
+      "drug_class": "điều trị gout"
+    },
+    {
+      "generic_name": "insulin glargine",
+      "vn_name": "insulin glargin",
+      "drug_class": "insulin nền"
+    },
+    {
+      "generic_name": "phenytoin",
+      "vn_name": "phenytoin",
+      "drug_class": "chống động kinh"
+    },
+    {
+      "generic_name": "sulfamethoxazole and trimethoprim",
+      "vn_name": "sulfamethoxazol/trimethoprim",
+      "drug_class": "kháng sinh"
+    }
+  ],
+  "events": [
+    {
+      "index": 1,
+      "name": "Gastrointestinal haemorrhage",
+      "slug": "gastrointestinal-haemorrhage",
+      "meddra_pt": "GASTROINTESTINAL HAEMORRHAGE",
+      "synonyms": [
+        "gastrointestinal haemorrhage",
+        "gastrointestinal hemorrhage",
+        "gastrointestinal bleeding",
+        "gastrointestinal bleed",
+        "gi bleeding",
+        "gi haemorrhage",
+        "gastro-intestinal haemorrhage"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Hepatotoxicity",
+      "slug": "hepatotoxicity",
+      "meddra_pt": "HEPATOTOXICITY",
+      "synonyms": [
+        "hepatotoxicity",
+        "hepatotoxic",
+        "hepatic injury",
+        "hepatic damage",
+        "liver injury",
+        "liver damage",
+        "hepatocellular injury",
+        "hepatocellular damage",
+        "drug-induced liver injury",
+        "hepatic necrosis",
+        "liver failure",
+        "hepatic failure"
+      ]
+    },
+    {
+      "index": 3,
+      "name": "Acute kidney injury",
+      "slug": "acute-kidney-injury",
+      "meddra_pt": "ACUTE KIDNEY INJURY",
+      "synonyms": [
+        "acute kidney injury",
+        "acute renal failure",
+        "acute renal injury",
+        "renal failure",
+        "renal impairment",
+        "renal insufficiency",
+        "nephrotoxicity",
+        "kidney injury",
+        "renal toxicity"
+      ]
+    },
+    {
+      "index": 4,
+      "name": "Rhabdomyolysis",
+      "slug": "rhabdomyolysis",
+      "meddra_pt": "RHABDOMYOLYSIS",
+      "synonyms": [
+        "rhabdomyolysis",
+        "myoglobinuria",
+        "muscle breakdown",
+        "muscle necrosis"
+      ]
+    },
+    {
+      "index": 5,
+      "name": "Anaphylaxis",
+      "slug": "anaphylaxis",
+      "meddra_pt": "ANAPHYLACTIC REACTION",
+      "synonyms": [
+        "anaphylaxis",
+        "anaphylactic",
+        "anaphylactoid"
+      ],
+      "meddra_pt_note": "'ANAPHYLAXIS' không phải là PT của MedDRA: mọi truy vấn FAERS với chuỗi này trả HTTP 404. Dùng PT 'ANAPHYLACTIC REACTION' (kiểm chứng bằng truy vấn thử 2026-10-06)."
+    },
+    {
+      "index": 6,
+      "name": "Agranulocytosis",
+      "slug": "agranulocytosis",
+      "meddra_pt": "AGRANULOCYTOSIS",
+      "synonyms": [
+        "agranulocytosis",
+        "agranulocytic",
+        "granulocytopenia"
+      ]
+    },
+    {
+      "index": 7,
+      "name": "Pancreatitis",
+      "slug": "pancreatitis",
+      "meddra_pt": "PANCREATITIS",
+      "synonyms": [
+        "pancreatitis",
+        "pancreatic inflammation"
+      ]
+    },
+    {
+      "index": 8,
+      "name": "QT prolongation",
+      "slug": "qt-prolongation",
+      "meddra_pt": "ELECTROCARDIOGRAM QT PROLONGED",
+      "synonyms": [
+        "qt prolongation",
+        "qt interval prolongation",
+        "prolonged qt",
+        "qtc prolongation",
+        "qtc interval prolongation",
+        "torsade de pointes",
+        "torsades de pointes"
+      ]
+    },
+    {
+      "index": 9,
+      "name": "Angioedema",
+      "slug": "angioedema",
+      "meddra_pt": "ANGIOEDEMA",
+      "synonyms": [
+        "angioedema",
+        "angio-oedema",
+        "angioneurotic oedema",
+        "angioneurotic edema"
+      ]
+    },
+    {
+      "index": 10,
+      "name": "Stevens-Johnson syndrome",
+      "slug": "stevens-johnson-syndrome",
+      "meddra_pt": "STEVENS-JOHNSON SYNDROME",
+      "synonyms": [
+        "stevens-johnson syndrome",
+        "stevens johnson syndrome",
+        "toxic epidermal necrolysis",
+        "sjs/ten",
+        "sjs-ten"
+      ]
+    }
+  ]
+}
