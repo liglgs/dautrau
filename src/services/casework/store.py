@@ -385,11 +385,13 @@ def _latest_response_reviews(session: Session, response_ids: list[str]) -> dict[
             select(ReviewRef)
             .where(ReviewRef.entity == "response", ReviewRef.entity_id.in_(response_ids))
             # ``entity_version`` là số phiên bản của đối tượng bị duyệt tại lúc ra quyết định, và mỗi
-            # quyết định đều tăng số đó lên một (``_apply_response_review`` ghi ``expected + 1``), nên
-            # trong một phiếu nó tăng đúng theo thứ tự ghi. Đó mới là thứ tự thật khi hai quyết định
-            # trùng dấu thời gian; ``review_id`` chỉ là chốt cuối cho trường hợp hoà, vì mã đó ngẫu
-            # nhiên và không phản ánh thứ tự ghi.
-            .order_by(ReviewRef.decided_at, ReviewRef.entity_version, ReviewRef.review_id)
+            # quyết định đều tăng số đó lên đúng một (``_apply_response_review`` ghi ``expected + 1``
+            # và chặn nếu ``expected`` không khớp bản đang có), nên trong một đối tượng nó chính là
+            # thứ tự ghi. Vì vậy nó phải đứng TRƯỚC ``decided_at``: ``decided_at`` là giờ tường, giờ
+            # này có thể lùi (NTP, máy lệch giờ, đồng hồ chậm), và khi đó bản ghi sau lại mang dấu cũ
+            # rồi bị bản cũ đè về mặt thứ tự. ``decided_at`` xuống làm khoá phụ, ``review_id`` là chốt
+            # cuối cho trường hợp hoà hoàn toàn — mã đó ngẫu nhiên nên không phản ánh thứ tự ghi.
+            .order_by(ReviewRef.entity_version, ReviewRef.decided_at, ReviewRef.review_id)
         )
         .scalars()
         .all()
@@ -1160,7 +1162,16 @@ class CaseWorkStore:
                 )
             else:
                 bundle = _ensure_row(session, EvidenceBundle, entity_id, "gói bằng chứng")
-                previous_status, entity_version = "created", 1
+                previous_status = "created"
+                # Gói bằng chứng không có cột phiên bản, nên đếm số quyết định đã có để giữ đúng
+                # bất biến mà thứ tự sắp xếp dựa vào: ``entity_version`` tăng một mỗi quyết định.
+                # Gán cứng 1 thì hai quyết định hoà nhau và thứ tự rơi xuống ``review_id`` ngẫu nhiên.
+                highest = session.execute(
+                    select(func.max(ReviewRef.entity_version)).where(
+                        ReviewRef.entity == "evidence_bundle", ReviewRef.entity_id == entity_id
+                    )
+                ).scalar()
+                entity_version = (highest or 0) + 1
                 new_status = "reviewed"
                 snapshot = _bundle_document(bundle)
                 snapshot_version = 1
@@ -1243,11 +1254,13 @@ class CaseWorkStore:
                     select(ReviewRef)
                     .where(ReviewRef.entity == entity, ReviewRef.entity_id == entity_id)
                     # ``entity_version`` là số phiên bản của đối tượng bị duyệt tại lúc ra quyết định, và mỗi
-            # quyết định đều tăng số đó lên một (``_apply_response_review`` ghi ``expected + 1``), nên
-            # trong một phiếu nó tăng đúng theo thứ tự ghi. Đó mới là thứ tự thật khi hai quyết định
-            # trùng dấu thời gian; ``review_id`` chỉ là chốt cuối cho trường hợp hoà, vì mã đó ngẫu
-            # nhiên và không phản ánh thứ tự ghi.
-            .order_by(ReviewRef.decided_at, ReviewRef.entity_version, ReviewRef.review_id)
+            # quyết định đều tăng số đó lên đúng một (``_apply_response_review`` ghi ``expected + 1``
+            # và chặn nếu ``expected`` không khớp bản đang có), nên trong một đối tượng nó chính là
+            # thứ tự ghi. Vì vậy nó phải đứng TRƯỚC ``decided_at``: ``decided_at`` là giờ tường, giờ
+            # này có thể lùi (NTP, máy lệch giờ, đồng hồ chậm), và khi đó bản ghi sau lại mang dấu cũ
+            # rồi bị bản cũ đè về mặt thứ tự. ``decided_at`` xuống làm khoá phụ, ``review_id`` là chốt
+            # cuối cho trường hợp hoà hoàn toàn — mã đó ngẫu nhiên nên không phản ánh thứ tự ghi.
+            .order_by(ReviewRef.entity_version, ReviewRef.decided_at, ReviewRef.review_id)
                 )
                 .scalars()
                 .all()

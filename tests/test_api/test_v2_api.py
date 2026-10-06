@@ -1263,3 +1263,114 @@ async def test_the_last_decision_wins_even_when_the_clocks_match(v2_client_with_
     envelope = await client.get(f"/api/v2/work-items/{created['work_item_id']}", headers=_headers("investigator"))
     assert envelope.status_code == 200, envelope.text
     assert envelope.json()["responses"][0]["review"]["action"] == "approve"
+
+
+@pytest.mark.asyncio
+async def test_a_slow_clock_cannot_outvote_the_real_write_order(v2_client_with_store):
+    """``decided_at`` là giờ tường nên nó có thể lùi; thứ tự thật là ``entity_version``.
+
+    Dựng đúng ca mà đồng hồ nói ngược: quyết định ghi **sau** mang dấu thời gian **sớm hơn**.
+    Nếu ``decided_at`` còn đứng trước trong khoá sắp xếp thì bản cũ thắng, và người đọc ca thấy
+    "yêu cầu sửa" trong khi phiếu đã được duyệt.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client, "investigator")
+    response = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 0,
+                "sources_ok": [],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": False,
+            },
+        },
+        headers=_headers("investigator"),
+    )
+    assert response.status_code == 201, response.text
+    document = response.json()
+    response_id = document["response_id"]
+
+    store.add_review(
+        entity="response",
+        entity_id=response_id,
+        action="request_changes",
+        reviewer={"id": "usr_reviewer"},
+        reason="Cần sửa.",
+        expected_version=document["version"],
+        review_id="rev_cu",
+    )
+    store.add_review(
+        entity="response",
+        entity_id=response_id,
+        action="approve",
+        reviewer={"id": "usr_reviewer"},
+        reason="Đã sửa xong.",
+        expected_version=document["version"] + 1,
+        review_id="rev_moi",
+    )
+
+    # Đồng hồ chậm: bản ghi sau nhận dấu thời gian sớm hơn bản ghi trước.
+    with store.engine.begin() as connection:
+        connection.execute(
+            text("UPDATE review_refs SET decided_at = :when WHERE review_id = :review_id"),
+            {"when": "2026-01-02 00:00:00+00:00", "review_id": "rev_cu"},
+        )
+        connection.execute(
+            text("UPDATE review_refs SET decided_at = :when WHERE review_id = :review_id"),
+            {"when": "2026-01-01 00:00:00+00:00", "review_id": "rev_moi"},
+        )
+
+    stored = store.get_response(response_id)
+    assert stored["review"]["review_id"] == "rev_moi", "giờ tường không được đè lên thứ tự ghi thật"
+    assert stored["review"]["action"] == "approve"
+
+    envelope = await client.get(f"/api/v2/work-items/{created['work_item_id']}", headers=_headers("investigator"))
+    assert envelope.status_code == 200, envelope.text
+    assert envelope.json()["responses"][0]["review"]["action"] == "approve"
+
+
+@pytest.mark.asyncio
+async def test_two_decisions_on_a_bundle_do_not_share_a_version(v2_client_with_store):
+    """Gói bằng chứng không có cột phiên bản, nên số phiên bản phải do số quyết định đếm ra.
+
+    Gán cứng 1 thì hai quyết định hoà ở khoá giữa và thứ tự rơi xuống ``review_id`` ngẫu nhiên —
+    tức là chọn sai bản cũ. Đường này hiện chưa tuyến nào gọi tới, nhưng ``add_review`` là cửa công
+    khai nên bất biến phải đúng ở đó, không phải đúng nhờ may.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client, "investigator")
+    bundle = store.add_evidence_bundle(
+        created["work_item_id"],
+        investigation_id="inv_bundle_order",
+        items=[],
+        gaps=[],
+        coverage={
+            "documents_retrieved": 0,
+            "sources_ok": [],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": False,
+        },
+        assessment_status="insufficient_evidence",
+    )
+
+    first = store.add_review(
+        entity="evidence_bundle",
+        entity_id=bundle["bundle_id"],
+        action="approve",
+        reviewer={"id": "usr_reviewer"},
+        review_id="rev_zzz_cu",
+    )
+    second = store.add_review(
+        entity="evidence_bundle",
+        entity_id=bundle["bundle_id"],
+        action="reject",
+        reviewer={"id": "usr_reviewer"},
+        review_id="rev_aaa_moi",
+    )
+    assert (first["entity_version"], second["entity_version"]) == (1, 2)
+    assert second["entity_version"] > first["entity_version"]
