@@ -1,0 +1,93 @@
+{
+  "artifact_version": "r2-3-06.1",
+  "status": "đề xuất, chờ dược sĩ xác nhận",
+  "synthetic": true,
+  "use": "Offline validation scenarios only; no patient data and no clinical conclusion.",
+  "scenarios": [
+    {
+      "scenario_id": "missing-data-initial",
+      "synthetic": true,
+      "case_id": "SYN-R2-001",
+      "case_version": 1,
+      "record_kind": "initial",
+      "drug": {
+        "source_term": "Drug Alpha",
+        "candidate_normalized": null,
+        "normalization_status": "unknown"
+      },
+      "administrations": [
+        {
+          "route": "unknown",
+          "dose": "unknown",
+          "started_at": "unknown",
+          "ended_at": "unknown",
+          "source_ref": "synthetic-intake-v1"
+        }
+      ],
+      "outcome": {
+        "observed_description": "rash reported by caller",
+        "started_at": "unknown",
+        "severity": "unknown",
+        "seriousness": "not_assessed",
+        "causality": "not_assessed",
+        "expectedness": "not_assessed"
+      },
+      "dechallenge": "unknown",
+      "rechallenge": "unknown",
+      "alternative_causes": "unknown",
+      "assessment": null,
+      "required_follow_up": [
+        "verify medicine identity/route",
+        "obtain timeline",
+        "assess seriousness and alternative causes"
+      ]
+    },
+    {
+      "scenario_id": "duplicate-candidate",
+      "synthetic": true,
+      "case_id": "SYN-R2-002",
+      "case_version": 1,
+      "record_kind": "duplicate_candidate",
+      "duplicate_candidate_of": "SYN-R2-001",
+      "deduplication_status": "requires_pharmacist_review",
+      "outcome": {
+        "observed_description": "rash reported by caller",
+        "started_at": "unknown",
+        "severity": "unknown",
+        "seriousness": "not_assessed",
+        "causality": "not_assessed",
+        "expectedness": "not_assessed"
+      },
+      "required_follow_up": [
+        "compare permitted identifiers and provenance",
+        "do not merge or delete automatically"
+      ]
+    },
+    {
+      "scenario_id": "follow-up-same-case-versioned",
+      "synthetic": true,
+      "case_id": "SYN-R2-001",
+      "case_version": 2,
+      "supersedes_version": 1,
+      "record_kind": "follow_up",
+      "received_at": "2026-10-06T10:00:00Z",
+      "field_updates": {
+        "administrations": [
+          {
+            "route": "oral",
+            "dose": "unknown",
+            "started_at": "2026-10-04",
+            "ended_at": "unknown",
+            "source_ref": "synthetic-follow-up-v2"
+          }
+        ],
+        "dechallenge": "unknown"
+      },
+      "assessment": null,
+      "required_follow_up": [
+        "preserve version 1",
+        "ask for observed clinical course and source"
+      ]
+    }
+  ]
+}

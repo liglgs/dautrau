@@ -1,0 +1,167 @@
+{
+  "synthetic": true,
+  "records": [
+    {
+      "case_id": "synthetic-case-0002",
+      "record_status": "proposed_needs_pharmacist_confirmation",
+      "synthetic": true,
+      "medications": [
+        {
+          "medication_id": "med-101",
+          "recorded_name": "Thuốc C (tên minh hoạ)",
+          "role": "unknown",
+          "route": null,
+          "dose_text": null,
+          "unknowns": [
+            {
+              "field": "medications.med-101.role",
+              "reason": "Không có đủ dữ kiện để gán vai trò thuốc.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-101.strength",
+              "reason": "Không có hàm lượng trong dữ kiện synthetic.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-101.dosage_form",
+              "reason": "Không có dạng bào chế trong dữ kiện synthetic.",
+              "needs_confirmation": true
+            }
+          ],
+          "strength": null,
+          "dosage_form": null
+        }
+      ],
+      "administrations": [],
+      "timeline": [
+        {
+          "event_id": "event-101",
+          "kind": "other",
+          "description": "Có ghi chú diễn biến synthetic nhưng không có ngày hoặc giờ.",
+          "occurred_at": {
+            "resolution": "unknown",
+            "date": null,
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic incomplete note"
+        }
+      ],
+      "labs": [
+        {
+          "lab_id": "lab-101",
+          "test_name": "Xét nghiệm synthetic thiếu đơn vị",
+          "value_text": "7",
+          "unit": null,
+          "unit_resolution": "unknown",
+          "reference_range": null,
+          "collected_at": {
+            "resolution": "known_date",
+            "date": "2026-09-20",
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic incomplete laboratory result"
+        }
+      ],
+      "observations": [
+        {
+          "observation_id": "obs-101",
+          "text": "Trường minh hoạ có chủ ý thiếu dữ kiện, không điền thay bằng giá trị mặc định.",
+          "observed_at": {
+            "resolution": "known_date",
+            "date": "2026-09-20",
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic reporter note"
+        }
+      ],
+      "assessments": [
+        {
+          "assessment_id": "assessment-101",
+          "axis": "seriousness",
+          "framework": "none",
+          "status": "unknown",
+          "value": null,
+          "rationale": "Thiếu thông tin về kết cục và tiêu chí nghiêm trọng; chờ dược sĩ xác nhận.",
+          "assessed_at": {
+            "resolution": "known_date",
+            "date": "2026-09-20",
+            "time": null,
+            "timezone": null
+          },
+          "assessed_by": null
+        }
+      ],
+      "report_revisions": [
+        {
+          "report_revision_id": "report-002-v1",
+          "case_id": "synthetic-case-0002",
+          "version": 1,
+          "status": "proposed_needs_pharmacist_confirmation",
+          "created_at": "2026-09-20T15:00:00+07:00",
+          "summary": "Bản báo cáo synthetic thiếu dữ kiện; không có kết luận lâm sàng.",
+          "revision_of": null
+        }
+      ],
+      "supplements": [
+        {
+          "supplement_id": "supplement-002",
+          "case_id": "synthetic-case-0002",
+          "received_at": "2026-09-21T08:00:00+07:00",
+          "kind": "timeline",
+          "note": "Bổ sung cùng synthetic-case-0002; vẫn chưa có ngày/giờ chính xác.",
+          "source": "synthetic follow-up"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "administrations",
+          "reason": "Không có bản ghi lần dùng thuốc trong fixture synthetic.",
+          "needs_confirmation": true
+        },
+        {
+          "field": "labs",
+          "reason": "Không có kết quả xét nghiệm trong fixture synthetic.",
+          "needs_confirmation": true
+        },
+        {
+          "field": "timeline.event-101.occurred_at",
+          "reason": "Không có ngày/giờ cho diễn biến được ghi nhận.",
+          "needs_confirmation": true
+        },
+        {
+          "field": "labs.lab-101.unit",
+          "reason": "Kết quả synthetic có giá trị nhưng nguồn không ghi đơn vị; không tự điền đơn vị.",
+          "needs_confirmation": true
+        }
+      ],
+      "case_version": 1,
+      "supersedes_version": null,
+      "record_kind": "initial",
+      "duplicate_candidate_of": null,
+      "dechallenge": {
+        "status": "unknown",
+        "source": null,
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      },
+      "rechallenge": {
+        "status": "unknown",
+        "source": null,
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      }
+    }
+  ]
+}

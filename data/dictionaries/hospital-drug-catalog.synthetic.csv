@@ -1,0 +1,5 @@
+# synthetic: true
+hospital_code,brand_name,active_ingredient,strength,dosage_form,route,manufacturer,synthetic_label
+SYN-BV-001,Panto Demo IV,pantoprazole,40 mg,powder for injection,intravenous,Synthetic Pharma,SYNTHETIC
+SYN-BV-002,Cipro Ear Demo,ciprofloxacin,0.3%,ear drops,otic,Synthetic Pharma,SYNTHETIC
+SYN-BV-003,Panto Demo Oral,pantoprazole,40 mg,tablet,oral,Synthetic Pharma,SYNTHETIC

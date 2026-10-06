@@ -34,6 +34,13 @@ data/
 !data/
 data/*
 !data/README.md
+# Person 3 round-two offline artifacts: small, authored, and source-pointer only.
+!data/person3/
+data/person3/*
+!data/person3/r2_evidence_bundles.json
+!data/person3/r2_case_scenarios.json
+!data/person3/r2_pair_evaluation_index.json
+!data/person3/r2_annotation_ledger.template.jsonl
 # Candidate bundles & large unzipped collections (do not commit)
 mvp-candidates-50-2026-10-02/
 data/mvp-candidates-50-2026-10-02/
@@ -43,6 +50,7 @@ data/dictionaries/*
 !data/dictionaries/person3_synthetic.json
 !data/dictionaries/aspirin_demo.json
 !data/dictionaries/mvp_candidates_2026_10_02.json
+!data/dictionaries/hospital-drug-catalog.synthetic.csv
 !data/benchmark/
 data/benchmark/*
 !data/benchmark/mvp_claims.jsonl

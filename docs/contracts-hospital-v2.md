@@ -8,8 +8,9 @@
 
 ## 1. Phạm vi và nguyên tắc
 
-Lần chốt này **chỉ** mở lát cắt DI (drug–event investigation) và bảy thực thể đi kèm.
-**Không** mở lược đồ ADR/C đầy đủ, không đổi lược đồ MVP hiện có.
+Lát A của lần chốt này mở DI (drug–event investigation) và bảy thực thể đi kèm.
+Lát B `CaseRecord` ở §9 chỉ là đề xuất kỹ thuật có fixture synthetic, chưa là lược đồ ADR/C
+được xác nhận. **Không** đổi lược đồ MVP hiện có.
 
 1. **Additive.** Mọi đường dẫn mới nằm trong `/api/v2`. Lược đồ cũ (`src/models/schemas.py`) giữ nguyên.
    Các enum dùng chung phải **giữ đủ giá trị MVP**; chỉ được thêm giá trị mới (kiểm bằng test đồng bộ).
@@ -186,3 +187,44 @@ nên mọi bản chiếu trả ra (`owner`, `updated_by`, `reviewer`, `assignee`
 `work_items.created_by_json` vẫn được lưu để kiểm toán nhưng **không** xuất hiện trong bản chiếu
 `WorkItem` vì lược đồ cấm trường này (`additionalProperties: false`); muốn biết ai tạo thì đọc
 `history()[0].updated_by`.
+
+## 9. Lát B — `CaseRecord` (đề xuất kỹ thuật, chờ dược sĩ xác nhận)
+
+**Task:** R2-2-09 và R2-1-05. Phần này chỉ là contract nháp để kiểm kỹ thuật ngoại tuyến;
+chưa có SOP/ca được đơn vị cho phép và **không phải clinical acceptance**. Không thêm endpoint,
+không đổi `openapi.json`, và không làm thay đổi lát A DI đang có.
+
+`CaseRecord` trong `schemas.json` là hồ sơ **một ca đã khử định danh**, không chứa tên, mã bệnh
+nhân hoặc dữ liệu bệnh viện thật. Các phần chính là:
+
+| Phần | Quy ước đề xuất |
+|---|---|
+| Phiên bản và trùng ca | `case_version`, `supersedes_version`, `record_kind` (`initial`, `follow_up`, `correction`, `duplicate_candidate`) và `duplicate_candidate_of` giữ đúng lịch sử. `duplicate_candidate` chỉ chờ dược sĩ rà soát, không tự gộp/xóa ca. |
+| `medications`, `administrations` | Một ca có nhiều thuốc; mỗi lần dùng trỏ `medication_id`. Vai trò, liều và đường dùng chưa rõ giữ `null` + `unknowns`, không đoán thuốc nghi ngờ. |
+| `timeline`, `PartialDateTime` | `resolution` tách `known_date_and_time`, `known_date`, `unknown`; `unknown` buộc `date`, `time`, `timezone` là `null`, còn `known_date` buộc `time` và `timezone` là `null`. Vì vậy timezone không xuất hiện khi không có giờ và không có giờ giả. |
+| `labs`, `observations` | Lab có đơn vị đã biết dùng `unit_resolution: confirmed`; khi nguồn thiếu đơn vị bắt buộc dùng `unit: null` + `unit_resolution: unknown`, không bịa/qui đổi đơn vị. Quan sát luôn có nguồn và không tự trở thành kết luận nhân quả. |
+| `dechallenge`, `rechallenge` | Tách `observed`, `not_observed`, `not_done`, `unknown`, cùng nguồn và thời điểm. `unknown` không phải `not_observed`; không yêu cầu rechallenge. |
+| `assessments` | Là đánh giá **ca**, tách riêng literature stance của `EvidenceBundle`. Khi thiếu dữ kiện dùng `framework: none`, `status: unknown`; Naranjo/WHO-UMC hoặc assessment không-unknown phải có `assessed_by` khác `null`, không tự sinh score/category. |
+| `report_revisions` | Mỗi bản có `case_id`, phiên bản và trạng thái; mọi trạng thái lâm sàng mặc định là `proposed_needs_pharmacist_confirmation` cho đến khi dược sĩ xác nhận. |
+| `supplements` | Bổ sung bắt buộc mang cùng `case_id` với ca đang có; không tạo bệnh nhân hoặc ca mới. Kiểm thử ngoại tuyến kiểm quan hệ này. |
+
+Hai fixture mới là `case-record-synthetic-multidrug.json` và
+`case-record-synthetic-missing-and-supplement.json`. Chúng dùng envelope
+`SyntheticCaseRecordFile`: **cả tệp lẫn từng record** đều có `synthetic: true`, cố ý gồm
+nhiều thuốc, ngày/giờ unknown, lab có đơn vị, bổ sung cùng ca và trường thiếu. Chúng không phải
+dữ liệu bệnh nhân thật và không được dùng làm kết luận chuyên môn.
+
+`SyntheticCaseRecord` cấm `confirmed_by_pharmacist` ở record, assessment và report revision:
+fixture chỉ kiểm kỹ thuật, không thay xác nhận chuyên môn. Ràng buộc liên trường như
+`supplement.case_id == case.case_id`, mọi report revision cùng ca, và
+`case_version == supersedes_version + 1` được kiểm trong test Python vì JSON Schema chuẩn không
+biểu diễn phép so sánh giá trị giữa hai nhánh của instance.
+
+R2-3-06 giữ các scenario nhỏ riêng tại `data/person3/r2_case_scenarios.json` để mô tả intake,
+trùng ca và follow-up; chúng không phải payload `CaseRecord` và không tham chiếu schema này trực
+tiếp. Các tên trường chung (`case_id`, `case_version`, `supersedes_version`, `record_kind`,
+`duplicate_candidate_of`, `dechallenge`, `rechallenge`) dùng cùng ngữ nghĩa theo bảng trên.
+`CaseRecord` fixtures trong thư mục này là bộ kiểm schema đầy đủ và chỉ synthetic.
+
+Việc chọn rubric, xác nhận ngữ nghĩa và mở API chỉ thực hiện sau khi có SOP/dữ liệu được phép và
+dược sĩ xác nhận.

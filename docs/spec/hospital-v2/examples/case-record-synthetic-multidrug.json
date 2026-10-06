@@ -1,0 +1,220 @@
+{
+  "synthetic": true,
+  "records": [
+    {
+      "case_id": "synthetic-case-0001",
+      "record_status": "proposed_needs_pharmacist_confirmation",
+      "synthetic": true,
+      "medications": [
+        {
+          "medication_id": "med-001",
+          "recorded_name": "Thuốc A (tên minh hoạ)",
+          "role": "suspected",
+          "route": "oral",
+          "dose_text": "10 mg mỗi ngày",
+          "unknowns": [],
+          "strength": "10 mg",
+          "dosage_form": "tablet"
+        },
+        {
+          "medication_id": "med-002",
+          "recorded_name": "Thuốc B (tên minh hoạ)",
+          "role": "concomitant",
+          "route": null,
+          "dose_text": null,
+          "unknowns": [
+            {
+              "field": "medications.med-002.route",
+              "reason": "Bản ghi synthetic không có đường dùng; không tự suy diễn.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-002.dose_text",
+              "reason": "Bản ghi synthetic không có liều; không tự suy diễn.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-002.strength",
+              "reason": "Bản ghi synthetic không có hàm lượng; không tự suy diễn.",
+              "needs_confirmation": true
+            },
+            {
+              "field": "medications.med-002.dosage_form",
+              "reason": "Bản ghi synthetic không có dạng bào chế; không tự suy diễn.",
+              "needs_confirmation": true
+            }
+          ],
+          "strength": null,
+          "dosage_form": null
+        }
+      ],
+      "administrations": [
+        {
+          "administration_id": "admin-001",
+          "medication_id": "med-001",
+          "administered_at": {
+            "resolution": "known_date_and_time",
+            "date": "2026-09-12",
+            "time": "08:30",
+            "timezone": "+07:00"
+          },
+          "dose_text": "10 mg",
+          "route": "oral",
+          "source": "synthetic medication chart"
+        },
+        {
+          "administration_id": "admin-002",
+          "medication_id": "med-002",
+          "administered_at": {
+            "resolution": "unknown",
+            "date": null,
+            "time": null,
+            "timezone": null
+          },
+          "dose_text": null,
+          "route": null,
+          "source": "synthetic incomplete note"
+        }
+      ],
+      "timeline": [
+        {
+          "event_id": "event-001",
+          "kind": "symptom",
+          "description": "Người báo cáo ghi nhận triệu chứng minh hoạ; không có dữ liệu bệnh nhân thật.",
+          "occurred_at": {
+            "resolution": "known_date",
+            "date": "2026-09-13",
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic case narrative"
+        },
+        {
+          "event_id": "event-002",
+          "kind": "follow_up",
+          "description": "Mốc diễn biến được ghi nhận nhưng không rõ ngày và giờ.",
+          "occurred_at": {
+            "resolution": "unknown",
+            "date": null,
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic incomplete follow-up"
+        }
+      ],
+      "labs": [
+        {
+          "lab_id": "lab-001",
+          "test_name": "Xét nghiệm minh hoạ",
+          "value_text": "42",
+          "unit": "U/L",
+          "reference_range": "0-40 U/L",
+          "collected_at": {
+            "resolution": "known_date",
+            "date": "2026-09-14",
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic laboratory result",
+          "unit_resolution": "confirmed"
+        }
+      ],
+      "observations": [
+        {
+          "observation_id": "obs-001",
+          "text": "Quan sát minh hoạ được lưu tách với đánh giá nhân quả.",
+          "observed_at": {
+            "resolution": "unknown",
+            "date": null,
+            "time": null,
+            "timezone": null
+          },
+          "source": "synthetic observer note"
+        }
+      ],
+      "assessments": [
+        {
+          "assessment_id": "assessment-001",
+          "axis": "causality",
+          "framework": "none",
+          "status": "unknown",
+          "value": null,
+          "rationale": "Thiếu mốc dùng thuốc và diễn biến đầy đủ; không tự sinh Naranjo hoặc WHO-UMC.",
+          "assessed_at": {
+            "resolution": "unknown",
+            "date": null,
+            "time": null,
+            "timezone": null
+          },
+          "assessed_by": null
+        }
+      ],
+      "report_revisions": [
+        {
+          "report_revision_id": "report-001-v1",
+          "case_id": "synthetic-case-0001",
+          "version": 1,
+          "status": "draft",
+          "created_at": "2026-09-15T09:00:00+07:00",
+          "summary": "Bản nháp synthetic ban đầu, còn trường thiếu.",
+          "revision_of": null
+        },
+        {
+          "report_revision_id": "report-001-v2",
+          "case_id": "synthetic-case-0001",
+          "version": 2,
+          "status": "proposed_needs_pharmacist_confirmation",
+          "created_at": "2026-09-16T10:00:00+07:00",
+          "summary": "Bản nháp synthetic bổ sung xét nghiệm có đơn vị; chờ dược sĩ xác nhận.",
+          "revision_of": "report-001-v1"
+        }
+      ],
+      "supplements": [
+        {
+          "supplement_id": "supplement-001",
+          "case_id": "synthetic-case-0001",
+          "received_at": "2026-09-16T09:30:00+07:00",
+          "kind": "lab",
+          "note": "Bổ sung cùng ca synthetic: thêm kết quả xét nghiệm minh hoạ có đơn vị.",
+          "source": "synthetic follow-up"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "timeline.event-002.occurred_at",
+          "reason": "Nguồn synthetic chỉ nói có diễn biến sau đó, không có ngày/giờ.",
+          "needs_confirmation": true
+        },
+        {
+          "field": "assessments.assessment-001",
+          "reason": "Chưa đủ dữ kiện để đánh giá nhân quả.",
+          "needs_confirmation": true
+        }
+      ],
+      "case_version": 2,
+      "supersedes_version": 1,
+      "record_kind": "follow_up",
+      "duplicate_candidate_of": null,
+      "dechallenge": {
+        "status": "unknown",
+        "source": null,
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      },
+      "rechallenge": {
+        "status": "not_done",
+        "source": "synthetic case narrative",
+        "observed_at": {
+          "resolution": "unknown",
+          "date": null,
+          "time": null,
+          "timezone": null
+        }
+      }
+    }
+  ]
+}

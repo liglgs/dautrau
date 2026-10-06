@@ -4,6 +4,15 @@ from src.services.sources.dailymed import DailyMedAdapter
 from src.services.sources.faers import FAERSAdapter
 from src.services.sources.pubmed import PubMedAdapter
 from src.services.sources.pubmed_local import LocalPubMedAdapter
+from src.services.sources.result import (
+    SourceResult as SourceResult,
+)
+from src.services.sources.result import (
+    source_result_from_fetch as source_result_from_fetch,
+)
+from src.services.sources.result import (
+    source_result_from_search as source_result_from_search,
+)
 from src.services.sources.transport import SourceTransport
 
 

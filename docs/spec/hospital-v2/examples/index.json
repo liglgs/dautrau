@@ -53,5 +53,15 @@
     "file": "version-ref.json",
     "def": "VersionRef",
     "note": "tham chiếu phiên bản để dùng If-Match và đọc lịch sử"
+  },
+  {
+    "file": "case-record-synthetic-multidrug.json",
+    "def": "SyntheticCaseRecordFile",
+    "note": "fixture synthetic: nhiều thuốc, lần dùng/timeline có ngày giờ unknown, lab có đơn vị, bổ sung cùng ca và revision"
+  },
+  {
+    "file": "case-record-synthetic-missing-and-supplement.json",
+    "def": "SyntheticCaseRecordFile",
+    "note": "fixture synthetic: trường thiếu được giữ unknown và bổ sung vẫn thuộc cùng ca"
   }
 ]

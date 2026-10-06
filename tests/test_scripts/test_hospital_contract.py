@@ -7,10 +7,11 @@ chung với MVP (`src/models/schemas.py`) phải trùng khớp, nếu lệch là
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 from src.models import schemas as mvp
 from src.services.casework import store as casework_store
@@ -31,6 +32,8 @@ ENTITY_DEFS = [
     "FollowUp",
     "VersionRef",
     "ReviewRef",
+    "CaseRecord",
+    "SyntheticCaseRecordFile",
 ]
 
 
@@ -49,9 +52,16 @@ def index() -> list[dict]:
     return json.loads(INDEX_PATH.read_text(encoding="utf-8"))
 
 
-def _validate(schemas: dict, def_name: str, instance: dict) -> None:
+FORMAT_CHECKER = FormatChecker()
+
+
+def _validation_errors(schemas: dict, def_name: str, instance: dict) -> list:
     schema = {"$ref": f"#/$defs/{def_name}", "$defs": schemas["$defs"]}
-    errors = sorted(Draft202012Validator(schema).iter_errors(instance), key=lambda e: e.path)
+    return sorted(Draft202012Validator(schema, format_checker=FORMAT_CHECKER).iter_errors(instance), key=lambda e: e.path)
+
+
+def _validate(schemas: dict, def_name: str, instance: dict) -> None:
+    errors = _validation_errors(schemas, def_name, instance)
     assert not errors, "; ".join(f"{list(e.path)}: {e.message}" for e in errors)
 
 
@@ -120,6 +130,142 @@ def test_unknown_is_a_first_class_value(schemas: dict) -> None:
     assert "unknown" in schemas["$defs"]["EvidenceItem"]["properties"]["scope_match"]["enum"]
     unknown = schemas["$defs"]["UnknownField"]
     assert {"field", "reason", "needs_confirmation"} <= set(unknown["required"])
+
+
+def test_case_record_b_is_proposed_and_keeps_unknowns_explicit(schemas: dict, openapi: dict) -> None:
+    """Lát B chỉ là contract nháp: giữ ca/đánh giá riêng và không bịa thời điểm."""
+    defs = schemas["$defs"]
+    case = defs["CaseRecord"]
+    assert {"medications", "administrations", "timeline", "labs", "observations", "assessments", "report_revisions", "supplements"} <= set(
+        case["required"]
+    )
+    assert "chờ dược sĩ xác nhận" in case["description"]
+    assert {"unit", "unit_resolution"} <= set(defs["LabResult"]["required"])
+    assert set(defs["LabResult"]["properties"]["unit_resolution"]["enum"]) == {"confirmed", "unknown"}
+    partial = defs["PartialDateTime"]
+    assert {"resolution", "date", "time", "timezone"} <= set(partial["required"])
+    assert "unknown" in partial["properties"]["resolution"]["enum"]
+    assessment = defs["CaseAssessment"]
+    assert {"naranjo", "who_umc"} <= set(assessment["properties"]["framework"]["enum"])
+    assert "literature stance" in assessment["description"]
+    assert "CaseRecord" not in json.dumps(openapi), "lát B nháp không được tự thêm API/OpenAPI"
+
+
+def test_synthetic_case_examples_keep_case_identity_and_missing_data(index: list[dict]) -> None:
+    """Fixture R2-1-05 không chứa ca thật và không biến bổ sung thành ca mới."""
+    entries = [entry for entry in index if entry["def"] == "SyntheticCaseRecordFile"]
+    assert len(entries) >= 2, "cần ít nhất hai fixture CaseRecord synthetic"
+    payloads = [json.loads((EXAMPLES_DIR / entry["file"]).read_text(encoding="utf-8")) for entry in entries]
+    assert all(payload["synthetic"] is True for payload in payloads), "mỗi tệp phải mang nhãn synthetic"
+    records = [record for payload in payloads for record in payload["records"]]
+    assert records and all(record["synthetic"] is True for record in records), "mỗi record phải mang nhãn synthetic"
+    assert all(record["case_id"].startswith("synthetic-case-") for record in records)
+    assert any(len(record["medications"]) > 1 for record in records), "thiếu ca nhiều thuốc"
+    assert any(
+        lab["unit_resolution"] == "confirmed" and lab["unit"]
+        for record in records
+        for lab in record["labs"]
+    ), "thiếu lab có đơn vị"
+    assert any(
+        lab["unit_resolution"] == "unknown" and lab["unit"] is None
+        for record in records
+        for lab in record["labs"]
+    ), "thiếu lab giữ đơn vị unknown thay vì bịa"
+    assert any(not record["administrations"] for record in records), "thiếu fixture giữ trường administrations là thiếu"
+
+    unknown_moments = [
+        point
+        for record in records
+        for administration in record["administrations"]
+        for point in [administration["administered_at"]]
+    ] + [event["occurred_at"] for record in records for event in record["timeline"]]
+    assert any(point["resolution"] == "unknown" for point in unknown_moments), "thiếu ngày/giờ unknown"
+    for point in unknown_moments:
+        if point["resolution"] == "unknown":
+            assert point["date"] is point["time"] is point["timezone"] is None
+
+    for record in records:
+        assert {"case_version", "supersedes_version", "record_kind", "duplicate_candidate_of"} <= set(record)
+        assert all({"strength", "dosage_form"} <= set(medication) for medication in record["medications"])
+        if record["record_kind"] in {"follow_up", "correction"}:
+            assert record["supersedes_version"] == record["case_version"] - 1
+        if record["record_kind"] == "initial":
+            assert record["supersedes_version"] is None
+            assert record["duplicate_candidate_of"] is None
+        assert all(item["case_id"] == record["case_id"] for item in record["supplements"])
+        assert all(item["case_id"] == record["case_id"] for item in record["report_revisions"])
+        assert record["record_status"] != "confirmed_by_pharmacist"
+        assert all(item["status"] != "confirmed_by_pharmacist" for item in record["report_revisions"])
+        assert record["dechallenge"]["status"] in {"observed", "not_observed", "not_done", "unknown"}
+        assert record["rechallenge"]["status"] in {"observed", "not_observed", "not_done", "unknown"}
+        for assessment in record["assessments"]:
+            assert assessment["status"] != "confirmed_by_pharmacist"
+            if assessment["status"] == "unknown":
+                assert assessment["framework"] == "none"
+                assert assessment["value"] is None
+        for point in [
+            *(item["administered_at"] for item in record["administrations"]),
+            *(item["occurred_at"] for item in record["timeline"]),
+            *(item["collected_at"] for item in record["labs"]),
+            *(item["observed_at"] for item in record["observations"]),
+            record["dechallenge"]["observed_at"],
+            record["rechallenge"]["observed_at"],
+        ]:
+            if point["time"] is None:
+                assert point["timezone"] is None
+
+
+def test_case_record_rejects_unowned_assessments_and_unsafe_unknowns(schemas: dict, index: list[dict]) -> None:
+    """Các ràng buộc safety cần bị lược đồ từ chối, không chỉ được mô tả bằng tài liệu."""
+    fixture_entry = next(entry for entry in index if entry["file"] == "case-record-synthetic-multidrug.json")
+    record = json.loads((EXAMPLES_DIR / fixture_entry["file"]).read_text(encoding="utf-8"))["records"][0]
+
+    proposed = deepcopy(record["assessments"][0])
+    proposed.update({"status": "proposed_needs_pharmacist_confirmation", "framework": "local_rubric", "value": "draft"})
+    assert _validation_errors(schemas, "CaseAssessment", proposed), "assessment không-unknown cần assessed_by"
+    proposed["assessed_by"] = {"id": "synthetic-reviewer", "role": "reviewer"}
+    assert not _validation_errors(schemas, "CaseAssessment", proposed)
+    proposed["assessed_by"] = {"id": "llm-agent", "role": "service"}
+    assert _validation_errors(schemas, "CaseAssessment", proposed), "assessment đề xuất cần người đánh giá"
+
+    naranjo = deepcopy(record["assessments"][0])
+    naranjo.update({"status": "proposed_needs_pharmacist_confirmation", "framework": "naranjo", "value": "4"})
+    assert _validation_errors(schemas, "CaseAssessment", naranjo), "Naranjo cần assessed_by"
+    naranjo["assessed_by"] = {"id": "llm-agent", "role": "service"}
+    assert _validation_errors(schemas, "CaseAssessment", naranjo), "Naranjo không cho service tự đánh giá"
+
+    confirmed = deepcopy(naranjo)
+    confirmed.update({"status": "confirmed_by_pharmacist", "framework": "local_rubric", "value": "confirmed"})
+    confirmed["assessed_by"] = {"id": "reviewer-1", "role": "reviewer"}
+    assert _validation_errors(schemas, "CaseAssessment", confirmed), "confirmed cần vai trò pharmacist"
+    confirmed["assessed_by"] = {"id": "pharmacist-1", "role": "pharmacist"}
+    assert not _validation_errors(schemas, "CaseAssessment", confirmed)
+
+    unsafe_synthetic = deepcopy(record)
+    unsafe_synthetic["record_status"] = "confirmed_by_pharmacist"
+    assert _validation_errors(schemas, "SyntheticCaseRecord", unsafe_synthetic)
+    unsafe_synthetic = deepcopy(record)
+    unsafe_synthetic["report_revisions"][0]["status"] = "confirmed_by_pharmacist"
+    assert _validation_errors(schemas, "SyntheticCaseRecord", unsafe_synthetic)
+    unsafe_synthetic = deepcopy(record)
+    unsafe_synthetic["assessments"][0].update(
+        {"status": "confirmed_by_pharmacist", "framework": "local_rubric", "value": "confirmed", "assessed_by": {"id": "synthetic-pharmacist"}}
+    )
+    assert _validation_errors(schemas, "SyntheticCaseRecord", unsafe_synthetic)
+
+    unsafe_timezone = deepcopy(record)
+    unsafe_timezone["timeline"][0]["occurred_at"]["timezone"] = "+07:00"
+    assert _validation_errors(schemas, "SyntheticCaseRecord", unsafe_timezone), "không có time không được có timezone"
+    invalid_date = deepcopy(record)
+    invalid_date["timeline"][0]["occurred_at"]["date"] = "2026-99-40"
+    assert _validation_errors(schemas, "SyntheticCaseRecord", invalid_date), "format date phải được kiểm"
+
+    unknown_unit_with_value = deepcopy(record)
+    unknown_unit_with_value["labs"][0].update({"unit": "mg/dL", "unit_resolution": "unknown"})
+    assert _validation_errors(schemas, "SyntheticCaseRecord", unknown_unit_with_value)
+    confirmed_unit_missing = deepcopy(record)
+    confirmed_unit_missing["labs"][0]["unit"] = None
+    assert _validation_errors(schemas, "SyntheticCaseRecord", confirmed_unit_missing)
 
 
 # ------------------------------------------------------------------ đồng bộ với MVP

@@ -53,6 +53,7 @@ class DailyMedAdapter(SourceAdapter):
                 "effective_time": root.find("s:effectiveTime", NS).get("value")
                 if root.find("s:effectiveTime", NS) is not None
                 else None,
+                "published_date": candidate.get("published_date"),
                 "warnings": ["current_label_only", "candidate_label_not_verified_product_match"],
             }
             if not any(body for _, body in sections):
