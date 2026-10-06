@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from collections.abc import Iterable
 from typing import Any, Protocol, TypeVar
 
@@ -66,6 +67,8 @@ class LLMCallMetadata(BaseModel):
     repair: bool = False
     input_tokens: int = 0
     output_tokens: int = 0
+    #: Thời gian gọi mô hình thật (ms). Trước đây không có nên mọi bước hiện 0.
+    duration_ms: int = 0
 
 
 class LLMProvider(Protocol):
@@ -440,6 +443,7 @@ class LLMGateway:
         prompt_version: str = "ad-hoc",
         prompt_hash: str = "",
     ) -> LLMResponse:
+        started = time.monotonic()
         try:
             response = self.provider.complete(
                 task=task,
@@ -462,6 +466,7 @@ class LLMGateway:
                 repair=task.endswith(":repair"),
                 input_tokens=response.input_tokens,
                 output_tokens=response.output_tokens,
+                duration_ms=int((time.monotonic() - started) * 1000),
             )
         )
         if reservation is not None and budget is not None:

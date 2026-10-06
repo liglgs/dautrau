@@ -395,11 +395,16 @@ class MvpStore:
         state: InvestigationState,
         *,
         expected_version: int | None = None,
-        event: tuple[str, str] | None = None,
+        event: tuple[str, str] | tuple[str, str, dict[str, Any]] | None = None,
         actor: str = "system",
         actor_role: str | None = None,
     ) -> InvestigationState:
-        """Lưu state với kiểm tra phiên bản (stale version không được ghi đè)."""
+        """Lưu state với kiểm tra phiên bản (stale version không được ghi đè).
+
+        ``event`` nhận ``(kind, message)`` hoặc ``(kind, message, payload)``. Dạng ba phần tử cho
+        phép gắn dữ liệu có cấu trúc vào đúng dòng nhật ký đã có, thay vì phải thêm một dòng mới
+        làm nhiễu trình tự sự kiện mà giao diện đang đọc.
+        """
         with self._lock, self._conn:
             row = self._conn.execute(
                 "SELECT version FROM investigations WHERE id = ?", (state.investigation_id,)
@@ -431,7 +436,8 @@ class MvpStore:
                 ),
             )
             if event is not None:
-                self._append_event(updated.investigation_id, event[0], event[1])
+                payload = event[2] if len(event) > 2 else None
+                self._append_event(updated.investigation_id, event[0], event[1], payload)
             self._audit(
                 updated.investigation_id,
                 actor,

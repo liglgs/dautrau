@@ -208,7 +208,6 @@ class _QuoteExtractor:
                         quote=quote,
                         locator=QuoteLocator(start=start, end=start + len(quote), section="abstract"),
                         scope=EvidenceScope(study_type="cohort"),
-                        confidence=0.7,
                     )
                 ]
         return []

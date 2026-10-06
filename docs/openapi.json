@@ -831,6 +831,12 @@
             ],
             "title": "Created At"
           },
+          "elapsed_ms": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Elapsed Ms",
+            "type": "integer"
+          },
           "gaps": {
             "items": {
               "additionalProperties": true,
@@ -888,6 +894,11 @@
               }
             ],
             "title": "Review Status"
+          },
+          "run_mode": {
+            "additionalProperties": true,
+            "title": "Run Mode",
+            "type": "object"
           },
           "run_status": {
             "title": "Run Status",

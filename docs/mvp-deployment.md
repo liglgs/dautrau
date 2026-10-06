@@ -1,6 +1,6 @@
 # Triển khai demo local MVP và kiểm tra CI
 
-Gói này bổ sung môi trường và kiểm tra tự động cho runtime MVP: SQLite, runner trong tiến trình, fixture synthetic, FastAPI và VigiLens. Demo mặc định không cần model key hoặc nguồn ngoài. Có connectors PubMed/DailyMed/FAERS và PubMed local; xem [runbook](runbook.md). Cấu hình `MVP_EVIDENCE_MODE=person3` + `MVP_SOURCE_MODE=live` ghép bộ phân tích/hồ sơ Người 3; [hướng dẫn](person3/merged_runtime.md) mô tả model và dictionary container. Giữ network guard; chỉ bật source live vẫn dùng extractor fixture.
+Gói này bổ sung môi trường và kiểm tra tự động cho runtime MVP: SQLite, runner trong tiến trình, fixture synthetic, FastAPI và VigiLens. Demo mặc định không cần model key hoặc nguồn ngoài. Có connectors PubMed/DailyMed/FAERS và PubMed local; xem [runbook](runbook.md). Cấu hình `MVP_EVIDENCE_MODE=person3` + `MVP_SOURCE_MODE=live` ghép bộ phân tích/hồ sơ Người 3; [hướng dẫn](person3/merged_runtime.md) mô tả model và dictionary container. Giữ network guard. Hai công tắc chế độ phải đi cùng nhau: `MVP_SOURCE_MODE=live` hoặc `warehouse` bắt buộc đi với `MVP_EVIDENCE_MODE=person3`, và ngược lại. Tổ hợp lệch bị chặn ngay lúc khởi động — trước đây bật source live mà quên đổi chế độ bằng chứng vẫn chạy, và hệ thống gắn bằng chứng fixture lên tài liệu tải từ mạng, nên hồ sơ xuất ra trông như thật.
 
 ## Chạy Docker trên Windows
 

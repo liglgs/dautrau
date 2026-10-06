@@ -59,7 +59,7 @@ INVALIDATION_TABLE: dict[ReviewAction, tuple[str, ...]] = {
 CLAIM_EDIT_FIELDS = ("drug", "event", "population", "dose", "route", "time_window")
 
 #: Trường được phép sửa trong ``edit_evidence``.
-EVIDENCE_EDIT_FIELDS = ("quote", "stance", "scope", "confidence", "notes")
+EVIDENCE_EDIT_FIELDS = ("quote", "stance", "scope", "notes")
 
 
 @dataclass

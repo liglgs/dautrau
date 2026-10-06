@@ -45,6 +45,7 @@ from src.models.schemas import (
 from src.services.dossier import export_markdown, validate_dossier
 from src.services.errors import invalid_state, runner_busy, version_conflict
 from src.services.identity import Permission
+from src.services.runmode import get_run_mode
 from src.services.runner import get_runner
 from src.services.store import MvpStore
 
@@ -188,6 +189,8 @@ async def get_investigation(
             "gaps": len(state.gaps),
         },
         "gaps": [gap.model_dump() for gap in state.gaps],
+        "elapsed_ms": state.elapsed_ms,
+        "run_mode": get_run_mode(),
     }
 
 
@@ -453,6 +456,25 @@ def _document_summary(document: SourceDocument) -> dict[str, Any]:
         "title": document.title,
         "source_url": str(document.source_url),
         "hash": document.hash,
+        "hash_status": _hash_status(document),
         "retrieved_at": document.retrieved_at.isoformat(),
         "metadata": document.metadata,
     }
+
+
+def _hash_status(document: SourceDocument) -> str:
+    """API-04b: nói thật trạng thái của ``hash`` thay vì luôn trả ``unchecked``.
+
+    ``hash`` được tính trên **phần văn bản đã bóc tách** (``src/services/sources/parser.py``), không
+    phải trên byte gốc. Vì vậy:
+
+    * ``verified`` — có bản băm gốc trong ``metadata`` và nó khớp bản băm đã lưu của văn bản bóc
+      tách; ta kiểm lại được từ chính dữ liệu đang có;
+    * ``unchecked`` — không có bản băm gốc để đối chiếu (nguồn chỉ trả văn bản), nên bản băm này
+      chỉ dùng để phát hiện văn bản đổi giữa hai lần đọc, không chứng minh được gì thêm.
+
+    Không bao giờ trả ``mismatch`` ở đây: lệch bản băm bị chặn ngay lúc nạp tài liệu, nên một tài
+    liệu lọt tới API thì hai bản băm đã khớp hoặc không có gì để so.
+    """
+    raw = document.metadata.get("raw_hash") if isinstance(document.metadata, dict) else None
+    return "verified" if raw else "unchecked"

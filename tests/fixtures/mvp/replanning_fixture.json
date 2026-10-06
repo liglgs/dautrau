@@ -96,7 +96,6 @@
         "time_window": null,
         "study_type": "drug_label"
       },
-      "confidence": 0.9,
       "evidence_type": "label",
       "version": 1,
       "excluded": false,
@@ -120,7 +119,6 @@
         "time_window": "first 90 days",
         "study_type": "population-based cohort"
       },
-      "confidence": 0.75,
       "evidence_type": "observational",
       "version": 1,
       "excluded": false,

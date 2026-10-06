@@ -22,6 +22,7 @@ def main():
     os.chdir(ROOT)
     os.environ.update({
         "MVP_EVIDENCE_MODE": "person3_demo",
+        "MVP_SOURCE_MODE": "fixture",
         "MVP_PERSON3_DEMO_SCENARIO": args.scenario,
         "MVP_DB_PATH": str(ROOT / "data/person3-demo.sqlite3"),
         "LANGSMITH_TRACING": "false", "LANGCHAIN_TRACING_V2": "false",

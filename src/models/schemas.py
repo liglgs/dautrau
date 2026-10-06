@@ -396,7 +396,8 @@ class EvidenceUnit(BaseModel):
     quote: str = Field(min_length=1, max_length=2000)
     locator: QuoteLocator
     scope: EvidenceScope = Field(default_factory=EvidenceScope)
-    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    # EV-07: trường ``confidence`` cũ (mặc định 0.5, có nơi ghi 0.0) đã bị bỏ. Nó chưa từng được
+    # hiệu chỉnh bằng dữ liệu thật, nhưng lại nằm cạnh trích đoạn nên bị đọc như xác suất đúng.
     evidence_type: EvidenceType = EvidenceType.OTHER
     version: int = Field(default=1, ge=1)
     excluded: bool = False
@@ -412,7 +413,12 @@ class AssessmentResult(BaseModel):
     rationale: str = Field(min_length=1, max_length=4000)
     evidence_ids: list[str] = Field(default_factory=list)
     scope_notes: list[str] = Field(default_factory=list)
-    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    #: Báo phủ bằng chứng theo từng trường của câu hỏi, đếm từ bằng chứng **đã thật sự tìm được**.
+    #: Giá trị: ``verified`` (có bằng chứng khớp trường đó), ``partial`` (có bằng chứng nhắc tới
+    #: nhưng chưa khớp), ``not_specified`` (câu hỏi có nêu nhưng chưa bằng chứng nào nói tới),
+    #: ``missing`` (câu hỏi không nêu trường đó). Trước đây trường này không tồn tại nên giao diện
+    #: tự suy từ phần chuẩn hoá câu hỏi — tức là báo phủ nói về *câu hỏi*, không về *bằng chứng*.
+    coverage: dict[str, str] = Field(default_factory=dict)
 
 
 # --------------------------------------------------------------------------------------
@@ -502,6 +508,9 @@ class InvestigationState(BaseModel):
     source_status: dict[str, SourceStatus] = Field(default_factory=dict)
     config: InvestigationConfig = Field(default_factory=InvestigationConfig)
     created_by: str = Field(default="anonymous", max_length=120)
+    #: Tổng thời gian agent thật sự chạy (ms), cộng dồn qua các lần chạy và chạy tiếp. Không tính
+    #: thời gian chờ người duyệt. Trước đây giao diện luôn hiện 0 vì trường này không tồn tại.
+    elapsed_ms: int = Field(default=0, ge=0)
     version: int = Field(default=1, ge=1)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -772,6 +781,10 @@ class InvestigationDetailResponse(BaseModel):
     source_status: dict[str, str] = Field(default_factory=dict)
     counters: dict[str, int] = Field(default_factory=dict)
     gaps: list[dict[str, Any]] = Field(default_factory=list)
+    #: API-04a: tổng thời gian agent thật sự chạy (ms), không tính thời gian chờ người duyệt.
+    elapsed_ms: int = Field(default=0, ge=0)
+    #: RT-01: chế độ chạy đang bật (nguồn thật hay mẫu, bằng chứng thật hay phát lại).
+    run_mode: dict[str, Any] = Field(default_factory=dict)
 
 
 class EventListResponse(BaseModel):

@@ -97,7 +97,6 @@ class RecordingExtractor:
                 quote=quote,
                 locator=QuoteLocator(start=start, end=start + len(quote), section="results"),
                 scope=EvidenceScope(population="adults with renal impairment", route="oral", study_type="cohort"),
-                confidence=0.8,
             )
         ]
 

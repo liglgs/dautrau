@@ -10,6 +10,7 @@ Trách nhiệm:
 from __future__ import annotations
 
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -17,6 +18,7 @@ from typing import Any
 from src.models.schemas import CheckpointKind, ErrorCode, InvestigationState, RunStatus
 from src.services.errors import MvpError, invalid_state, runner_busy
 from src.services.llm import LLMGateway
+from src.services.runmode import describe_run_mode, resolve_run_mode
 from src.services.store import MvpStore
 
 Executor = Callable[[InvestigationState, "RunContext"], InvestigationState]
@@ -42,6 +44,13 @@ class RunContext:
     evidence_analyzer: Any | None = None
     scenario: dict[str, Any] | None = None
     source_factory: Callable[[Any], dict[str, Any]] | None = None
+    #: API-04a: mốc bắt đầu lượt chạy và thời gian đã cộng dồn của các lượt trước. ``None`` ⇒
+    #: không phải lượt chạy thật (test gọi node trực tiếp) nên không đụng vào ``elapsed_ms``.
+    started_at: float | None = None
+    base_elapsed_ms: int = 0
+    #: Giá trị ``elapsed_ms`` của lần lưu gần nhất trong lượt này, để biết bản executor trả về đã
+    #: được lưu hay chưa (xem ``InProcessRunner.run``).
+    last_stamped_ms: int | None = None
 
     def is_cancelled(self, investigation_id: str) -> bool:
         return self.runner is not None and self.runner.is_cancelled(investigation_id)
@@ -60,6 +69,11 @@ class RunContext:
     ) -> InvestigationState:
         """Lưu state sau một node (mặc định kiểm tra phiên bản hiện tại của state)."""
         self.check_cancelled(state.investigation_id)
+        if self.started_at is not None:
+            state = state.model_copy(
+                update={"elapsed_ms": self.base_elapsed_ms + int((time.monotonic() - self.started_at) * 1000)}
+            )
+            self.last_stamped_ms = state.elapsed_ms
         return self.store.save_state(
             state,
             expected_version=state.version if expected_version is None else expected_version,
@@ -240,14 +254,41 @@ class InProcessRunner:
             if not resume:
                 update["next_stage"] = None
                 update["stop_reason"] = None
+            # RT-01: gắn chế độ chạy vào chính dòng "bắt đầu chạy" thay vì thêm một dòng mới, để
+            # trình tự sự kiện (created → running → normalize → …) mà giao diện đang đọc giữ nguyên.
+            from src.config import get_settings
+
+            mode = resolve_run_mode(get_settings())
             state = self.store.save_state(
-                state.model_copy(update=update), event=("running", "Agent bắt đầu chạy.")
+                state.model_copy(update=update),
+                event=(
+                    "running",
+                    f"Agent bắt đầu chạy. {describe_run_mode(get_settings())}",
+                    mode.as_event_payload(),
+                ),
             )
-            result = self.executor(state, self.context())
-            if result.run_status is RunStatus.RUNNING:
-                result = self.store.save_state(
-                    result.model_copy(update={"run_status": RunStatus.COMPLETED}),
-                    event=("completed", "Agent kết thúc mà không còn bước chờ."),
+            context = self.context()
+            # API-04a: mọi lần lưu trong lượt này đều mang theo thời gian chạy đã cộng dồn, nên
+            # bản lưu cuối cùng của graph đã có số đúng — không cần thêm một lần lưu nữa (mỗi lần
+            # lưu thừa lại đẩy ``version`` lên và làm lệch trình tự sự kiện giao diện đang đọc).
+            context.started_at = time.monotonic()
+            context.base_elapsed_ms = state.elapsed_ms
+            result = self.executor(state, context)
+            finished = result.run_status is RunStatus.RUNNING
+            if finished:
+                result = result.model_copy(update={"run_status": RunStatus.COMPLETED})
+            if finished or result.elapsed_ms != context.last_stamped_ms:
+                # Executor kết thúc mà không lưu lần cuối (hoặc không lưu gì cả): chốt lại để số đo
+                # thời gian không bị mất. Trường hợp thường — graph đã lưu ở node cuối — không tốn
+                # thêm lần lưu nào, nên ``version`` và trình tự sự kiện giữ nguyên như trước.
+                result = context.save(
+                    result,
+                    event=(
+                        ("completed", "Agent kết thúc mà không còn bước chờ.")
+                        if finished
+                        else None
+                    ),
+                    actor="system",
                 )
             return result
         except InvestigationCancelledError:

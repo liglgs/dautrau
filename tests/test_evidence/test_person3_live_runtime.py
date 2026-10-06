@@ -13,6 +13,7 @@ import pytest
 from src.api.mvp_runtime import configure_mvp, get_mvp_runner, reset_mvp
 from src.config import get_settings
 from src.main import app
+from src.services.errors import MvpError
 from src.services.evidence.contracts import read_annotation
 from src.services.llm import MockProvider, TransportProvider
 from src.services.sources.transport import SourceTransport
@@ -184,7 +185,9 @@ def test_invalid_live_configuration_fails_before_store(live_runtime, monkeypatch
         )
         monkeypatch.setenv("MVP_DICTIONARY_PATH", str(path))
     get_settings.cache_clear()
-    with pytest.raises((ValueError, FileNotFoundError)):
+    # RT-01: tổ hợp ``MVP_SOURCE_MODE=fixture`` + ``MVP_EVIDENCE_MODE=person3`` bị chặn bằng
+    # ``MvpError`` (mã ``invalid_state``) chứ không còn là ``ValueError`` trần.
+    with pytest.raises((MvpError, ValueError, FileNotFoundError)):
         configure_mvp()
     assert not Path(get_settings().mvp_db_path).exists()
 

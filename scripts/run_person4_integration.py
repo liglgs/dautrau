@@ -29,6 +29,7 @@ def main():
                 "APP_ENV": "test",
                 "MVP_DB_PATH": str(Path(folder) / "integration.sqlite3"),
                 "MVP_EVIDENCE_MODE": "person3_demo",
+                "MVP_SOURCE_MODE": "fixture",
                 "MVP_PERSON3_DEMO_SCENARIO": "match",
                 "LANGSMITH_TRACING": "false",
                 "LANGCHAIN_TRACING_V2": "false",

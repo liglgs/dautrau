@@ -164,7 +164,7 @@ class EvidenceExtractor:
             unit = EvidenceUnit(
                 evidence_id=f"EV-P3-{digest}", doc_id=document.doc_id, source=document.source,
                 stance=stance, quote=finding.quote, locator=finding.locator, scope=finding.scope,
-                evidence_type=evidence_type, confidence=0.0, notes=annotation.to_notes(),
+                evidence_type=evidence_type, notes=annotation.to_notes(),
             )
             checked = validate_evidence_citation(document, unit)
             if checked.errors or "outside_examined_text" in issues or alignment_failed:

@@ -104,6 +104,10 @@ interface BackendState {
   source_status?: Record<string, string>;
   counters?: { evidence: number; documents: number; queries: number; gaps: number };
   gaps?: { gap_id: string; description: string; kind?: string; field?: string }[];
+  /** API-04a: tổng thời gian agent đã chạy (ms). */
+  elapsed_ms?: number;
+  /** RT-01: chế độ chạy của lượt này (nguồn/bằng chứng thật hay mẫu). */
+  run_mode?: Record<string, unknown>;
 }
 
 interface BackendLastReview {
@@ -205,6 +209,11 @@ function claimFromBackend(claim: Record<string, unknown> | null | undefined) {
   };
 }
 
+/** API-04b: `hash_status` của backend → nhãn của UI. Giá trị lạ bị coi là "chưa đối chiếu". */
+function hashStatusFromBackend(value: unknown): "verified" | "mismatch" | "unchecked" {
+  return value === "verified" || value === "mismatch" ? value : "unchecked";
+}
+
 const COVERAGE_KEYS = ["drug", "adverseEvent", "population", "dose", "route", "timeWindow"] as const;
 
 /** Normalization is not evidence coverage; fields remain unverified without explicit backend coverage. */
@@ -256,7 +265,8 @@ function toInvestigation(state: BackendState): Investigation {
       steps: budget.steps_used ?? state.step_index ?? 0,
       docs: budget.documents_used ?? counters.documents ?? 0,
       tokens: (budget.input_tokens ?? 0) + (budget.output_tokens ?? 0),
-      elapsedMs: 0,
+      // API-04a: thời gian agent đã chạy thật, backend cộng dồn qua các lượt (không tính lúc chờ duyệt).
+      elapsedMs: typeof state.elapsed_ms === "number" ? state.elapsed_ms : 0,
     },
     runStatus: (state.run_status as Investigation["runStatus"]) ?? "queued",
     assessment: state.assessment
@@ -265,9 +275,12 @@ function toInvestigation(state: BackendState): Investigation {
             Investigation["assessment"]
           >["status"],
           rationale: state.assessment.rationale ?? "",
-          coverage: state.assessment.coverage
-            ? coverageFromBackend(state.assessment.coverage)
-            : coverageFromNormalized(state.normalized_claim),
+          // API-03: ưu tiên báo phủ đếm từ bằng chứng thật; chỉ khi backend chưa có (hồ sơ cũ)
+          // mới tạm suy từ phần chuẩn hoá câu hỏi.
+          coverage:
+            state.assessment.coverage && Object.keys(state.assessment.coverage).length > 0
+              ? coverageFromBackend(state.assessment.coverage)
+              : coverageFromNormalized(state.normalized_claim),
         }
       : undefined,
     reviewState: reviewStateFromBackend(state.review_status),
@@ -460,7 +473,9 @@ export function createApiSource(): DataSource {
         origin: "auto" as const,
         text: String(document.text ?? ""),
         sha256: String(document.hash ?? ""),
-        hashStatus: "unchecked" as const,
+        // API-04b: backend nói rõ trạng thái bản băm; trước đây giao diện tự gán "unchecked" nên
+        // nhãn "chưa đối chiếu" hiện cả khi tài liệu đã có bản băm gốc để đối chiếu.
+        hashStatus: hashStatusFromBackend(document.hash_status),
         retrievedAt: String(document.retrieved_at ?? new Date().toISOString()),
         url: document.source_url ? String(document.source_url) : undefined,
         meta: Object.fromEntries(Object.entries((document.metadata ?? {}) as Record<string, unknown>).map(([key, value]) => [key, String(value)])),
