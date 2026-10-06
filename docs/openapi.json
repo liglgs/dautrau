@@ -1,6 +1,46 @@
 {
   "components": {
     "schemas": {
+      "Actor": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "Actor",
+        "type": "object"
+      },
       "AssessmentStatus": {
         "description": "Kết luận an toàn thuốc được phép.\n\nLưu ý: ``causal`` (kết luận nhân quả) KHÔNG nằm trong enum này — agent không bao giờ\nđược phép tự kết luận quan hệ nhân quả.",
         "enum": [
@@ -675,6 +715,55 @@
         "title": "EvidenceReference",
         "type": "object"
       },
+      "FollowUpCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "assignee": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "kind": {
+            "enum": [
+              "request_information",
+              "recheck_source",
+              "monitor_case",
+              "handover",
+              "close"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "note"
+        ],
+        "title": "FollowUpCreate",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -967,6 +1056,60 @@
         "title": "InvestigationDetailResponse",
         "type": "object"
       },
+      "InvestigationLinkCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "investigation_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Investigation Id",
+            "type": "string"
+          },
+          "purpose": {
+            "default": "initial",
+            "enum": [
+              "initial",
+              "additional",
+              "recheck",
+              "reproduce"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          },
+          "run_summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Summary"
+          },
+          "state": {
+            "default": "queued",
+            "enum": [
+              "not_started",
+              "queued",
+              "running",
+              "waiting_for_review",
+              "completed",
+              "cancelled",
+              "interrupted",
+              "failed"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "investigation_id"
+        ],
+        "title": "InvestigationLinkCreate",
+        "type": "object"
+      },
       "InvestigationListResponse": {
         "additionalProperties": false,
         "description": "Danh sách có phân trang; ``scope`` nói rõ đang nhìn thấy ca của ai.",
@@ -1235,6 +1378,163 @@
         "title": "RagSearchRequest",
         "type": "object"
       },
+      "RequestContext": {
+        "additionalProperties": false,
+        "description": "Bối cảnh tiếp nhận. ``request_id`` và ``received_at`` do máy chủ sinh, không nhận từ người gọi.",
+        "properties": {
+          "attachments": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "channel": {
+            "default": "api",
+            "enum": [
+              "web",
+              "api",
+              "import",
+              "email"
+            ],
+            "title": "Channel",
+            "type": "string"
+          },
+          "language": {
+            "default": "vi",
+            "enum": [
+              "vi",
+              "en"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "raw_text": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Raw Text",
+            "type": "string"
+          },
+          "requester": {
+            "$ref": "#/components/schemas/Actor"
+          },
+          "source_system": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source System"
+          }
+        },
+        "required": [
+          "requester",
+          "raw_text"
+        ],
+        "title": "RequestContext",
+        "type": "object"
+      },
+      "ResponseCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_status": {
+            "enum": [
+              "supported_for_scope",
+              "contradicted_for_scope",
+              "insufficient_evidence",
+              "scope_mismatch",
+              "out_of_scope",
+              "requires_human_review"
+            ],
+            "title": "Assessment Status",
+            "type": "string"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage"
+          },
+          "drafted_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/ResponseSectionIn"
+            },
+            "minItems": 1,
+            "title": "Sections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sections",
+          "assessment_status"
+        ],
+        "title": "ResponseCreate",
+        "type": "object"
+      },
+      "ResponseSectionIn": {
+        "additionalProperties": false,
+        "properties": {
+          "citations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "key": {
+            "enum": [
+              "summary",
+              "evidence",
+              "limits",
+              "recommendation",
+              "follow_up"
+            ],
+            "title": "Key",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "text"
+        ],
+        "title": "ResponseSectionIn",
+        "type": "object"
+      },
       "ReviewAction": {
         "enum": [
           "approve",
@@ -1246,6 +1546,57 @@
         ],
         "title": "ReviewAction",
         "type": "string"
+      },
+      "ReviewCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "approve",
+              "reject",
+              "request_changes",
+              "edit_claim",
+              "edit_evidence",
+              "exclude_evidence",
+              "request_more"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "action",
+          "expected_version"
+        ],
+        "title": "ReviewCreate",
+        "type": "object"
       },
       "ReviewRequest": {
         "additionalProperties": false,
@@ -1490,6 +1841,34 @@
         "title": "TraceResponse",
         "type": "object"
       },
+      "UnknownField": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "needs_confirmation": {
+            "default": true,
+            "title": "Needs Confirmation",
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "reason"
+        ],
+        "title": "UnknownField",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -1557,6 +1936,231 @@
           "ok"
         ],
         "title": "ValidationReport",
+        "type": "object"
+      },
+      "WorkItemCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/RequestContext"
+          },
+          "labels": {
+            "additionalProperties": true,
+            "title": "Labels",
+            "type": "object"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "default": "routine",
+            "enum": [
+              "routine",
+              "urgent",
+              "stat"
+            ],
+            "title": "Priority",
+            "type": "string"
+          },
+          "question": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "revision_of": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision Of"
+          },
+          "revision_reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision Reason"
+          },
+          "scope": {
+            "additionalProperties": true,
+            "title": "Scope",
+            "type": "object"
+          },
+          "unknowns": {
+            "items": {
+              "$ref": "#/components/schemas/UnknownField"
+            },
+            "title": "Unknowns",
+            "type": "array"
+          },
+          "work_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "draft",
+                  "accepted",
+                  "in_progress",
+                  "awaiting_information",
+                  "awaiting_review",
+                  "completed",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Status"
+          }
+        },
+        "required": [
+          "question",
+          "context"
+        ],
+        "title": "WorkItemCreate",
+        "type": "object"
+      },
+      "WorkItemPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Labels"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "enum": [
+                  "routine",
+                  "urgent",
+                  "stat"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          },
+          "unknowns": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/UnknownField"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unknowns"
+          },
+          "work_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "draft",
+                  "accepted",
+                  "in_progress",
+                  "awaiting_information",
+                  "awaiting_review",
+                  "completed",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Status"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "WorkItemPatch",
         "type": "object"
       }
     },
@@ -4056,6 +4660,526 @@
         "tags": [
           "mvp",
           "warehouse"
+        ]
+      }
+    },
+    "/api/v2/responses/{response_id}/review": {
+      "post": {
+        "description": "Duyệt phiếu trả lời. Chỉ vai có ``review:decide`` gọi được.\n\nQuyết định lưu **trước**, trạng thái phiếu đổi **sau**, trong cùng giao dịch — nên không có cửa\nsổ nào để một phiếu vừa \"đã duyệt\" vừa không có vết quyết định.",
+        "operationId": "review_response_api_v2_responses__response_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "response_id",
+            "required": true,
+            "schema": {
+              "title": "Response Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Review Response Api V2 Responses  Response Id  Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Response",
+        "tags": [
+          "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items": {
+      "get": {
+        "description": "Hàng chờ yêu cầu, mới nhất trước.\n\nNgười chỉ có quyền đọc ca của mình **không** thấy ca người khác trong danh sách; lọc theo phạm vi\nnằm trong câu truy vấn chứ không cắt sau ``LIMIT``, nên số trang không bị hụt.",
+        "operationId": "list_work_items_api_v2_work_items_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "work_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "draft",
+                    "accepted",
+                    "in_progress",
+                    "awaiting_information",
+                    "awaiting_review",
+                    "completed",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Work Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "run_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "not_started",
+                    "queued",
+                    "running",
+                    "waiting_for_review",
+                    "completed",
+                    "cancelled",
+                    "interrupted",
+                    "failed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Work Items Api V2 Work Items Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Work Items",
+        "tags": [
+          "v2"
+        ]
+      },
+      "post": {
+        "description": "Tiếp nhận một yêu cầu mới.\n\n``work_status`` mặc định là ``draft``: tiếp nhận **không** đồng nghĩa với bắt đầu điều tra.\n``request_id`` và ``received_at`` do máy chủ sinh — người gọi không được tự đặt, vì nhật ký\ntruy vết dựa vào chúng.",
+        "operationId": "create_work_item_api_v2_work_items_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Work Item Api V2 Work Items Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Work Item",
+        "tags": [
+          "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}": {
+      "get": {
+        "description": "Đọc một yêu cầu kèm mọi thứ thuộc về nó, trong một phiên đọc.",
+        "operationId": "read_work_item_api_v2_work_items__work_item_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Work Item Api V2 Work Items  Work Item Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Work Item",
+        "tags": [
+          "v2"
+        ]
+      },
+      "patch": {
+        "description": "Sửa câu hỏi/phạm vi hoặc gán chủ sở hữu.\n\nGán chủ sở hữu là việc của hàng đợi, không phải của người điều tra: đổi ``owner`` đòi quyền\n``queue:assign``. Khoá lạc quan nằm ở ``expected_version``; thiếu thì nhận 422 chứ không được\nhiểu ngầm là \"ghi đè bản mới nhất\".",
+        "operationId": "update_work_item_api_v2_work_items__work_item_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkItemPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Work Item Api V2 Work Items  Work Item Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Work Item",
+        "tags": [
+          "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/evidence-bundle": {
+      "get": {
+        "description": "Gói bằng chứng của lần chạy gần nhất.\n\nChưa có gói nào trả **404** kèm lý do, không trả một gói rỗng — gói rỗng trông y hệt \"đã tìm mà\nkhông thấy gì\", và đó là hai chuyện khác nhau.",
+        "operationId": "read_evidence_bundle_api_v2_work_items__work_item_id__evidence_bundle_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Evidence Bundle Api V2 Work Items  Work Item Id  Evidence Bundle Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Evidence Bundle",
+        "tags": [
+          "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/follow-ups": {
+      "post": {
+        "description": "Tạo việc theo dõi/chuyển giao.\n\n``due_at`` chỉ được đặt khi người gọi nêu tường minh. Không suy ra hạn luật định từ loại việc:\nhệ thống không biết hạn nào áp dụng cho cơ sở nào.",
+        "operationId": "create_follow_up_api_v2_work_items__work_item_id__follow_ups_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowUpCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Follow Up Api V2 Work Items  Work Item Id  Follow Ups Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Follow Up",
+        "tags": [
+          "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/investigations": {
+      "post": {
+        "description": "Liên kết một lần chạy điều tra với yêu cầu.\n\nĐây là **liên kết**, không phải lệnh chạy: tệp này không khởi động agent. Nhờ vậy một yêu cầu có\nthể có nhiều lần chạy (``initial``/``additional``/``recheck``/``reproduce``) mà không lẫn chúng.",
+        "operationId": "link_investigation_api_v2_work_items__work_item_id__investigations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestigationLinkCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Link Investigation Api V2 Work Items  Work Item Id  Investigations Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Link Investigation",
+        "tags": [
+          "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/responses": {
+      "post": {
+        "description": "Tạo phiếu trả lời. Luôn là **bản nháp**.\n\nKhông có tham số nào để tạo bản đã duyệt. Bản nháp trước đó của cùng yêu cầu chuyển sang\n``superseded`` chứ không bị xoá, để còn đối chiếu được đã đổi cái gì.",
+        "operationId": "create_response_api_v2_work_items__work_item_id__responses_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Response Api V2 Work Items  Work Item Id  Responses Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Response",
+        "tags": [
+          "v2"
         ]
       }
     },

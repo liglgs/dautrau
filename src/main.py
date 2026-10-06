@@ -16,6 +16,7 @@ from src.api.mvp_runtime import configure_mvp, get_mvp_runner, get_mvp_store
 from src.api.research_routes import router as research_router
 from src.api.reviews import router as reviews_router
 from src.api.routes import router
+from src.api.v2_routes import router as v2_router
 from src.api.vmec_routes import router as vmec_router
 from src.api.warehouse_routes import router as warehouse_router
 from src.config import get_settings
@@ -74,6 +75,7 @@ app.include_router(router, prefix="/api/v1")
 app.include_router(vmec_router, prefix="/api/v1")
 app.include_router(warehouse_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
+app.include_router(v2_router, prefix="/api/v2")
 app.include_router(research_router)
 
 
