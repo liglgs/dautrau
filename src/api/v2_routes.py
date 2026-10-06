@@ -420,6 +420,27 @@ def _contract_violations(name: str, document: Any) -> list[str]:
     ]
 
 
+def _require_contract_shaped_bundles(work_item_id: str, bundles: list[dict[str, Any]]) -> None:
+    """Chặn không cho gói sai lược đồ ra khỏi hệ thống, dù đi qua đường nào.
+
+    Không chuẩn hoá: ``stance`` và ``retrieval`` mà kho không có thì không suy ra được, và bịa ra
+    đúng là loại dữ liệu giả mà hợp đồng này sinh ra để chặn.
+    """
+    for bundle in bundles:
+        violations = _contract_violations("EvidenceBundle", bundle)
+        if violations:
+            raise MvpError(
+                500,
+                ErrorCode.UNAVAILABLE,
+                "Gói bằng chứng trong kho không khớp hợp đồng nên không trả ra được.",
+                {
+                    "work_item_id": work_item_id,
+                    "bundle_id": bundle.get("bundle_id"),
+                    "violations": violations,
+                },
+            )
+
+
 def _etag_header(document: dict[str, Any]) -> str:
     """``ETag`` đúng cú pháp HTTP: giá trị phải nằm trong dấu ngoặc kép.
 
@@ -547,9 +568,15 @@ def read_work_item(
     store: StoreDep,
     principal: Annotated[Principal, Depends(require_permission(Permission.INVESTIGATION_READ_OWN))],
 ) -> dict[str, Any]:
-    """Đọc một yêu cầu kèm mọi thứ thuộc về nó, trong một phiên đọc."""
+    """Đọc một yêu cầu kèm mọi thứ thuộc về nó, trong một phiên đọc.
+
+    Gói bằng chứng trong lớp bọc cũng được đối chiếu ``schemas.json`` như ở đường đọc gói riêng:
+    cùng một tài liệu thì phải cùng một luật, nếu không thì chỗ dễ lách nhất lại là chỗ ít ai nhìn.
+    """
     document = _read_work_item(store, work_item_id, principal)
-    return store.work_item_bundle(document["work_item_id"])
+    bundle = store.work_item_bundle(document["work_item_id"])
+    _require_contract_shaped_bundles(document["work_item_id"], bundle.get("evidence_bundles") or [])
+    return bundle
 
 
 @router.patch("/work-items/{work_item_id}")
@@ -652,16 +679,8 @@ def read_evidence_bundle(
             "Yêu cầu chưa có gói bằng chứng nào.",
             {"work_item_id": work_item_id, "remedy": "Liên kết một lần chạy điều tra trước."},
         )
-    bundle = bundles[-1]
-    violations = _contract_violations("EvidenceBundle", bundle)
-    if violations:
-        raise MvpError(
-            500,
-            ErrorCode.UNAVAILABLE,
-            "Gói bằng chứng trong kho không khớp hợp đồng nên không trả ra được.",
-            {"work_item_id": work_item_id, "bundle_id": bundle.get("bundle_id"), "violations": violations},
-        )
-    return bundle
+    _require_contract_shaped_bundles(work_item_id, bundles)
+    return bundles[-1]
 
 
 @router.post("/work-items/{work_item_id}/responses", status_code=201)

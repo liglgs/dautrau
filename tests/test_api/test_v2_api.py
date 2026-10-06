@@ -1177,3 +1177,25 @@ async def test_claiming_your_own_case_needs_queue_assign_too(v2_client):
     )
     assert allowed.status_code == 200, allowed.text
     assert allowed.json()["owner"]["id"] == "usr_investigator"
+
+
+@pytest.mark.asyncio
+async def test_a_broken_bundle_is_not_served_through_the_work_item_either(v2_client_with_store):
+    """Cùng một tài liệu thì cùng một luật: lớp bọc của `GET /work-items/{id}` cũng bị soi.
+
+    Nếu chỉ soi ở đường đọc gói riêng thì chỗ dễ lách nhất lại là chỗ ít ai nhìn — giao diện đọc ca
+    theo lớp bọc, nên đó mới là đường gói bằng chứng thật sự đi ra.
+    """
+    client, store = v2_client_with_store
+    created = await _create(client)
+    store.add_evidence_bundle(
+        created["work_item_id"],
+        **_bundle(items=[{"evidence_id": "EVI-1", "quote": "Thiếu trường."}], gaps=[{"reason": "thiếu"}]),
+    )
+    response = await client.get(f"/api/v2/work-items/{created['work_item_id']}", headers=_headers("investigator"))
+    assert response.status_code == 500, response.text
+    assert response.json()["error"]["code"] == "unavailable"
+
+    # Đường liệt kê vẫn phải chạy: nó không trả nội dung gói, chỉ trả yêu cầu.
+    listed = await client.get("/api/v2/work-items", headers=_headers("investigator"))
+    assert listed.status_code == 200, listed.text
