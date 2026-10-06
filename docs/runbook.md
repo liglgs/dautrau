@@ -126,8 +126,10 @@ python -m scripts.elt.migrate_casework            # tạo bảng còn thiếu, i
 python -m scripts.elt.migrate_casework --rollback --yes   # bỏ bảy bảng DI (mất dữ liệu DI)
 ```
 
-Script đếm số dòng của 14 bảng kho trước và sau khi chạy; lệch thì trả mã thoát 1.
-Kiểm thử ngoại tuyến cho lưu trữ và bước nâng cấp: `python -m pytest tests/test_services/test_casework_store.py -q`.
+`--check` đối chiếu bảng, cột và chỉ mục duy nhất còn thiếu (mã thoát 1 khi còn thiếu). Script đếm
+số dòng của 14 bảng kho trước và sau khi chạy; lệch thì trả mã thoát 1.
+Kiểm thử ngoại tuyến cho lưu trữ và bước nâng cấp: `python -m pytest tests/test_services/test_casework_store.py -q`
+(bao gồm bài đua hai luồng ghi song song và bài đối chiếu bản chiếu với `docs/spec/hospital-v2/schemas.json`).
 
 Sao lưu/phục hồi: bảy bảng này nằm trong cùng volume PostgreSQL `elt_postgres_data`, nên quy trình
 `pg_dump`/`pg_restore` của kho áp dụng nguyên vẹn; `--rollback` chỉ dùng khi muốn bỏ hẳn dữ liệu DI.

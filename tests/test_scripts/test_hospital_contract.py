@@ -13,6 +13,7 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from src.models import schemas as mvp
+from src.services.casework import store as casework_store
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC_DIR = ROOT / "docs" / "spec" / "hospital-v2"
@@ -136,6 +137,47 @@ def test_shared_enums_match_the_mvp_schemas(schemas: dict) -> None:
     assert "not_started" in run_values
     gap_values = set(defs["Gap"]["properties"]["kind"]["enum"])
     assert {s.value for s in mvp.GapKind} <= gap_values, "Gap.kind chỉ được thêm giá trị, không bỏ giá trị MVP"
+
+
+def test_schemas_internal_refs_resolve(schemas: dict) -> None:
+    """Mọi ``$ref`` nội bộ trong ``schemas.json`` phải trỏ tới một định nghĩa có thật.
+
+    Trước đây chỉ ``$ref`` của OpenAPI được kiểm, nên một định nghĩa bị đổi tên trong
+    ``schemas.json`` vẫn qua được bộ kiểm thử.
+    """
+    refs: list[str] = []
+    _walk_refs(schemas, refs)
+    assert refs
+    for ref in refs:
+        assert ref.startswith("#/$defs/"), ref
+        target = schemas
+        for token in ref.strip("#/").split("/"):
+            assert token in target, f"{ref} không tồn tại trong schemas.json"
+            target = target[token]
+
+
+def test_store_enums_stay_inside_the_contract(schemas: dict) -> None:
+    """Hằng số của kho phải nằm trong enum của hợp đồng, nếu không là hợp đồng đã lệch."""
+    defs = schemas["$defs"]
+    assert set(casework_store.WORK_STATUSES) <= set(defs["WorkStatus"]["enum"])
+    assert set(casework_store.RUN_STATUSES) <= set(defs["RunStatusRef"]["enum"])
+    assert set(casework_store.REVIEW_STATUSES) <= set(defs["ReviewStatusRef"]["enum"])
+    assert set(casework_store.ACTOR_ROLES) <= set(defs["Actor"]["properties"]["role"]["enum"])
+    assert set(casework_store.ASSESSMENT_STATUSES) <= set(
+        defs["EvidenceBundle"]["properties"]["assessment_status"]["enum"]
+    )
+    assert set(casework_store.REVIEW_ACTIONS) <= set(defs["ReviewRef"]["properties"]["action"]["enum"])
+    assert set(casework_store.REVIEW_ENTITIES) <= set(defs["ReviewRef"]["properties"]["entity"]["enum"])
+    # InvestigationLink.state trỏ tới RunStatusRef, không phải enum tại chỗ.
+    assert defs["InvestigationLink"]["properties"]["state"] == {"$ref": "#/$defs/RunStatusRef"}
+    assert set(casework_store.LINK_STATES) <= set(defs["RunStatusRef"]["enum"])
+    assert set(casework_store.FOLLOW_UP_KINDS) <= set(defs["FollowUp"]["properties"]["kind"]["enum"])
+    assert set(casework_store.FOLLOW_UP_STATUSES) <= set(defs["FollowUp"]["properties"]["status"]["enum"])
+    assert casework_store.ALLOWED_WORK_ITEM_PATCH_FIELDS <= set(defs["WorkItem"]["properties"])
+    # Nhật ký phiên bản phủ cả liên kết điều tra và việc theo dõi.
+    assert {"work_item", "response", "evidence_bundle", "investigation_link", "follow_up"} <= set(
+        defs["VersionRef"]["properties"]["entity"]["enum"]
+    )
 
 
 # ------------------------------------------------------------------ OpenAPI

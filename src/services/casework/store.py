@@ -2,14 +2,17 @@
 
 Quy ước chống mất dữ liệu:
 
-* Mọi lần sửa ``work_items`` phải kèm ``expected_version`` (khoá lạc quan). Sai phiên
-  bản thì trả ``VERSION_CONFLICT`` và **không** ghi gì.
-* Mọi lần tạo/sửa đều ghi thêm một dòng ``version_refs`` giữ ảnh chụp của thực thể
-  sau khi ghi, nên lịch sử luôn đọc lại được.
+* Mọi lần sửa ``work_items`` phải kèm ``expected_version`` (khoá lạc quan) và được ghi
+  bằng một câu ``UPDATE ... WHERE version = :expected`` có kiểm ``rowcount`` — hai
+  người cùng sửa một phiên bản thì đúng một người thắng, người kia nhận
+  ``VERSION_CONFLICT`` và không ghi gì.
+* Mọi lần tạo/sửa đều ghi thêm một dòng ``version_refs`` giữ ảnh chụp của thực thể,
+  nên lịch sử luôn đọc lại được.
 * Chỉ nhận các trường trong danh sách trắng; khoá lạ thì báo ``INVALID_REQUEST``
   thay vì bỏ qua im lặng.
 * ``professional_responses`` là append-only theo phiên bản: bản cũ chuyển sang
-  ``superseded`` nhưng vẫn nằm trong bảng.
+  ``superseded`` nhưng vẫn nằm trong bảng, và ràng buộc duy nhất
+  ``(work_item_id, version)`` chặn hai bản "hiện hành" cùng lúc.
 
 Mã lỗi dùng envelope chung của MVP (``src/services/errors.py``).
 """
@@ -22,8 +25,9 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import func, inspect, select, update
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 
 from src.services.casework.models import (
     EvidenceBundle,
@@ -34,26 +38,33 @@ from src.services.casework.models import (
     VersionRef,
     WorkItem,
 )
-from src.services.errors import invalid_request, not_found, version_conflict
-from src.services.warehouse.db import session_scope
-from src.services.warehouse.models import WarehouseBase
-
-ALLOWED_WORK_ITEM_PATCH_FIELDS = frozenset(
-    {
-        "context",
-        "question",
-        "scope",
-        "unknowns",
-        "priority",
-        "owner",
-        "work_status",
-        "run_status",
-        "review_status",
-        "labels",
-        "revision_of",
-        "revision_reason",
-    }
+from src.services.errors import (
+    MvpError,
+    idempotency_conflict,
+    invalid_request,
+    invalid_state,
+    not_found,
+    version_conflict,
 )
+from src.services.warehouse.db import session_scope
+from src.services.warehouse.models import WarehouseBase, now
+
+# Bản đồ trường nghiệp vụ -> cột, dùng chung cho danh sách trắng và vòng lặp gán giá trị.
+WORK_ITEM_COLUMNS = {
+    "context": "context_json",
+    "question": "question",
+    "scope": "scope_json",
+    "unknowns": "unknowns_json",
+    "priority": "priority",
+    "owner": "owner_json",
+    "work_status": "work_status",
+    "run_status": "run_status",
+    "review_status": "review_status",
+    "labels": "labels_json",
+    "revision_of": "revision_of",
+    "revision_reason": "revision_reason",
+}
+ALLOWED_WORK_ITEM_PATCH_FIELDS = frozenset(WORK_ITEM_COLUMNS)
 
 CASEWORK_TABLES = (
     "work_items",
@@ -72,7 +83,6 @@ RUN_STATUSES = frozenset(
     {"not_started", "queued", "running", "waiting_for_review", "completed", "cancelled", "interrupted", "failed"}
 )
 REVIEW_STATUSES = frozenset({"not_required", "pending", "approved", "rejected", "changes_requested"})
-RESPONSE_STATUSES = frozenset({"draft", "in_review", "approved", "rejected", "superseded"})
 RESPONSE_CREATE_STATUSES = frozenset({"draft", "in_review"})
 ASSESSMENT_STATUSES = frozenset(
     {
@@ -86,13 +96,15 @@ ASSESSMENT_STATUSES = frozenset(
 )
 PRIORITIES = frozenset({"routine", "urgent", "stat"})
 LINK_PURPOSES = frozenset({"initial", "additional", "recheck", "reproduce"})
-LINK_STATES = frozenset({"queued", "running", "completed", "failed", "cancelled"})
+# Trạng thái liên kết điều tra dùng đúng tập của ``RunStatusRef`` trong hợp đồng.
+LINK_STATES = RUN_STATUSES
 REVIEW_ENTITIES = frozenset({"work_item", "response", "evidence_bundle"})
 REVIEW_ACTIONS = frozenset(
     {"approve", "reject", "request_changes", "edit_claim", "edit_evidence", "exclude_evidence", "request_more"}
 )
 FOLLOW_UP_KINDS = frozenset({"request_information", "recheck_source", "monitor_case", "handover", "close"})
 FOLLOW_UP_STATUSES = frozenset({"open", "in_progress", "done", "cancelled"})
+ACTOR_ROLES = frozenset({"doctor", "pharmacist", "nurse", "reviewer", "admin", "service"})
 
 WORK_ITEM_REVIEW_TARGET = {
     "approve": "approved",
@@ -122,38 +134,125 @@ def etag_for(entity: str, entity_id: str, version: int) -> str:
     return hashlib.sha256(f"{entity}:{entity_id}:{version}".encode()).hexdigest()[:32]
 
 
-def utcnow() -> datetime:
-    return datetime.now(UTC)
-
-
 def _iso(value: datetime | None) -> str | None:
-    return value.isoformat() if value is not None else None
+    """RFC 3339 kèm múi giờ; SQLite trả về thời gian không múi giờ nên gắn UTC."""
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return value.isoformat()
 
 
-def _require(value: Any, allowed: Iterable[str], field: str) -> str:
+def _as_int(value: Any, field: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, str)):
+        raise invalid_request(f"{field} phải là số nguyên.")
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise invalid_request(f"{field} phải là số nguyên.") from exc
+
+
+def _text(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise invalid_request(f"{field} không được để trống.")
+    return value.strip()
+
+
+def _json_object(value: Any, field: str) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise invalid_request(f"{field} phải là đối tượng.")
+    return value
+
+
+def _json_list(value: Any, field: str) -> list[Any]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise invalid_request(f"{field} phải là danh sách.")
+    return value
+
+
+def _optional_object(value: Any, field: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise invalid_request(f"{field} phải là đối tượng hoặc null.")
+    return value
+
+
+def _actor(value: Any, field: str = "actor") -> dict[str, Any] | None:
+    """Chuẩn hoá người dùng về dạng ``Actor`` của hợp đồng: ``{id, role?, unit?}``."""
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise invalid_request(f"{field} phải là đối tượng.")
+    raw_id = value.get("id", value.get("actor_id"))
+    actor: dict[str, Any] = {"id": _text(raw_id, f"{field}.id")}
+    role = value.get("role")
+    if role is not None:
+        if role not in ACTOR_ROLES:
+            raise invalid_request(f"Vai trò không hợp lệ trong {field}.role: {role!r}.", {"allowed": sorted(ACTOR_ROLES)})
+        actor["role"] = role
+    unit = value.get("unit")
+    if unit is not None:
+        if not isinstance(unit, str):
+            raise invalid_request(f"{field}.unit phải là chuỗi.")
+        actor["unit"] = unit
+    return actor
+
+
+def _require(value: Any, allowed: Iterable[str], field: str) -> None:
     if value is None:
         raise invalid_request(f"Thiếu trường bắt buộc: {field}.")
-    if value not in allowed:
+    if not isinstance(value, str) or value not in allowed:
         raise invalid_request(f"Giá trị không hợp lệ cho {field}: {value!r}.", {"allowed": sorted(allowed)})
-    return str(value)
 
 
 def ensure_casework_schema(engine: Engine) -> list[str]:
     """Tạo các bảng còn thiếu của lát cắt DI (chỉ thêm, không sửa bảng cũ)."""
-    tables = [WarehouseBase.metadata.tables[name] for name in CASEWORK_TABLES]
-    before = set(_table_names(engine))
-    WarehouseBase.metadata.create_all(engine, tables=tables)
-    return sorted(set(_table_names(engine)) - before)
+    existing = set(inspect(engine).get_table_names())
+    missing = [name for name in CASEWORK_TABLES if name not in existing]
+    WarehouseBase.metadata.create_all(
+        engine, tables=[WarehouseBase.metadata.tables[name] for name in missing]
+    )
+    return sorted(missing)
 
 
-def _table_names(engine: Engine) -> list[str]:
-    from sqlalchemy import inspect
+def _ensure_work_item(session, work_item_id: str) -> WorkItem:
+    row = session.get(WorkItem, work_item_id)
+    if row is None:
+        raise not_found("yêu cầu", work_item_id)
+    return row
 
-    return list(inspect(engine).get_table_names())
+
+def _related_ids(session, work_item_id: str) -> dict[str, list[str]]:
+    return {
+        "investigation_ids": [
+            value
+            for value in session.execute(
+                select(InvestigationLink.link_id).where(InvestigationLink.work_item_id == work_item_id)
+            ).scalars()
+        ],
+        "response_ids": [
+            value
+            for value in session.execute(
+                select(ProfessionalResponse.response_id).where(ProfessionalResponse.work_item_id == work_item_id)
+            ).scalars()
+        ],
+        "follow_up_ids": [
+            value
+            for value in session.execute(
+                select(FollowUp.follow_up_id).where(FollowUp.work_item_id == work_item_id)
+            ).scalars()
+        ],
+    }
 
 
-def work_item_document(row: WorkItem) -> dict[str, Any]:
+def work_item_document(row: WorkItem, related: dict[str, list[str]] | None = None) -> dict[str, Any]:
     """Chuyển bản ghi ORM sang hình dạng ``WorkItem`` của hợp đồng hospital-v2."""
+    ids = related or {"investigation_ids": [], "response_ids": [], "follow_up_ids": []}
     return {
         "work_item_id": row.work_item_id,
         "version": row.version,
@@ -167,10 +266,12 @@ def work_item_document(row: WorkItem) -> dict[str, Any]:
         "work_status": row.work_status,
         "run_status": row.run_status,
         "review_status": row.review_status,
+        "investigation_ids": list(ids["investigation_ids"]),
+        "response_ids": list(ids["response_ids"]),
+        "follow_up_ids": list(ids["follow_up_ids"]),
         "labels": row.labels_json or {},
         "revision_of": row.revision_of,
         "revision_reason": row.revision_reason,
-        "created_by": row.created_by_json,
         "created_at": _iso(row.created_at),
         "updated_at": _iso(row.updated_at),
     }
@@ -256,28 +357,35 @@ def _review_document(row: ReviewRef) -> dict[str, Any]:
     }
 
 
-def _version_document(row: VersionRef) -> dict[str, Any]:
+def version_ref_document(row: VersionRef) -> dict[str, Any]:
+    """Hình dạng ``VersionRef`` của hợp đồng (bản chiếu của một dòng ``version_refs``)."""
     return {
         "entity": row.entity,
-        "entity_id": row.entity_id,
-        "revision": row.revision,
-        "entity_version": row.entity_version,
+        "id": row.entity_id,
+        "version": row.entity_version,
         "etag": row.etag,
+        "updated_at": _iso(row.updated_at),
+        "updated_by": row.updated_by_json,
+    }
+
+
+def _version_document(row: VersionRef) -> dict[str, Any]:
+    """Bản đầy đủ trong kho: gồm cả hình dạng hợp đồng lẫn phần thêm của nhật ký."""
+    return {
+        **version_ref_document(row),
+        "revision": row.revision,
         "change_kind": row.change_kind,
         "changed_fields": row.changed_fields_json or [],
         "snapshot": row.snapshot_json or {},
-        "updated_by": row.updated_by_json,
-        "updated_at": _iso(row.updated_at),
     }
 
 
 class CaseWorkStore:
     """Đọc/ghi yêu cầu, liên kết điều tra, gói bằng chứng, phiếu trả lời và theo dõi."""
 
-    def __init__(self, engine: Engine, *, ensure_schema: bool = True):
+    def __init__(self, engine: Engine):
         self.engine = engine
-        if ensure_schema:
-            ensure_casework_schema(engine)
+        ensure_casework_schema(engine)
 
     # ------------------------------------------------------------------ tiện ích
 
@@ -310,9 +418,63 @@ class CaseWorkStore:
                 changed_fields_json=changed_fields,
                 snapshot_json=snapshot,
                 updated_by_json=actor,
-                updated_at=utcnow(),
+                updated_at=now(),
             )
         )
+
+    def _insert(self, session, row, *, key: str, conflict: MvpError | None = None) -> None:
+        """Chèn bản ghi mới; vi phạm ràng buộc trả 409 thay vì lỗi hệ thống.
+
+        ``conflict`` dùng cho ràng buộc duy nhất không phải khoá chính (ví dụ số phiên
+        bản phiếu trả lời) để thông báo đúng nguyên nhân.
+        """
+        session.add(row)
+        try:
+            session.flush()
+        except IntegrityError as exc:
+            raise (conflict or idempotency_conflict(key)) from exc
+
+    def _apply_work_item_change(
+        self,
+        session,
+        work_item_id: str,
+        *,
+        expected: int,
+        changes: dict[str, Any],
+        actor: dict[str, Any] | None,
+        change_kind: str = "updated",
+        changed_fields: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Cập nhật có khoá lạc quan: chỉ một người thắng mỗi phiên bản."""
+        values = {WORK_ITEM_COLUMNS[field]: changes[field] for field in changes}
+        values.update(
+            version=expected + 1,
+            etag=etag_for("work_item", work_item_id, expected + 1),
+            updated_at=now(),
+        )
+        result = session.execute(
+            update(WorkItem)
+            .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected)
+            .values(**values)
+        )
+        if result.rowcount != 1:
+            session.expire_all()
+            current = session.get(WorkItem, work_item_id)
+            raise version_conflict(expected, current.version if current is not None else expected)
+        session.expire_all()
+        row = _ensure_work_item(session, work_item_id)
+        document = work_item_document(row, _related_ids(session, work_item_id))
+        self._record_version(
+            session,
+            entity="work_item",
+            entity_id=work_item_id,
+            version=row.version,
+            change_kind=change_kind,
+            changed_fields=sorted(changed_fields if changed_fields is not None else changes),
+            snapshot=document,
+            actor=actor,
+        )
+        return document
 
     # ------------------------------------------------------------- work items
 
@@ -331,24 +493,27 @@ class CaseWorkStore:
         revision_of: str | None = None,
         revision_reason: str | None = None,
     ) -> dict[str, Any]:
-        if not (question or "").strip():
-            raise invalid_request("Câu hỏi không được để trống.")
+        question = _text(question, "question")
         _require(priority, PRIORITIES, "priority")
-        if scope is not None and not isinstance(scope, dict):
-            raise invalid_request("scope phải là đối tượng.")
-        if unknowns is not None and not isinstance(unknowns, list):
-            raise invalid_request("unknowns phải là danh sách.")
+        context = _json_object(context, "context")
+        scope = _json_object(scope, "scope")
+        unknowns = _json_list(unknowns, "unknowns")
+        labels = _json_object(labels, "labels")
+        owner = _actor(owner, "owner")
+        actor = _actor(actor)
+        if work_item_id is not None:
+            work_item_id = _text(work_item_id, "work_item_id")
 
         work_item_id = work_item_id or new_id("wi")
-        stamp = utcnow()
+        stamp = now()
         row = WorkItem(
             work_item_id=work_item_id,
             version=1,
             etag=etag_for("work_item", work_item_id, 1),
-            context_json=context or {},
+            context_json=context,
             question=question,
-            scope_json=scope or {},
-            unknowns_json=unknowns or [],
+            scope_json=scope,
+            unknowns_json=unknowns,
             priority=priority,
             owner_json=owner,
             work_status="draft",
@@ -356,14 +521,14 @@ class CaseWorkStore:
             review_status="not_required",
             revision_of=revision_of,
             revision_reason=revision_reason,
-            labels_json=labels or {},
+            labels_json=labels,
             created_at=stamp,
             updated_at=stamp,
             created_by_json=actor,
         )
-        document = work_item_document(row)
         with session_scope(self.engine) as session:
-            session.add(row)
+            self._insert(session, row, key=work_item_id)
+            document = work_item_document(row, _related_ids(session, work_item_id))
             self._record_version(
                 session,
                 entity="work_item",
@@ -378,10 +543,8 @@ class CaseWorkStore:
 
     def get_work_item(self, work_item_id: str) -> dict[str, Any]:
         with session_scope(self.engine) as session:
-            row = session.get(WorkItem, work_item_id)
-            if row is None:
-                raise not_found("yêu cầu", work_item_id)
-            return work_item_document(row)
+            row = _ensure_work_item(session, work_item_id)
+            return work_item_document(row, _related_ids(session, work_item_id))
 
     def list_work_items(
         self,
@@ -391,8 +554,12 @@ class CaseWorkStore:
         limit: int = 50,
         offset: int = 0,
     ) -> list[dict[str, Any]]:
-        limit = max(1, min(int(limit), 200))
-        offset = max(0, int(offset))
+        limit = max(1, min(_as_int(limit, "limit"), 200))
+        offset = max(0, _as_int(offset, "offset"))
+        if work_status is not None:
+            _require(work_status, WORK_STATUSES, "work_status")
+        if run_status is not None:
+            _require(run_status, RUN_STATUSES, "run_status")
         with session_scope(self.engine) as session:
             query = select(WorkItem).order_by(WorkItem.created_at.desc(), WorkItem.work_item_id)
             if work_status:
@@ -410,7 +577,6 @@ class CaseWorkStore:
         expected_version: int | None,
         actor: dict[str, Any] | None = None,
         reason: str | None = None,
-        force: bool = False,
     ) -> dict[str, Any]:
         """Sửa yêu cầu với khoá lạc quan; trả bản ghi mới kèm ``version`` tăng một."""
         if not isinstance(changes, dict) or not changes:
@@ -421,61 +587,41 @@ class CaseWorkStore:
                 "Trường không được phép cập nhật: " + ", ".join(unknown),
                 {"allowed": sorted(ALLOWED_WORK_ITEM_PATCH_FIELDS)},
             )
-        if not force and expected_version is None:
+        if expected_version is None:
             raise invalid_request("Thiếu expected_version; đọc lại yêu cầu rồi gửi kèm phiên bản.")
+        expected = _as_int(expected_version, "expected_version")
+        actor = _actor(actor)
 
-        if "work_status" in changes:
-            _require(changes["work_status"], WORK_STATUSES, "work_status")
-        if "run_status" in changes:
-            _require(changes["run_status"], RUN_STATUSES, "run_status")
-        if "review_status" in changes:
-            _require(changes["review_status"], REVIEW_STATUSES, "review_status")
-        if "priority" in changes:
-            _require(changes["priority"], PRIORITIES, "priority")
-        if "question" in changes and not str(changes["question"] or "").strip():
-            raise invalid_request("Câu hỏi không được để trống.")
-
-        columns = {
-            "context": "context_json",
-            "question": "question",
-            "scope": "scope_json",
-            "unknowns": "unknowns_json",
-            "priority": "priority",
-            "owner": "owner_json",
-            "work_status": "work_status",
-            "run_status": "run_status",
-            "review_status": "review_status",
-            "labels": "labels_json",
-            "revision_of": "revision_of",
-            "revision_reason": "revision_reason",
-        }
+        checks: tuple[tuple[str, Iterable[str]], ...] = (
+            ("work_status", WORK_STATUSES),
+            ("run_status", RUN_STATUSES),
+            ("review_status", REVIEW_STATUSES),
+            ("priority", PRIORITIES),
+        )
+        for field, allowed in checks:
+            if field in changes:
+                _require(changes[field], allowed, field)
+        if "question" in changes:
+            changes = {**changes, "question": _text(changes["question"], "question")}
+        for field in ("context", "scope", "labels"):
+            if field in changes:
+                changes = {**changes, field: _json_object(changes[field], field)}
+        if "unknowns" in changes:
+            changes = {**changes, "unknowns": _json_list(changes["unknowns"], "unknowns")}
+        if "owner" in changes:
+            changes = {**changes, "owner": _actor(changes["owner"], "owner")}
+        if reason is not None:
+            changes = {**changes, "revision_reason": reason}
 
         with session_scope(self.engine) as session:
-            row = session.get(WorkItem, work_item_id)
-            if row is None:
-                raise not_found("yêu cầu", work_item_id)
-            if not force and int(expected_version) != row.version:
-                raise version_conflict(int(expected_version), row.version)
-            if reason is not None:
-                changes = {**changes, "revision_reason": reason}
-            for field, column in columns.items():
-                if field in changes:
-                    setattr(row, column, changes[field])
-            row.version = row.version + 1
-            row.etag = etag_for("work_item", work_item_id, row.version)
-            row.updated_at = utcnow()
-            document = work_item_document(row)
-            self._record_version(
+            _ensure_work_item(session, work_item_id)
+            return self._apply_work_item_change(
                 session,
-                entity="work_item",
-                entity_id=work_item_id,
-                version=row.version,
-                change_kind="updated",
-                changed_fields=sorted(changes),
-                snapshot=document,
+                work_item_id,
+                expected=expected,
+                changes=changes,
                 actor=actor,
             )
-            return document
 
     # ------------------------------------------------------- liên kết điều tra
 
@@ -493,9 +639,11 @@ class CaseWorkStore:
     ) -> dict[str, Any]:
         _require(purpose, LINK_PURPOSES, "purpose")
         _require(state, LINK_STATES, "state")
-        if not investigation_id:
-            raise invalid_request("Thiếu investigation_id.")
-        link_id = link_id or new_id("il")
+        investigation_id = _text(investigation_id, "investigation_id")
+        run_summary = _optional_object(run_summary, "run_summary")
+        error = _optional_object(error, "error")
+        actor = _actor(actor)
+        link_id = _text(link_id, "link_id") if link_id else new_id("il")
         row = InvestigationLink(
             link_id=link_id,
             work_item_id=work_item_id,
@@ -504,13 +652,12 @@ class CaseWorkStore:
             state=state,
             run_summary_json=run_summary,
             error_json=error,
-            created_at=utcnow(),
+            created_at=now(),
             created_by_json=actor,
         )
         with session_scope(self.engine) as session:
-            if session.get(WorkItem, work_item_id) is None:
-                raise not_found("yêu cầu", work_item_id)
-            session.add(row)
+            _ensure_work_item(session, work_item_id)
+            self._insert(session, row, key=link_id)
             document = _link_document(row)
             self._record_version(
                 session,
@@ -535,6 +682,9 @@ class CaseWorkStore:
     ) -> dict[str, Any]:
         if state is not None:
             _require(state, LINK_STATES, "state")
+        run_summary = _optional_object(run_summary, "run_summary")
+        error = _optional_object(error, "error")
+        actor = _actor(actor)
         with session_scope(self.engine) as session:
             row = session.get(InvestigationLink, link_id)
             if row is None:
@@ -593,29 +743,31 @@ class CaseWorkStore:
         bundle_id: str | None = None,
     ) -> dict[str, Any]:
         _require(assessment_status, ASSESSMENT_STATUSES, "assessment_status")
-        if not investigation_id:
-            raise invalid_request("Thiếu investigation_id.")
-        for name, value in (("items", items), ("gaps", gaps), ("coverage", coverage)):
-            if not isinstance(value, (list if name != "coverage" else dict)):
-                raise invalid_request(f"{name} sai kiểu dữ liệu.")
-        bundle_id = bundle_id or new_id("eb")
+        investigation_id = _text(investigation_id, "investigation_id")
+        items = _json_list(items, "items")
+        gaps = _json_list(gaps, "gaps")
+        source_errors = _json_list(source_errors, "source_errors")
+        limitations = _json_list(limitations, "limitations")
+        if not isinstance(coverage, dict):
+            raise invalid_request("coverage phải là đối tượng.")
+        claim = _optional_object(claim, "claim")
+        bundle_id = _text(bundle_id, "bundle_id") if bundle_id else new_id("eb")
         row = EvidenceBundle(
             bundle_id=bundle_id,
             work_item_id=work_item_id,
             investigation_id=investigation_id,
-            created_at=utcnow(),
+            created_at=now(),
             claim_json=claim,
             items_json=items,
             gaps_json=gaps,
             coverage_json=coverage,
             assessment_status=assessment_status,
-            source_errors_json=source_errors or [],
-            limitations_json=limitations or [],
+            source_errors_json=source_errors,
+            limitations_json=limitations,
         )
         with session_scope(self.engine) as session:
-            if session.get(WorkItem, work_item_id) is None:
-                raise not_found("yêu cầu", work_item_id)
-            session.add(row)
+            _ensure_work_item(session, work_item_id)
+            self._insert(session, row, key=bundle_id)
             document = _bundle_document(row)
             self._record_version(
                 session,
@@ -666,12 +818,20 @@ class CaseWorkStore:
         """Ghi một phiên bản phiếu trả lời mới; bản trước đó chuyển sang ``superseded``."""
         _require(status, RESPONSE_CREATE_STATUSES, "status")
         _require(assessment_status, ASSESSMENT_STATUSES, "assessment_status")
-        if not isinstance(sections, list):
-            raise invalid_request("sections phải là danh sách.")
+        sections = _json_list(sections, "sections")
+        if not sections:
+            raise invalid_request("Phiếu trả lời phải có ít nhất một mục.")
+        coverage = _json_object(coverage, "coverage")
+        drafted_by = _actor(drafted_by, "drafted_by")
+        actor = _actor(actor)
+        response_id = _text(response_id, "response_id") if response_id else new_id("resp")
 
         with session_scope(self.engine) as session:
-            if session.get(WorkItem, work_item_id) is None:
-                raise not_found("yêu cầu", work_item_id)
+            # Khoá dòng yêu cầu để hai lần lưu song song không tạo hai bản "hiện hành".
+            _ensure_work_item(session, work_item_id)
+            session.execute(
+                select(WorkItem.work_item_id).where(WorkItem.work_item_id == work_item_id).with_for_update()
+            ).scalar_one()
             previous = (
                 session.execute(
                     select(ProfessionalResponse)
@@ -690,7 +850,7 @@ class CaseWorkStore:
                 version = previous.version + 1
                 supersedes = previous.response_id
                 previous.status = "superseded"
-                previous.updated_at = utcnow()
+                previous.updated_at = now()
                 self._record_version(
                     session,
                     entity="response",
@@ -701,8 +861,7 @@ class CaseWorkStore:
                     snapshot=_response_document(previous),
                     actor=actor,
                 )
-            response_id = response_id or new_id("resp")
-            stamp = utcnow()
+            stamp = now()
             row = ProfessionalResponse(
                 response_id=response_id,
                 work_item_id=work_item_id,
@@ -711,7 +870,7 @@ class CaseWorkStore:
                 status=status,
                 sections_json=sections,
                 assessment_status=assessment_status,
-                coverage_json=coverage or {},
+                coverage_json=coverage,
                 drafted_by_json=drafted_by,
                 review_json=None,
                 approval_json=None,
@@ -719,7 +878,17 @@ class CaseWorkStore:
                 created_at=stamp,
                 updated_at=stamp,
             )
-            session.add(row)
+            self._insert(
+                session,
+                row,
+                key=response_id,
+                # Lưới an toàn: nếu vì lý do nào đó hai bản cùng số phiên bản lọt qua
+                # khoá dòng, ràng buộc duy nhất chặn lại và báo đúng là xung đột phiên bản.
+                conflict=invalid_state(
+                    "Có phiếu trả lời khác vừa được lưu; đọc lại yêu cầu rồi gửi lại.",
+                    {"work_item_id": work_item_id, "attempted_version": version},
+                ),
+            )
             document = _response_document(row)
             self._record_version(
                 session,
@@ -759,45 +928,71 @@ class CaseWorkStore:
         reviewer: dict[str, Any],
         reason: str | None = None,
         review_id: str | None = None,
+        expected_version: int | None = None,
     ) -> dict[str, Any]:
         _require(entity, REVIEW_ENTITIES, "entity")
         _require(action, REVIEW_ACTIONS, "action")
-        if not isinstance(reviewer, dict) or not reviewer.get("actor_id"):
-            raise invalid_request("reviewer cần có actor_id.")
+        entity_id = _text(entity_id, "entity_id")
+        reviewer = _actor(reviewer, "reviewer")
+        if reviewer is None:
+            raise invalid_request("reviewer không được để trống.")
+        if reason is not None and len(reason) > 1000:
+            raise invalid_request("reason tối đa 1000 ký tự.")
+        review_id = _text(review_id, "review_id") if review_id else new_id("rev")
+        expected = _as_int(expected_version, "expected_version") if expected_version is not None else None
 
         with session_scope(self.engine) as session:
             previous_status = ""
             new_status = ""
             entity_version = 0
+            snapshot: dict[str, Any]
+            snapshot_version: int
             if entity == "work_item":
-                row = session.get(WorkItem, entity_id)
-                if row is None:
-                    raise not_found("yêu cầu", entity_id)
-                previous_status, entity_version = row.review_status, row.version
+                row = _ensure_work_item(session, entity_id)
+                entity_version = row.version
+                previous_status = row.review_status
                 new_status = WORK_ITEM_REVIEW_TARGET[action]
-                row.review_status = new_status
-                row.updated_at = utcnow()
-                row.version += 1
-                row.etag = etag_for("work_item", entity_id, row.version)
-                snapshot, snapshot_version = work_item_document(row), row.version
+                if expected is not None and expected != row.version:
+                    raise version_conflict(expected, row.version)
+                snapshot = self._apply_work_item_change(
+                    session,
+                    entity_id,
+                    expected=entity_version,
+                    changes={"review_status": new_status},
+                    actor=reviewer,
+                    change_kind="reviewed",
+                    changed_fields=["review_status"],
+                )
+                snapshot_version = snapshot["version"]
             elif entity == "response":
                 response = session.get(ProfessionalResponse, entity_id)
                 if response is None:
                     raise not_found("phiếu trả lời", entity_id)
-                previous_status, entity_version = response.status, response.version
+                if response.status == "superseded":
+                    raise invalid_state(
+                        "Không duyệt được phiếu trả lời đã bị thay thế.",
+                        {"response_id": entity_id, "status": response.status},
+                    )
+                if expected is not None and expected != response.version:
+                    raise version_conflict(expected, response.version)
+                entity_version = response.version
+                previous_status = response.status
                 new_status = RESPONSE_REVIEW_TARGET[action]
                 response.status = new_status
-                response.updated_at = utcnow()
-                snapshot, snapshot_version = _response_document(response), response.version
+                response.updated_at = now()
+                response.version = entity_version + 1
+                response.etag = etag_for("response", entity_id, response.version)
+                snapshot = _response_document(response)
+                snapshot_version = response.version
             else:
                 bundle = session.get(EvidenceBundle, entity_id)
                 if bundle is None:
                     raise not_found("gói bằng chứng", entity_id)
                 previous_status, entity_version = "created", 1
                 new_status = "reviewed"
-                snapshot, snapshot_version = _bundle_document(bundle), 1
+                snapshot = _bundle_document(bundle)
+                snapshot_version = 1
 
-            review_id = review_id or new_id("rev")
             row_review = ReviewRef(
                 review_id=review_id,
                 entity=entity,
@@ -806,11 +1001,11 @@ class CaseWorkStore:
                 action=action,
                 reviewer_json=reviewer,
                 reason=reason,
-                decided_at=utcnow(),
+                decided_at=now(),
                 previous_status=previous_status,
                 new_status=new_status,
             )
-            session.add(row_review)
+            self._insert(session, row_review, key=review_id)
             self._record_version(
                 session,
                 entity=entity,
@@ -850,9 +1045,12 @@ class CaseWorkStore:
         follow_up_id: str | None = None,
     ) -> dict[str, Any]:
         _require(kind, FOLLOW_UP_KINDS, "kind")
-        if not (note or "").strip():
-            raise invalid_request("Ghi chú theo dõi không được để trống.")
-        follow_up_id = follow_up_id or new_id("fu")
+        note = _text(note, "note")
+        if due_at is not None and not isinstance(due_at, datetime):
+            raise invalid_request("due_at phải là thời điểm.")
+        assignee = _actor(assignee, "assignee")
+        actor = _actor(actor)
+        follow_up_id = _text(follow_up_id, "follow_up_id") if follow_up_id else new_id("fu")
         row = FollowUp(
             follow_up_id=follow_up_id,
             work_item_id=work_item_id,
@@ -862,12 +1060,11 @@ class CaseWorkStore:
             due_at=due_at,
             assignee_json=assignee,
             created_by_json=actor,
-            created_at=utcnow(),
+            created_at=now(),
         )
         with session_scope(self.engine) as session:
-            if session.get(WorkItem, work_item_id) is None:
-                raise not_found("yêu cầu", work_item_id)
-            session.add(row)
+            _ensure_work_item(session, work_item_id)
+            self._insert(session, row, key=follow_up_id)
             document = _follow_up_document(row)
             self._record_version(
                 session,
@@ -892,6 +1089,11 @@ class CaseWorkStore:
     ) -> dict[str, Any]:
         if status is not None:
             _require(status, FOLLOW_UP_STATUSES, "status")
+        if note is not None:
+            note = _text(note, "note")
+        if resolution is not None:
+            resolution = _text(resolution, "resolution")
+        actor = _actor(actor)
         with session_scope(self.engine) as session:
             row = session.get(FollowUp, follow_up_id)
             if row is None:
@@ -901,7 +1103,7 @@ class CaseWorkStore:
                 row.status = status
                 changed.append("status")
                 if status in {"done", "cancelled"}:
-                    row.closed_at = utcnow()
+                    row.closed_at = now()
                     changed.append("closed_at")
             if note is not None:
                 row.note = note
@@ -951,18 +1153,56 @@ class CaseWorkStore:
             return [_version_document(row) for row in rows]
 
     def work_item_bundle(self, work_item_id: str) -> dict[str, Any]:
-        """Yêu cầu kèm mọi thứ thuộc về nó (dùng cho API và kiểm thử khôi phục)."""
-        return {
-            "work_item": self.get_work_item(work_item_id),
-            "investigation_links": self.list_investigation_links(work_item_id),
-            "evidence_bundles": self.list_evidence_bundles(work_item_id),
-            "responses": self.list_responses(work_item_id),
-            "follow_ups": self.list_follow_ups(work_item_id),
-        }
+        """Yêu cầu kèm mọi thứ thuộc về nó, đọc trong một phiên để không bị cắt khúc."""
+        with session_scope(self.engine) as session:
+            row = _ensure_work_item(session, work_item_id)
+            links = (
+                session.execute(
+                    select(InvestigationLink)
+                    .where(InvestigationLink.work_item_id == work_item_id)
+                    .order_by(InvestigationLink.created_at)
+                )
+                .scalars()
+                .all()
+            )
+            bundles = (
+                session.execute(
+                    select(EvidenceBundle)
+                    .where(EvidenceBundle.work_item_id == work_item_id)
+                    .order_by(EvidenceBundle.created_at)
+                )
+                .scalars()
+                .all()
+            )
+            responses = (
+                session.execute(
+                    select(ProfessionalResponse)
+                    .where(ProfessionalResponse.work_item_id == work_item_id)
+                    .order_by(ProfessionalResponse.version)
+                )
+                .scalars()
+                .all()
+            )
+            follow_ups = (
+                session.execute(
+                    select(FollowUp).where(FollowUp.work_item_id == work_item_id).order_by(FollowUp.created_at)
+                )
+                .scalars()
+                .all()
+            )
+            return {
+                "work_item": work_item_document(row, _related_ids(session, work_item_id)),
+                "investigation_links": [_link_document(item) for item in links],
+                "evidence_bundles": [_bundle_document(item) for item in bundles],
+                "responses": [_response_document(item) for item in responses],
+                "follow_ups": [_follow_up_document(item) for item in follow_ups],
+            }
 
     def counts(self) -> dict[str, int]:
         with session_scope(self.engine) as session:
             return {
-                name: int(session.execute(select(func.count()).select_from(WarehouseBase.metadata.tables[name])).scalar_one())
+                name: int(
+                    session.execute(select(func.count()).select_from(WarehouseBase.metadata.tables[name])).scalar_one()
+                )
                 for name in CASEWORK_TABLES
             }

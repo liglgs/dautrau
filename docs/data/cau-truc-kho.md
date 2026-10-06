@@ -49,11 +49,18 @@ Chúng **chỉ được thêm**, không sửa bảng kho ở trên.
 
 Quy ước chống mất dữ liệu:
 
-* Mọi lần sửa `work_items` phải gửi kèm `expected_version`; lệch phiên bản trả `409 VERSION_CONFLICT`
-  và không ghi gì.
+* Mọi lần sửa `work_items` phải gửi kèm `expected_version`; thiếu thì `422`, lệch thì `409 VERSION_CONFLICT`
+  và không ghi gì. Phép kiểm và phép ghi nằm trong cùng một câu `UPDATE ... WHERE version = :expected`
+  có kiểm `rowcount`, nên hai người sửa cùng một phiên bản thì đúng một người thắng.
+* Hai lần lưu phiếu trả lời song song không tạo hai bản "hiện hành": khoá dòng yêu cầu
+  (`SELECT ... FOR UPDATE`) cộng ràng buộc duy nhất `(work_item_id, version)`.
 * Mọi lần tạo/sửa đều ghi thêm một dòng `version_refs` (kèm ảnh chụp), nên đọc lại được lịch sử.
-* Phiếu trả lời là append-only theo phiên bản: bản cũ chuyển sang `superseded` nhưng vẫn còn trong bảng.
+* Phiếu trả lời là append-only theo phiên bản: bản cũ chuyển sang `superseded` nhưng vẫn còn trong bảng;
+  phiếu đã `superseded` không duyệt được (`409 INVALID_STATE`).
 * Chỉ nhận các trường trong danh sách trắng; khoá lạ trả `422 INVALID_REQUEST`.
+* Khoá ngoài do người gọi đặt mà trùng thì trả `409 IDEMPOTENCY_CONFLICT`, không phải lỗi hệ thống.
+* Kho kiểm kiểu và enum của từng trường, không kiểm cấu trúc lồng sâu (`context`, `scope`, `items`,
+  `coverage`, ...) — phần đó thuộc `/api/v2` với `docs/spec/hospital-v2/schemas.json`.
 
 ### 1.2. Nâng cấp lược đồ (chỉ thêm bảng)
 
@@ -62,7 +69,10 @@ python -m scripts.elt.migrate_casework --check   # mã thoát 1 nếu còn thi�
 python -m scripts.elt.migrate_casework           # tạo bảy bảng còn thiếu, in số dòng trước/sau
 ```
 
-Script đếm số dòng của 14 bảng cũ trước và sau khi chạy; lệch thì báo lỗi và trả mã thoát 1.
+`--check` đối chiếu cả **cột** và **chỉ mục duy nhất** còn thiếu, không chỉ tên bảng, và trả mã thoát 1
+khi còn thiếu hoặc khi bảng cũ mất đi. Script đếm số dòng của 14 bảng cũ trước và sau khi chạy;
+lệch thì báo lỗi và trả mã thoát 1. Bảng đã có từ bản nâng cấp trước nhưng thiếu chỉ mục thì script
+tạo nốt chỉ mục đó.
 Muốn bỏ bảy bảng mới (chấp nhận mất dữ liệu DI): `python -m scripts.elt.migrate_casework --rollback --yes`.
 
 ## 2. Chỉ mục vector

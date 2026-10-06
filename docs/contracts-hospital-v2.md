@@ -121,5 +121,32 @@ Bảy thực thể của hợp đồng đã có bảng tương ứng trong cùng
 | `ReviewRef` | `review_refs` | append-only; cập nhật luôn trạng thái của thực thể được duyệt |
 | `VersionRef` | `version_refs` | nhật ký phiên bản kèm ảnh chụp, phục vụ đọc lại lịch sử |
 
-Quy ước: sửa `work_items` mà thiếu `expected_version` hoặc lệch phiên bản thì trả `409 VERSION_CONFLICT`
-và không ghi gì; mọi lần ghi đều thêm một dòng `version_refs`.
+Quy ước chống mất dữ liệu:
+
+* Sửa `work_items` mà thiếu `expected_version` thì trả `422 INVALID_REQUEST`; lệch phiên bản thì trả
+  `409 VERSION_CONFLICT` và không ghi gì. Phép kiểm và phép ghi nằm trong **cùng một câu**
+  `UPDATE ... WHERE version = :expected` có kiểm `rowcount`, nên hai người sửa cùng một phiên bản
+  thì đúng một người thắng — không còn khe thời gian để cả hai cùng thắng.
+* Hai lần lưu phiếu trả lời song song không tạo hai bản "hiện hành": lần lưu khoá dòng yêu cầu
+  (`SELECT ... FOR UPDATE`) và ràng buộc duy nhất `(work_item_id, version)` là lưới an toàn.
+* Phiếu trả lời đã ở trạng thái `superseded` thì không duyệt được (`409 INVALID_STATE`); mỗi lần
+  duyệt phiếu hiện hành tăng `version` và đổi `etag`.
+* Mọi lần ghi đều thêm một dòng `version_refs` giữ ảnh chụp; `history()` đọc lại được toàn bộ.
+* Khoá ngoài do người gọi đặt mà trùng thì trả `409 IDEMPOTENCY_CONFLICT`, không phải lỗi hệ thống.
+
+Phạm vi kiểm tra của tầng lưu trữ: kho kiểm **kiểu** và **giá trị enum** của từng trường, và
+kiểm bản chiếu của mình khớp lược đồ này (`tests/test_services/test_casework_store.py::test_store_documents_match_the_hospital_contract`).
+Kho **không** kiểm cấu trúc lồng sâu do người gọi gửi vào (`context`, `scope`, `unknowns`, `items`,
+`coverage`, ...); tầng `/api/v2` (R2-2-02) chịu trách nhiệm kiểm bằng chính `schemas.json`.
+
+Hai chỗ hợp đồng đã nới cho khớp thực tế lưu trữ:
+
+* `Actor.role` không còn bắt buộc — kho chỉ chắc chắn có mã người dùng; máy chủ điền vai trò từ token khi biết.
+* `InvestigationLink.created_by` cho phép `null` — lần chạy tự động có thể không có người tạo.
+* `VersionRef.entity` thêm `investigation_link` và `follow_up` — nhật ký phiên bản phủ cả hai, không chỉ ba thực thể API.
+
+Ánh xạ trường khi đọc/ghi: kho chuẩn hoá đầu vào `{"actor_id": ...}` về dạng hợp đồng `{"id": ...}`,
+nên mọi bản chiếu trả ra (`owner`, `updated_by`, `reviewer`, `assignee`, `drafted_by`) đều là `Actor`.
+`work_items.created_by_json` vẫn được lưu để kiểm toán nhưng **không** xuất hiện trong bản chiếu
+`WorkItem` vì lược đồ cấm trường này (`additionalProperties: false`); muốn biết ai tạo thì đọc
+`history()[0].updated_by`.

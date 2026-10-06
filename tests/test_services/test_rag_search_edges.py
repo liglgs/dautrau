@@ -16,6 +16,8 @@ from src.services.rag.search import search
 from src.services.warehouse.db import create_schema, get_warehouse_engine
 from src.vmec import DomainError
 
+pytestmark = pytest.mark.needs_chroma
+
 PAIR = {
     "pair_id": "ibuprofen__gastrointestinal-haemorrhage",
     "drug": "ibuprofen",

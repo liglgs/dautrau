@@ -168,7 +168,7 @@ def test_update_requires_matching_version_and_keeps_history(legacy_db):
     assert store.get_work_item(work_item_id)["version"] == 2
 
     history = store.history(entity="work_item", entity_id=work_item_id)
-    assert [item["entity_version"] for item in history] == [1, 2]
+    assert [item["version"] for item in history] == [1, 2]
     assert [item["revision"] for item in history] == [1, 2]
     assert history[0]["snapshot"]["work_status"] == "draft"
     assert history[0]["snapshot"]["question"] == "Câu hỏi gốc"
@@ -210,12 +210,12 @@ def test_two_sequential_updates_keep_both_versions(legacy_db):
     )
 
     history = store.history(entity="work_item", entity_id=work_item_id)
-    assert [(item["entity_version"], item["snapshot"]["work_status"]) for item in history] == [
+    assert [(item["version"], item["snapshot"]["work_status"]) for item in history] == [
         (1, "draft"),
         (2, "accepted"),
         (3, "in_progress"),
     ]
-    assert history[1]["updated_by"]["actor_id"] == "user-1182"
+    assert history[1]["updated_by"] == {"id": "user-1182"}
 
 
 # -------------------------------------------------- liên kết điều tra và bằng chứng
@@ -333,7 +333,7 @@ def test_review_updates_status_and_is_appended(legacy_db):
 
     reviews = store.list_reviews(entity="response", entity_id=response["response_id"])
     assert len(reviews) == 1
-    assert reviews[0]["reviewer"]["actor_id"] == "user-3301"
+    assert reviews[0]["reviewer"] == {"id": "user-3301", "role": "reviewer"}
 
     with pytest.raises(MvpError) as bad_entity:
         store.add_review(entity="dossier", entity_id="x", action="approve", reviewer={"actor_id": "user-3301"})
@@ -407,3 +407,385 @@ def test_bundle_view_and_counts(legacy_db):
     assert counts["work_items"] == 1
     assert counts["follow_ups"] == 1
     assert counts["version_refs"] >= 2
+
+
+# ------------------------------------------- khoá lạc quan khi hai người ghi song song
+
+
+def _run_two_writers(store, work_item_id, *, expected_version: int):
+    """Cho hai luồng cùng sửa một yêu cầu với cùng ``expected_version``.
+
+    Trả về ``(thành công, lỗi)`` — mỗi bên là một phần tử, ``None`` nghĩa là không có.
+    """
+    import threading
+
+    barrier = threading.Barrier(2, timeout=30)
+    results: dict[str, object] = {}
+
+    def writer(name: str, work_status: str) -> None:
+        try:
+            barrier.wait()
+            results[name] = store.update_work_item(
+                work_item_id,
+                changes={"work_status": work_status},
+                expected_version=expected_version,
+                actor={"id": name, "role": "doctor"},
+            )
+        except BaseException as exc:  # noqa: BLE001 - giữ nguyên để khẳng định bên dưới
+            results[name] = exc
+
+    threads = [
+        threading.Thread(target=writer, args=("user-1182", "accepted")),
+        threading.Thread(target=writer, args=("user-2044", "in_progress")),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=60)
+
+    successes = [value for value in results.values() if isinstance(value, dict)]
+    failures = [value for value in results.values() if isinstance(value, BaseException)]
+    return successes, failures
+
+
+def test_concurrent_updates_have_exactly_one_winner(legacy_db):
+    """Đua nhau cùng ``expected_version``: đúng một người thắng, người kia nhận 409.
+
+    Đây là bài kiểm tra chống mất dữ liệu (lost update): bản cũ đọc rồi mới ghi nên cả
+    hai đều thắng và bản ghi sau đè bản ghi trước.
+    """
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Hai người cùng sửa")["work_item_id"]
+
+    successes, failures = _run_two_writers(store, work_item_id, expected_version=1)
+
+    assert len(successes) == 1, successes
+    assert len(failures) == 1, failures
+    assert isinstance(failures[0], MvpError)
+    assert failures[0].code == ErrorCode.VERSION_CONFLICT
+    assert failures[0].status == 409
+
+    current = store.get_work_item(work_item_id)
+    assert current["version"] == 2
+    assert current["work_status"] == successes[0]["work_status"]
+
+    history = store.history(entity="work_item", entity_id=work_item_id)
+    assert [(item["revision"], item["version"]) for item in history] == [(1, 1), (2, 2)]
+
+
+def test_concurrent_saves_leave_exactly_one_current_response(legacy_db):
+    """Hai lần lưu phiếu song song không được tạo hai bản 'hiện hành' cùng lúc."""
+    import threading
+
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+
+    barrier = threading.Barrier(2, timeout=30)
+    results: dict[str, object] = {}
+
+    def saver(name: str, text: str) -> None:
+        try:
+            barrier.wait()
+            results[name] = store.save_response(work_item_id, sections=[{"key": "summary", "text": text}])
+        except BaseException as exc:  # noqa: BLE001
+            results[name] = exc
+
+    threads = [
+        threading.Thread(target=saver, args=("a", "Bản A")),
+        threading.Thread(target=saver, args=("b", "Bản B")),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=60)
+
+    # Bên thua (nếu có) phải nhận 409 sạch sẽ, không phải lỗi hệ thống.
+    for value in results.values():
+        assert isinstance(value, dict) or (isinstance(value, MvpError) and value.status == 409), value
+
+    # Bất biến quan trọng: không bao giờ có hai bản "hiện hành" cùng lúc.
+    current = store.list_responses(work_item_id, include_superseded=False)
+    assert len(current) == 1
+    versions = [item["version"] for item in store.list_responses(work_item_id)]
+    assert versions == sorted(set(versions)), versions
+    assert current[0]["version"] == max(versions)
+
+
+# ------------------------------------------------- kiểm tra kiểu và trạng thái
+
+
+def test_actor_is_normalised_to_contract_shape(legacy_db):
+    """Đầu vào kiểu ``actor_id`` được chuẩn hoá về ``Actor`` của hợp đồng."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    created = store.create_work_item(question="Câu hỏi", actor={"actor_id": "user-1182", "role": "doctor"})
+    assert created["owner"] is None
+
+    history = store.history(entity="work_item", entity_id=created["work_item_id"])
+    assert history[0]["updated_by"] == {"id": "user-1182", "role": "doctor"}
+
+    with pytest.raises(MvpError) as bad_role:
+        store.create_work_item(question="Câu hỏi", actor={"id": "user-1182", "role": "bác sĩ"})
+    assert bad_role.value.code == ErrorCode.INVALID_REQUEST
+
+    with pytest.raises(MvpError) as blank_id:
+        store.create_work_item(question="Câu hỏi", owner={"id": "   "})
+    assert blank_id.value.code == ErrorCode.INVALID_REQUEST
+
+
+def test_validation_rejects_contract_invalid_payloads(legacy_db):
+    """Không nhận dữ liệu sai kiểu hay rỗng mà hợp đồng đã cấm."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+
+    with pytest.raises(MvpError) as bad_scope:
+        store.create_work_item(question="Câu hỏi", scope=["không phải đối tượng"])
+    assert bad_scope.value.code == ErrorCode.INVALID_REQUEST
+
+    with pytest.raises(MvpError) as bad_unknowns:
+        store.create_work_item(question="Câu hỏi", unknowns={"không": "phải danh sách"})
+    assert bad_unknowns.value.code == ErrorCode.INVALID_REQUEST
+
+    with pytest.raises(MvpError) as blank_question:
+        store.create_work_item(question="   ")
+    assert blank_question.value.code == ErrorCode.INVALID_REQUEST
+
+    with pytest.raises(MvpError) as bad_version:
+        store.update_work_item(work_item_id, changes={"work_status": "accepted"}, expected_version="hai")
+    assert bad_version.value.code == ErrorCode.INVALID_REQUEST
+
+    with pytest.raises(MvpError) as empty_sections:
+        store.save_response(work_item_id, sections=[])
+    assert empty_sections.value.code == ErrorCode.INVALID_REQUEST
+
+    with pytest.raises(MvpError) as bad_limit:
+        store.list_work_items(limit="nhiều")
+    assert bad_limit.value.code == ErrorCode.INVALID_REQUEST
+
+    assert store.get_work_item(work_item_id)["version"] == 1
+
+
+def test_duplicate_identifier_is_reported_as_conflict(legacy_db):
+    """Mã do người gọi đặt mà trùng thì trả 409, không phải lỗi hệ thống."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    store.create_work_item(question="Câu hỏi", work_item_id="wi_co_dinh")
+
+    with pytest.raises(MvpError) as duplicate:
+        store.create_work_item(question="Câu hỏi khác", work_item_id="wi_co_dinh")
+    assert duplicate.value.code == ErrorCode.IDEMPOTENCY_CONFLICT
+    assert duplicate.value.status == 409
+
+
+def test_review_of_superseded_response_is_rejected(legacy_db):
+    """Phiếu đã bị thay thế thì không duyệt được, và mỗi lần duyệt tăng phiên bản."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+    first = store.save_response(work_item_id, sections=[{"key": "summary", "text": "Bản đầu."}])
+    store.save_response(work_item_id, sections=[{"key": "summary", "text": "Bản sau."}])
+
+    with pytest.raises(MvpError) as superseded:
+        store.add_review(
+            entity="response",
+            entity_id=first["response_id"],
+            action="approve",
+            reviewer={"id": "user-3301", "role": "reviewer"},
+        )
+    assert superseded.value.code == ErrorCode.INVALID_STATE
+
+    current = store.list_responses(work_item_id, include_superseded=False)
+    assert len(current) == 1
+    second_id = current[0]["response_id"]
+
+    review = store.add_review(
+        entity="response",
+        entity_id=second_id,
+        action="approve",
+        reviewer={"id": "user-3301", "role": "reviewer"},
+        expected_version=2,
+    )
+    assert review["new_status"] == "approved"
+    approved = store.get_response(second_id)
+    assert approved["status"] == "approved"
+    assert approved["version"] == 3
+    assert approved["etag"] != current[0]["etag"]
+
+    with pytest.raises(MvpError) as stale:
+        store.add_review(
+            entity="response",
+            entity_id=second_id,
+            action="approve",
+            reviewer={"id": "user-3301", "role": "reviewer"},
+            expected_version=2,
+        )
+    assert stale.value.code == ErrorCode.VERSION_CONFLICT
+
+
+def test_work_item_document_lists_related_ids(legacy_db):
+    """Bản chiếu yêu cầu mang mã của liên kết, phiếu trả lời và việc theo dõi."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    work_item_id = store.create_work_item(question="Câu hỏi")["work_item_id"]
+    link = store.add_investigation_link(work_item_id, investigation_id="INV-abc")
+    response = store.save_response(work_item_id, sections=[{"key": "summary", "text": "Nội dung."}])
+    follow_up = store.add_follow_up(work_item_id, kind="monitor_case", note="Theo dõi thêm.")
+
+    document = store.get_work_item(work_item_id)
+    assert document["investigation_ids"] == [link["link_id"]]
+    assert document["response_ids"] == [response["response_id"]]
+    assert document["follow_up_ids"] == [follow_up["follow_up_id"]]
+    assert "created_by" not in document
+
+
+def test_history_rows_keep_contract_version_reference(legacy_db):
+    """Mỗi dòng lịch sử vừa khớp ``VersionRef`` vừa giữ phần nhật ký của kho."""
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    created = store.create_work_item(question="Câu hỏi")
+    work_item_id = created["work_item_id"]
+    updated = store.update_work_item(
+        work_item_id, changes={"work_status": "accepted"}, expected_version=1, actor={"id": "user-1182"}
+    )
+
+    rows = store.history(entity="work_item", entity_id=work_item_id)
+    assert len(rows) == 2
+    for row in rows:
+        assert set(row) >= {"entity", "id", "version", "etag", "updated_at", "updated_by", "revision", "change_kind"}
+        assert row["id"] == work_item_id
+        assert row["entity"] == "work_item"
+        assert row["etag"].startswith("") and len(row["etag"]) == 32
+        assert row["updated_at"].endswith("+00:00")
+    assert rows[-1]["version"] == updated["version"]
+    assert rows[-1]["etag"] == updated["etag"]
+    assert rows[-1]["snapshot"]["work_status"] == "accepted"
+
+
+# ------------------------------------------- hợp đồng: bản chiếu của kho phải khớp lược đồ
+
+
+def _contract_validator(def_name: str):
+    """Bộ kiểm tra lược đồ hospital-v2 cho một định nghĩa, đọc từ tệp hợp đồng."""
+    import json
+
+    from jsonschema import Draft202012Validator
+
+    root = Path(__file__).resolve().parents[2]
+    schemas = json.loads((root / "docs/spec/hospital-v2/schemas.json").read_text(encoding="utf-8"))
+    return Draft202012Validator({"$ref": f"#/$defs/{def_name}", "$defs": schemas["$defs"]})
+
+
+def _assert_matches_contract(def_name: str, instance: dict) -> None:
+    errors = sorted(_contract_validator(def_name).iter_errors(instance), key=lambda item: list(item.path))
+    assert not errors, f"{def_name}: " + "; ".join(f"{list(e.path)}: {e.message}" for e in errors)
+
+
+def test_store_documents_match_the_hospital_contract(legacy_db):
+    """Mọi bản chiếu của kho phải vượt qua lược đồ hospital-v2.
+
+    Đây là lưới chống lệch hợp đồng: đổi tên trường (``actor_id`` → ``id``), thêm trường
+    bị cấm (``created_by`` trong WorkItem) hay bỏ trường bắt buộc (``investigation_ids``)
+    đều làm bài này đỏ.
+    """
+    migrate(legacy_db)
+    store = CaseWorkStore(legacy_db)
+    doctor = {"actor_id": "user-1182", "role": "doctor", "unit": "Khoa Dược"}
+    work_item = store.create_work_item(
+        question="Ibuprofen có gây xuất huyết tiêu hoá không?",
+        context={
+            "request_id": "req-1",
+            "requester": {"id": "user-1182", "role": "doctor"},
+            "channel": "web",
+            "received_at": "2026-10-05T08:00:00Z",
+            "raw_text": "Nhờ tra cứu giúp.",
+            "language": "vi",
+        },
+        scope={
+            "drug": {"value": "ibuprofen", "resolution": "confirmed"},
+            "event": {"value": "xuất huyết tiêu hoá", "resolution": "candidate"},
+        },
+        unknowns=[{"field": "event", "reason": "chưa rõ biến cố", "needs_confirmation": True}],
+        owner=doctor,
+        actor=doctor,
+    )
+    _assert_matches_contract("WorkItem", work_item)
+    work_item_id = work_item["work_item_id"]
+
+    link = store.add_investigation_link(work_item_id, investigation_id="INV-abc", purpose="initial", state="running")
+    _assert_matches_contract("InvestigationLink", link)
+
+    bundle = store.add_evidence_bundle(
+        work_item_id,
+        investigation_id="INV-abc",
+        claim={"claim_text": "Ibuprofen gây xuất huyết tiêu hoá."},
+        items=[
+            {
+                "evidence_id": "ev-1",
+                "doc_id": "doc-1",
+                "source": "pubmed",
+                "stance": "supports",
+                "quote": "Nguy cơ xuất huyết tiêu hoá tăng theo liều.",
+                "locator": {"start": 0, "end": 43, "section": "abstract"},
+                "retrieval": "abstract_only",
+            }
+        ],
+        gaps=[{"kind": "not_readable", "detail": "Chỉ có tóm tắt, không có toàn văn."}],
+        coverage={
+            "documents_retrieved": 1,
+            "sources_ok": ["pubmed"],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": True,
+        },
+        assessment_status="insufficient_evidence",
+        source_errors=[],
+        limitations=["Chỉ có tóm tắt PubMed."],
+    )
+    _assert_matches_contract("EvidenceBundle", bundle)
+
+    response = store.save_response(
+        work_item_id,
+        sections=[{"key": "summary", "title": "Tóm tắt", "text": "Cần thêm bằng chứng.", "citations": []}],
+        drafted_by={"actor_id": "user-2044", "role": "pharmacist"},
+        coverage={
+            "documents_retrieved": 1,
+            "sources_ok": ["pubmed"],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": True,
+        },
+    )
+    _assert_matches_contract("ProfessionalResponse", response)
+
+    review = store.add_review(
+        entity="response",
+        entity_id=response["response_id"],
+        action="request_changes",
+        reviewer={"actor_id": "user-3301", "role": "reviewer"},
+        reason="Bổ sung bằng chứng toàn văn.",
+    )
+    _assert_matches_contract("ReviewRef", review)
+
+    follow_up = store.add_follow_up(
+        work_item_id,
+        kind="request_information",
+        note="Hỏi lại khoa lâm sàng về thời điểm khởi phát.",
+        assignee={"actor_id": "user-2044", "role": "pharmacist"},
+    )
+    _assert_matches_contract("FollowUp", follow_up)
+
+    for row in store.history(entity="work_item", entity_id=work_item_id):
+        # Dòng lịch sử là bản mở rộng của VersionRef; phần lõi phải khớp lược đồ.
+        _assert_matches_contract("VersionRef", {key: row[key] for key in _VERSION_REF_KEYS})
+
+    bundle_view = store.work_item_bundle(work_item_id)
+    _assert_matches_contract("WorkItem", bundle_view["work_item"])
+    assert bundle_view["work_item"]["investigation_ids"] == [link["link_id"]]
+    assert bundle_view["work_item"]["response_ids"] == [response["response_id"]]
+    assert bundle_view["work_item"]["follow_up_ids"] == [follow_up["follow_up_id"]]
+
+
+_VERSION_REF_KEYS = ("entity", "id", "version", "etag", "updated_at", "updated_by")

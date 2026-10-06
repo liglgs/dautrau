@@ -1,0 +1,12 @@
+{
+  "entity": "work_item",
+  "id": "wi_3b1c8f2a91d47e50",
+  "version": 2,
+  "etag": "6f1c2a7d90b34e5581a2c4f6d8e0b135",
+  "updated_at": "2026-10-05T09:42:11Z",
+  "updated_by": {
+    "id": "user-1182",
+    "role": "doctor",
+    "unit": "Khoa Dược - Bệnh viện Đa khoa X"
+  }
+}

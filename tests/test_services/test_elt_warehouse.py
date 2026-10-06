@@ -180,6 +180,7 @@ def test_delete_document_does_not_touch_other_documents_events(warehouse) -> Non
     assert any(event.startswith("ingest-manual:axb:1-") for event in after), "sự kiện của tài liệu khác phải còn nguyên"
 
 
+@pytest.mark.needs_chroma
 def test_purge_document_removes_postgres_rows_and_chunks(warehouse) -> None:
     engine, settings = warehouse
     ingest_document(
@@ -196,6 +197,7 @@ def test_purge_document_removes_postgres_rows_and_chunks(warehouse) -> None:
     assert after["chroma_chunks"] == after["postgres_chunks"] == 0
 
 
+@pytest.mark.needs_chroma
 def test_rag_build_and_search_round_trip(warehouse) -> None:
     engine, settings = warehouse
     docs = [
@@ -258,6 +260,7 @@ def test_rejected_document_never_reaches_the_warehouse(warehouse) -> None:
     assert warehouse_overview(engine)["documents_by_quality_status"] == {"keep": 1}
 
 
+@pytest.mark.needs_chroma
 def test_document_that_becomes_rejected_is_removed_from_warehouse_and_index(warehouse) -> None:
     """Tài liệu đạt ở lần chạy trước, bị `reject` ở lần sau thì phải rời cả hai kho."""
     engine, settings = warehouse
@@ -290,6 +293,7 @@ def test_document_that_becomes_rejected_is_removed_from_warehouse_and_index(ware
     assert stats["chroma_chunks"] == stats["postgres_chunks"] == 0
 
 
+@pytest.mark.needs_chroma
 def test_reindex_drops_chunks_of_documents_that_left_the_index(warehouse) -> None:
     """Đoạn cũ trong Chroma phải bị xoá khi văn bản ngắn lại hoặc tài liệu bị cách ly."""
     from src.services.warehouse.db import session_scope
@@ -322,6 +326,7 @@ def test_reindex_drops_chunks_of_documents_that_left_the_index(warehouse) -> Non
     assert all(hit["in_postgres"] for hit in hits)
 
 
+@pytest.mark.needs_chroma
 def test_build_index_reset_on_a_fresh_chroma_dir_does_not_crash(warehouse) -> None:
     """``--reset`` trên thư mục Chroma trống (máy mới) phải chạy được, không ném NotFoundError.
 

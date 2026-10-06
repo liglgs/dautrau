@@ -24,10 +24,10 @@ from sqlalchemy import (
     JSON,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
-    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -104,6 +104,8 @@ class ProfessionalResponse(WarehouseBase):
     """Phiếu trả lời theo phiên bản (contract ``ProfessionalResponse``)."""
 
     __tablename__ = "professional_responses"
+    # Chặn hai bản "hiện hành" cùng số phiên bản (đua nhau khi hai người cùng lưu).
+    __table_args__ = (Index("uq_response_version", "work_item_id", "version", unique=True),)
     response_id: Mapped[str] = mapped_column(String(80), primary_key=True)
     work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
@@ -141,7 +143,7 @@ class VersionRef(WarehouseBase):
     """Nhật ký phiên bản append-only: một dòng cho mỗi lần tạo/sửa thực thể."""
 
     __tablename__ = "version_refs"
-    __table_args__ = (UniqueConstraint("entity", "entity_id", "revision", name="uq_version_ref"),)
+    __table_args__ = (Index("uq_version_ref", "entity", "entity_id", "revision", unique=True),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     entity: Mapped[str] = mapped_column(String(30), index=True)
     entity_id: Mapped[str] = mapped_column(String(80), index=True)

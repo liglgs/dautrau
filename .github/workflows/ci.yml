@@ -39,7 +39,10 @@ jobs:
           cache: pip
 
       - name: Cài phụ thuộc
-        run: python -m pip install -r requirements.lock.txt
+        # requirements-elt.txt (chromadb, pypdf, gdown) cần cho các bài kiểm thử RAG/kho ELT.
+        run: |
+          python -m pip install -r requirements.lock.txt
+          python -m pip install -r requirements-elt.txt
 
       - name: Ruff
         # Phạm vi hẹp như CI cũ: scripts/ còn nhiều tệp person3 chưa sạch lint.
@@ -67,6 +70,7 @@ jobs:
           cache: pip
 
       - name: Cài phụ thuộc
+        # jsonschema nằm trong requirements.lock.txt; job này không cần chromadb.
         run: python -m pip install -r requirements.lock.txt
 
       - name: Chuẩn vàng giai đoạn 1 (toàn vẹn tệp, băm, chia tập)

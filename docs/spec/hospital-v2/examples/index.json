@@ -48,5 +48,10 @@
     "file": "version-conflict-error.json",
     "def": "ApiError",
     "note": "lỗi xung đột phiên bản khi hai người cùng sửa"
+  },
+  {
+    "file": "version-ref.json",
+    "def": "VersionRef",
+    "note": "tham chiếu phiên bản để dùng If-Match và đọc lịch sử"
   }
 ]

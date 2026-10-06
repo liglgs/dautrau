@@ -21,10 +21,9 @@
     "Actor": {
       "type": "object",
       "title": "Actor",
-      "description": "Người dùng đã xác thực. Máy chủ lấy từ token, không lấy từ body.",
+      "description": "Người dùng đã xác thực. Máy chủ lấy từ token, không lấy từ body. `role` có thể vắng khi token chưa gắn vai trò.",
       "required": [
-        "id",
-        "role"
+        "id"
       ],
       "additionalProperties": false,
       "properties": {
@@ -611,7 +610,14 @@
           "$ref": "#/$defs/Timestamp"
         },
         "created_by": {
-          "$ref": "#/$defs/Actor"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -1083,7 +1089,7 @@
     "VersionRef": {
       "type": "object",
       "title": "VersionRef",
-      "description": "Tham chiếu phiên bản để kiểm soát đồng thời; dùng cho If-Match và lịch sử.",
+      "description": "Tham chiếu phiên bản để kiểm soát đồng thời; dùng cho If-Match và lịch sử. Nhật ký phiên bản phủ cả liên kết điều tra và việc theo dõi, không chỉ ba thực thể API.",
       "required": [
         "entity",
         "id",
@@ -1097,7 +1103,9 @@
           "enum": [
             "work_item",
             "response",
-            "evidence_bundle"
+            "evidence_bundle",
+            "investigation_link",
+            "follow_up"
           ]
         },
         "id": {

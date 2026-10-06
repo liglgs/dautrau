@@ -48,6 +48,22 @@ def pytest_configure(config):
     config._p066_offline_network_guard = guard
 
 
+def pytest_collection_modifyitems(config, items):
+    """Bỏ qua các bài cần chromadb khi máy chưa cài ``requirements-elt.txt``.
+
+    Giữ cho bộ kiểm thử chạy được trên máy chỉ cài ``requirements.lock.txt`` (CI và máy
+    mới); khi có chromadb thì mọi bài vẫn chạy bình thường.
+    """
+    import importlib.util
+
+    if importlib.util.find_spec("chromadb") is not None:
+        return
+    skip = pytest.mark.skip(reason="Chưa cài chromadb (xem requirements-elt.txt).")
+    for item in items:
+        if "needs_chroma" in item.keywords:
+            item.add_marker(skip)
+
+
 def pytest_unconfigure(config):
     guard = getattr(config, "_p066_offline_network_guard", None)
     if guard is not None:
