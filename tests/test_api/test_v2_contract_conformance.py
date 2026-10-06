@@ -52,11 +52,12 @@ def _headers(role: str, user_id: str | None = None) -> dict[str, str]:
 
 @pytest_asyncio.fixture
 async def client(tmp_path):
+    """Trả cả kho: gói bằng chứng không có điểm cuối ghi, phải gieo thẳng qua kho."""
     engine = get_warehouse_engine(f"sqlite:///{tmp_path / 'contract.db'}")
     store = CaseWorkStore(engine)
     app.dependency_overrides[get_casework_store] = lambda: store
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://contract") as http:
-        yield http
+        yield http, store
     app.dependency_overrides.pop(get_casework_store, None)
 
 
@@ -82,6 +83,7 @@ def test_the_contract_file_is_the_frozen_one() -> None:
 @pytest.mark.asyncio
 async def test_every_document_the_router_returns_matches_the_contract(client):
     """Đi hết chín điểm cuối và soi từng tài liệu trả về bằng chính lược đồ của hợp đồng."""
+    client, store = client
     investigator = _headers("investigator", "usr_contract")
     reviewer = _headers("reviewer", "usr_contract_rev")
 
@@ -94,6 +96,8 @@ async def test_every_document_the_router_returns_matches_the_contract(client):
                 "channel": "web",
                 "raw_text": "Câu hỏi nguyên văn của bác sĩ.",
                 "language": "vi",
+                "source_system": {"name": "his-bv-1", "record_id": "HS-9", "deidentified": True},
+                "attachments": [{"kind": "file", "ref": "hoso.pdf", "sha256": "a" * 64}],
             },
             "scope": {
                 "drug": {"value": "metformin", "resolution": "confirmed", "source": "requester"},
@@ -119,7 +123,11 @@ async def test_every_document_the_router_returns_matches_the_contract(client):
 
     link = await client.post(
         f"/api/v2/work-items/{work_item['work_item_id']}/investigations",
-        json={"investigation_id": "INV-contract", "purpose": "initial"},
+        json={
+            "investigation_id": "INV-contract",
+            "purpose": "initial",
+            "run_summary": {"steps_used": 3, "documents_used": 2, "stop_reason": "du_budget"},
+        },
         headers=investigator,
     )
     assert link.status_code == 201, link.text
@@ -153,6 +161,43 @@ async def test_every_document_the_router_returns_matches_the_contract(client):
     _assert_matches("ProfessionalResponse", reviewed.json())
     _assert_matches("ReviewRef", reviewed.json()["review"])
 
+    seeded = store.add_evidence_bundle(
+        work_item["work_item_id"],
+        investigation_id="INV-contract",
+        items=[
+            {
+                "evidence_id": "EVI-contract",
+                "doc_id": "PMID-1",
+                "source": "pubmed",
+                "evidence_type": "observational",
+                "stance": "supports",
+                "quote": "Trích đoạn nguyên văn từ tài liệu.",
+                "locator": {"start": 0, "end": 31, "section": "Tóm tắt"},
+                "retrieval": "abstract_only",
+                "scope_match": "match",
+                "quality_flags": ["abstract_only"],
+            }
+        ],
+        gaps=[{"kind": "missing_evidence", "detail": "Chưa có nhóm chứng.", "next_action": "Tìm thêm."}],
+        coverage={
+            "documents_retrieved": 1,
+            "sources_ok": ["pubmed"],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": True,
+        },
+        assessment_status="insufficient_evidence",
+        source_errors=[],
+        limitations=["Chỉ có tóm tắt."],
+    )
+    assert seeded["bundle_id"]
+
+    bundle_response = await client.get(
+        f"/api/v2/work-items/{work_item['work_item_id']}/evidence-bundle", headers=investigator
+    )
+    assert bundle_response.status_code == 200, bundle_response.text
+    _assert_matches("EvidenceBundle", bundle_response.json())
+
     follow_up = await client.post(
         f"/api/v2/work-items/{work_item['work_item_id']}/follow-ups",
         json={"kind": "recheck_source", "note": "Chạy lại khi có bản mới."},
@@ -169,6 +214,7 @@ async def test_an_optional_field_is_absent_rather_than_null(client):
     Đây là lỗi mà bài kiểm viết tay bỏ sót: mô hình Pydantic ghi ``null`` cho mọi trường không đặt,
     và lược đồ từ chối đúng những giá trị đó.
     """
+    client, _ = client
     created = await client.post(
         "/api/v2/work-items",
         json={

@@ -34,6 +34,9 @@ Chỗ tệp này cố ý khác hợp đồng ``docs/spec/hospital-v2`` (ghi ra �
 * ``ETag`` trả ở dạng ``W/"..."``; các tuyến đọc không gửi ``ETag``.
 * Chưa đọc ``If-Match`` và ``Idempotency-Key`` mà hợp đồng có khai báo; khoá lạc quan đi qua
   ``expected_version`` trong thân yêu cầu.
+* ``GET /work-items/{id}/evidence-bundle`` đối chiếu gói với ``schemas.json`` rồi mới trả; gói sai
+  lược đồ nhận **500** kèm đường dẫn từng chỗ sai, vì hình dạng gói do bên ghi quyết định chứ không
+  qua một mô hình nào của tầng này.
 * ``POST /responses`` **cố ý** không đòi ``expected_version``: đây là đường chỉ-thêm, bản trước
   chuyển sang ``superseded`` chứ không bị đè, nên hai lần lưu đua nhau không làm mất dữ liệu. Đổi
   lại, một người soạn có thể vô hiệu hoá phiên bản mà người duyệt đang chuẩn bị quyết — chấp nhận
@@ -45,11 +48,14 @@ chúng trong threadpool nên một truy vấn chậm không chặn vòng lặp s
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Query, Response
+from jsonschema import Draft202012Validator
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
 
@@ -65,6 +71,14 @@ router = APIRouter(tags=["v2"])
 
 #: Trần số dòng một trang hàng chờ; chặn ``limit`` lớn làm nghẽn kho.
 MAX_PAGE = 200
+
+#: Lược đồ đóng băng của hợp đồng ``hospital-v2``. Đọc một lần lúc nạp mô-đun: tệp này là hợp đồng,
+#: không phải cấu hình, nên thiếu nó là lỗi dựng chương trình chứ không phải lỗi chạy.
+_CONTRACT_SCHEMAS = json.loads(
+    (Path(__file__).resolve().parents[2] / "docs" / "spec" / "hospital-v2" / "schemas.json").read_text(
+        encoding="utf-8"
+    )
+)
 
 
 # --------------------------------------------------------------------------------------
@@ -97,6 +111,7 @@ StoreDep = Annotated[CaseWorkStore, Depends(get_casework_store)]
 ProfessionalRole = Literal["doctor", "pharmacist", "nurse", "reviewer", "admin", "service"]
 Resolution = Literal["confirmed", "candidate", "unknown"]
 ScopeSource = Literal["requester", "dictionary", "agent", "reviewer", "unknown"]
+AttachmentKind = Literal["file", "url", "text"]
 WorkStatus = Literal[
     "draft", "accepted", "in_progress", "awaiting_information", "awaiting_review", "completed", "cancelled"
 ]
@@ -213,6 +228,30 @@ class CoverageReport(BaseModel):
     note: str | None = Field(default=None, max_length=400)
 
 
+class SourceSystem(BaseModel):
+    """Hệ thống gửi yêu cầu sang. ``deidentified`` là trường **bắt buộc** của hợp đồng, không phải tuỳ chọn.
+
+    Bắt buộc là có lý do: nó là lời khai rằng yêu cầu đã được tách thông tin nhận dạng. Bỏ trống được
+    thì hệ thống không phân biệt nổi một yêu cầu đã tách thông tin với một yêu cầu chưa ai kiểm.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=80)
+    record_id: str | None = Field(default=None, max_length=120)
+    deidentified: bool
+
+
+class Attachment(BaseModel):
+    """Tệp hoặc liên kết đính kèm. ``sha256`` theo hợp đồng phải đủ 64 ký tự thập lục phân."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: AttachmentKind
+    ref: str = Field(min_length=1, max_length=500)
+    sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+
+
 class RequestContext(BaseModel):
     """Bối cảnh tiếp nhận. ``request_id`` và ``received_at`` do máy chủ sinh, không nhận từ người gọi."""
 
@@ -222,8 +261,8 @@ class RequestContext(BaseModel):
     channel: Channel = "api"
     raw_text: str = Field(min_length=1, max_length=4000)
     language: Language = "vi"
-    source_system: dict[str, Any] | None = None
-    attachments: list[dict[str, Any]] = Field(default_factory=list)
+    source_system: SourceSystem | None = None
+    attachments: list[Attachment] = Field(default_factory=list, max_length=20)
 
 
 class UnknownField(BaseModel):
@@ -264,13 +303,25 @@ class WorkItemPatch(BaseModel):
     reason: str | None = Field(default=None, max_length=500)
 
 
+class RunSummary(BaseModel):
+    """Số đo của một lần chạy. Mọi trường đều tuỳ chọn; cái nào chưa đo được thì vắng, không ghi ``0``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    steps_used: int | None = Field(default=None, ge=0)
+    documents_used: int | None = Field(default=None, ge=0)
+    source_requests_used: int | None = Field(default=None, ge=0)
+    stop_reason: str | None = Field(default=None, max_length=60)
+    assessment_status: str | None = Field(default=None, max_length=60)
+
+
 class InvestigationLinkCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     investigation_id: str = Field(min_length=1, max_length=120)
     purpose: Purpose = "initial"
     state: RunStatusRef = "queued"
-    run_summary: dict[str, Any] | None = None
+    run_summary: RunSummary | None = None
 
 
 class ResponseSectionIn(BaseModel):
@@ -352,6 +403,21 @@ def _require_assign_permission(principal: Principal, target: dict[str, Any] | No
         return
     if not principal.has(Permission.QUEUE_ASSIGN):
         raise forbidden(f"Vai {principal.role} không có quyền queue:assign để giao việc cho người khác.")
+
+
+def _contract_violations(name: str, document: Any) -> list[str]:
+    """Đường dẫn JSON của những chỗ tài liệu sai ``schemas.json``, rỗng nếu khớp.
+
+    ``docs/contracts-hospital-v2.md`` giao cho tầng này việc bảo đảm tài liệu trả ra đúng lược đồ.
+    Gói bằng chứng là chỗ duy nhất tài liệu đi thẳng từ kho ra mà **không** qua một mô hình Pydantic
+    nào, vì hình dạng của nó do bên ghi quyết định — nên đây là chỗ phải soi bằng chính tệp lược đồ.
+    """
+    schema = {"$ref": f"#/$defs/{name}", "$defs": _CONTRACT_SCHEMAS["$defs"]}
+    validator = Draft202012Validator(schema)
+    return [
+        f"{'/'.join(str(part) for part in error.path) or '<gốc>'}: {error.message}"
+        for error in sorted(validator.iter_errors(document), key=lambda item: list(item.path))
+    ]
 
 
 def _etag_header(document: dict[str, Any]) -> str:
@@ -555,7 +621,7 @@ def link_investigation(
         investigation_id=payload.investigation_id,
         purpose=payload.purpose,
         state=payload.state,
-        run_summary=payload.run_summary,
+        run_summary=payload.run_summary.model_dump(exclude_none=True) if payload.run_summary else None,
         actor=_actor_of(principal),
     )
 
@@ -570,6 +636,12 @@ def read_evidence_bundle(
 
     Chưa có gói nào trả **404** kèm lý do, không trả một gói rỗng — gói rỗng trông y hệt "đã tìm mà
     không thấy gì", và đó là hai chuyện khác nhau.
+
+    Gói là tài liệu duy nhất đi thẳng từ kho ra mà không qua một mô hình Pydantic nào — hình dạng
+    của nó do bên ghi quyết định. Nên trước khi trả, gói được đối chiếu với ``schemas.json``. Sai
+    lược đồ thì trả **500** kèm đường dẫn từng chỗ sai, chứ **không** trả tài liệu hỏng: một khách
+    hàng sinh kiểu từ hợp đồng sẽ đọc sai trường mà không có lỗi nào để lần theo. Đây là lỗi của máy
+    chủ (đã ghi một thứ không phục vụ được), không phải lỗi của người gọi.
     """
     _read_work_item(store, work_item_id, principal)
     bundles = store.list_evidence_bundles(work_item_id)
@@ -580,7 +652,16 @@ def read_evidence_bundle(
             "Yêu cầu chưa có gói bằng chứng nào.",
             {"work_item_id": work_item_id, "remedy": "Liên kết một lần chạy điều tra trước."},
         )
-    return bundles[-1]
+    bundle = bundles[-1]
+    violations = _contract_violations("EvidenceBundle", bundle)
+    if violations:
+        raise MvpError(
+            500,
+            ErrorCode.UNAVAILABLE,
+            "Gói bằng chứng trong kho không khớp hợp đồng nên không trả ra được.",
+            {"work_item_id": work_item_id, "bundle_id": bundle.get("bundle_id"), "violations": violations},
+        )
+    return bundle
 
 
 @router.post("/work-items/{work_item_id}/responses", status_code=201)

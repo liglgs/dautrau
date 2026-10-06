@@ -61,6 +61,45 @@
         "title": "AssessmentStatus",
         "type": "string"
       },
+      "Attachment": {
+        "additionalProperties": false,
+        "description": "Tệp hoặc liên kết đính kèm. ``sha256`` theo hợp đồng phải đủ 64 ký tự thập lục phân.",
+        "properties": {
+          "kind": {
+            "enum": [
+              "file",
+              "url",
+              "text"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "ref": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Ref",
+            "type": "string"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          }
+        },
+        "required": [
+          "kind",
+          "ref"
+        ],
+        "title": "Attachment",
+        "type": "object"
+      },
       "Body_append_sources_api_v1_cases__case_id__sources_post": {
         "properties": {
           "expected_revision": {
@@ -1157,14 +1196,12 @@
           "run_summary": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/RunSummary"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Run Summary"
+            ]
           },
           "state": {
             "default": "queued",
@@ -1462,9 +1499,9 @@
         "properties": {
           "attachments": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/Attachment"
             },
+            "maxItems": 20,
             "title": "Attachments",
             "type": "array"
           },
@@ -1500,14 +1537,12 @@
           "source_system": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/SourceSystem"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Source System"
+            ]
           }
         },
         "required": [
@@ -1768,6 +1803,74 @@
         "title": "RunStatus",
         "type": "string"
       },
+      "RunSummary": {
+        "additionalProperties": false,
+        "description": "Số đo của một lần chạy. Mọi trường đều tuỳ chọn; cái nào chưa đo được thì vắng, không ghi ``0``.",
+        "properties": {
+          "assessment_status": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Status"
+          },
+          "documents_used": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documents Used"
+          },
+          "source_requests_used": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Requests Used"
+          },
+          "steps_used": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Steps Used"
+          },
+          "stop_reason": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Reason"
+          }
+        },
+        "title": "RunSummary",
+        "type": "object"
+      },
       "Scope": {
         "additionalProperties": false,
         "description": "Phạm vi của yêu cầu: ``drug`` và ``event`` bắt buộc, sáu trường còn lại tuỳ chọn.",
@@ -1982,6 +2085,40 @@
           "hash"
         ],
         "title": "SourceDocument",
+        "type": "object"
+      },
+      "SourceSystem": {
+        "additionalProperties": false,
+        "description": "Hệ thống gửi yêu cầu sang. ``deidentified`` là trường **bắt buộc** của hợp đồng, không phải tuỳ chọn.\n\nBắt buộc là có lý do: nó là lời khai rằng yêu cầu đã được tách thông tin nhận dạng. Bỏ trống được\nthì hệ thống không phân biệt nổi một yêu cầu đã tách thông tin với một yêu cầu chưa ai kiểm.",
+        "properties": {
+          "deidentified": {
+            "title": "Deidentified",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "record_id": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Id"
+          }
+        },
+        "required": [
+          "name",
+          "deidentified"
+        ],
+        "title": "SourceSystem",
         "type": "object"
       },
       "TraceResponse": {
@@ -5147,7 +5284,7 @@
     },
     "/api/v2/work-items/{work_item_id}/evidence-bundle": {
       "get": {
-        "description": "Gói bằng chứng của lần chạy gần nhất.\n\nChưa có gói nào trả **404** kèm lý do, không trả một gói rỗng — gói rỗng trông y hệt \"đã tìm mà\nkhông thấy gì\", và đó là hai chuyện khác nhau.",
+        "description": "Gói bằng chứng của lần chạy gần nhất.\n\nChưa có gói nào trả **404** kèm lý do, không trả một gói rỗng — gói rỗng trông y hệt \"đã tìm mà\nkhông thấy gì\", và đó là hai chuyện khác nhau.\n\nGói là tài liệu duy nhất đi thẳng từ kho ra mà không qua một mô hình Pydantic nào — hình dạng\ncủa nó do bên ghi quyết định. Nên trước khi trả, gói được đối chiếu với ``schemas.json``. Sai\nlược đồ thì trả **500** kèm đường dẫn từng chỗ sai, chứ **không** trả tài liệu hỏng: một khách\nhàng sinh kiểu từ hợp đồng sẽ đọc sai trường mà không có lỗi nào để lần theo. Đây là lỗi của máy\nchủ (đã ghi một thứ không phục vụ được), không phải lỗi của người gọi.",
         "operationId": "read_evidence_bundle_api_v2_work_items__work_item_id__evidence_bundle_get",
         "parameters": [
           {
