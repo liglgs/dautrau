@@ -204,7 +204,8 @@ Hệ thống hỗ trợ cấu hình linh hoạt qua biến môi trường hoặc
 | `AUTH_PROVIDER` | `string` | `auto` | Chọn nhà cung cấp danh tính: `auto` (Supabase nếu chạy được, luôn kèm chế độ nội bộ làm đường lùi), `local`, `supabase`, `test`. |
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` | `string` | *(trống)* | Cấu hình dự án Supabase. Chỉ dùng được khi đã cài `PyJWT` và `cryptography`. |
 | `SESSION_COOKIE_SECURE` | `bool` | `false` | Đặt `true` khi chạy sau HTTPS để cookie phiên có cờ `Secure`. Bắt buộc ở production. |
-| `INVESTIGATOR_TOKEN` / `REVIEWER_TOKEN` | `string` | *(trống)* | Khoá tĩnh cũ cho công cụ dòng lệnh. **Bị vô hiệu hoá khi `APP_ENV=production`**; không dùng để đăng nhập giao diện. |
+| `VIGILENS_ALLOW_LEGACY_TOKENS` | `bool` | `false` | Bật khoá tĩnh cũ. Phải bật **tường minh**; chỉ có tác dụng ngoài production. |
+| `INVESTIGATOR_TOKEN` / `REVIEWER_TOKEN` | `string` | *(trống)* | Khoá tĩnh cũ cho công cụ dòng lệnh. Chỉ chạy khi `VIGILENS_ALLOW_LEGACY_TOKENS=true` **và** `APP_ENV` là `development`/`test`; không dùng để đăng nhập giao diện. |
 | `MVP_DB_PATH` | `string` | `data/mvp.sqlite3` | Đường dẫn tệp cơ sở dữ liệu SQLite lưu trữ trạng thái. |
 | `MVP_SOURCE_MODE` | `string` | `fixture` | Chế độ nguồn dữ liệu: `fixture` (offline demo) hoặc `live` (nguồn thực tế). |
 | `MVP_PUBMED_MODE` | `string` | `local` | Chế độ PubMed: `local` (tìm trên corpus đã import) hoặc `api` (gọi NCBI live). |

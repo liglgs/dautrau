@@ -98,9 +98,13 @@ def _legacy_static_token(token: str) -> Principal | None:
 
     Giữ lại một thời gian chỉ để chạy thử ngoại tuyến. Ánh xạ sang tài khoản cố định và đánh dấu
     ``auth_method="legacy_token"`` để nhật ký ghi rõ đây là khoá tạm, không phải danh tính thật.
+
+    Hai lớp khoá: môi trường phải là phát triển/kiểm thử **và** ``VIGILENS_ALLOW_LEGACY_TOKENS=1``
+    phải được bật tường minh. Chỉ kiểm tra môi trường là chưa đủ — một bản triển khai quên đặt
+    ``APP_ENV`` sẽ mang mặc định ``development`` và vô tình bật lại khoá dùng chung.
     """
     settings = get_settings()
-    if settings.app_env == "production":
+    if settings.is_production_like or not settings.vigilens_allow_legacy_tokens:
         return None
     candidates = {
         Role.INVESTIGATOR: settings.investigator_token,
@@ -204,21 +208,24 @@ class SupabaseProvider:
         if key is None:
             raise unauthorized("Khoá ký của Supabase không nhận ra được.")
 
-        # Supabase dùng khoá bất đối xứng (ES256/RS256) từ JWKS. Chỉ nhận đúng họ khoá của
-        # ``kty`` trong JWKS — không tin ``alg`` trong header để tránh tấn công đổi thuật toán.
+        # Supabase dùng khoá bất đối xứng (ES256/RS256) từ JWKS. Danh sách thuật toán được chốt
+        # theo ``kty`` của khoá **trong JWKS**, không lấy từ ``alg`` trong token: token do người
+        # gọi gửi tới, nên để nó chọn thuật toán là tự mở đường cho tấn công đổi thuật toán.
         if key.get("kty") == "EC":
             from jwt.algorithms import ECAlgorithm
 
             signing_key = ECAlgorithm.from_jwk(key)
+            allowed = ["ES256", "ES384", "ES512"]
         else:
             from jwt.algorithms import RSAAlgorithm
 
             signing_key = RSAAlgorithm.from_jwk(key)
+            allowed = ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512"]
 
         return jwt.decode(
             token,
             signing_key,
-            algorithms=[str(header.get("alg", "ES256"))],
+            algorithms=allowed,
             audience=settings.supabase_jwt_audience,
             options={"verify_exp": True},
         )
@@ -249,7 +256,7 @@ class SupabaseProvider:
 class TestProvider:
     """Chỉ trong bộ kiểm thử: ``X-Test-User: <user_id>[:<role>]`` khi bật ``VIGILENS_TEST_AUTH=1``.
 
-    Tuyệt đối không bật ở production — kiểm tra ``app_env`` trước khi đọc header.
+    Tuyệt đối không bật ở production — kiểm tra môi trường trước khi đọc header.
     """
 
     name = "test"
@@ -257,7 +264,7 @@ class TestProvider:
 
     def verify(self, request: Request) -> Principal:
         settings = get_settings()
-        if settings.app_env == "production":
+        if settings.is_production_like:
             raise unauthorized("Xác thực thử nghiệm bị chặn ở production.")
         if not settings.vigilens_test_auth:
             raise unauthorized("Xác thực thử nghiệm chưa bật (VIGILENS_TEST_AUTH=1).")
@@ -327,7 +334,7 @@ def provider_chain() -> list[IdentityProvider]:
         pass
     else:
         chain.append(LocalProvider())
-    if settings.vigilens_test_auth and settings.app_env != "production":
+    if settings.vigilens_test_auth and not settings.is_production_like:
         chain.append(TestProvider())
     return chain
 
@@ -487,7 +494,7 @@ async def login(payload: LoginRequest, request: Request, response: Response) -> 
         samesite="lax",
         path="/",
         max_age=43200,
-        secure=settings.session_cookie_secure or settings.app_env == "production",
+        secure=settings.session_cookie_secure or settings.is_production_like,
     )
     store.audit(
         None,

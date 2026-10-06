@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.auth import (
     Principal,
+    actor_for,
     current_principal,
     require_investigation_access,
     require_permission,
@@ -99,7 +100,12 @@ async def create_investigation(
 ) -> CreateInvestigationResponse:
     """Tạo cuộc điều tra mới và chạy nền; trả 202 + ID."""
     runner = get_runner()
-    state, created = store.create_investigation(claim, idempotency_key=idempotency_key, created_by=user.user_id)
+    state, created = store.create_investigation(
+        claim,
+        idempotency_key=idempotency_key,
+        created_by=user.user_id,
+        actor_role=str(user.role),
+    )
     started = False
     if created or state.run_status is RunStatus.QUEUED:
         # ``created``: tạo mới. ``queued`` + không tạo mới: lần gọi trước đã bị 429 nên job còn
@@ -275,7 +281,8 @@ async def cancel_investigation(
     state = _state(store, investigation_id)
     require_investigation_access(user, state, "run")
     runner = get_runner()
-    cancelled_state = runner.cancel(investigation_id)
+    # Ghi đúng người bấm hủy, không quy về "system" (AUTH-03).
+    cancelled_state = runner.cancel(investigation_id, actor=actor_for(user), actor_role=str(user.role))
     return CancelResponse(
         investigation_id=cancelled_state.investigation_id,
         run_status=cancelled_state.run_status,
@@ -388,6 +395,14 @@ async def export_dossier(investigation_id: str, store: StoreDep, user: UserDep) 
     state = _state(store, investigation_id)
     require_investigation_access(user, state, "export")
     markdown = export_markdown(store, investigation_id)
+    # B1.7 mục 3: kết xuất hồ sơ cũng là sự kiện phải truy được ai làm.
+    store.audit(
+        investigation_id,
+        actor_for(user),
+        "dossier_exported",
+        {"bytes": len(markdown.encode("utf-8")), "dossier_version": state.version},
+        actor_role=str(user.role),
+    )
     return Response(
         content=markdown,
         media_type="text/markdown; charset=utf-8",

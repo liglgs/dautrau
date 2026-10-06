@@ -56,6 +56,15 @@ class Settings(BaseSettings):
         ]
         return [k.strip() for k in raw if k and k.strip()]
 
+    @property
+    def is_production_like(self) -> bool:
+        """``True`` với mọi môi trường **không** phải phát triển/kiểm thử.
+
+        Dùng thay cho so sánh ``== "production"``: một bản triển khai lỡ quên đặt ``APP_ENV`` sẽ
+        mang giá trị mặc định ``development``, nên chỉ so sánh bằng chuỗi là tự mở lại đường tắt.
+        """
+        return self.app_env not in ("development", "test")
+
     # Xác thực và phân quyền (B1)
     #: ``auto`` = có ``SUPABASE_URL`` thì Supabase, không thì chế độ nội bộ.
     auth_provider: Literal["auto", "local", "supabase", "test"] = "auto"
@@ -68,6 +77,9 @@ class Settings(BaseSettings):
     supabase_jwt_audience: str = "authenticated"
 
     # MVP điều tra an toàn thuốc (P-066)
+    #: Khoá tĩnh dùng chung của giai đoạn ngoại tuyến. Mặc định **tắt**: đây là khoá dùng chung,
+    #: không phải danh tính, nên phải bật tường minh chứ không bật theo kiểu "không phải production".
+    vigilens_allow_legacy_tokens: bool = False
     investigator_token: str = ""
     reviewer_token: str = ""
     mvp_db_path: str = "data/mvp.sqlite3"

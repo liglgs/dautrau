@@ -67,6 +67,14 @@ describe("session gateway", () => {
     const logout = await POST(new NextRequest(`${origin}/api/backend/api/v1/auth/logout`, { method: "POST", headers: { origin } }), context("auth/logout"));
     expect(logout.headers.get("set-cookie")).toContain("Max-Age=0");
   });
+  it("does not repeat the Secure attribute when the backend already set it", async () => {
+    // The bridge used to append `; Secure` unconditionally on https, producing a duplicate attribute.
+    const upstream = new Response('{"logged_out":true}', { headers: { "Set-Cookie": "session_id=abc; HttpOnly; Path=/; Secure" } });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(upstream));
+    const response = await POST(new NextRequest(`${origin}/api/backend/api/v1/auth/logout`, { method: "POST", headers: { origin } }), context("auth/logout"));
+    const cookie = response.headers.get("set-cookie") ?? "";
+    expect(cookie.match(/secure/gi) ?? []).toHaveLength(1);
+  });
   it("refuses to proxy anything outside /api/v1/*", async () => {
     const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
     const response = await GET(new NextRequest(`${origin}/api/backend/health`, { headers: { origin } }), { params: Promise.resolve({ path: ["health"] }) });

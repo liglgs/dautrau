@@ -231,3 +231,110 @@ async def test_inbound_request_id_is_reused_so_traces_join_across_tiers(audit_cl
         "/api/v1/admin/audit", params={"limit": 1}, headers={**_headers("usr_kt", "auditor"), "X-Request-Id": "trace-ngoai-01"}
     )
     assert response.headers["x-request-id"] == "trace-ngoai-01"
+
+
+# --------------------------------------------------------------------------------------
+# B1.7 mục 3 — "mọi sự kiện quan trọng": tạo ca, hủy ca, kết xuất, đổi vai, cấp tài khoản
+# --------------------------------------------------------------------------------------
+
+
+def _rows(action: str, *, investigation_id: str | None = None) -> list[dict]:
+    store = get_mvp_store()
+    return [row for row in store.list_audit(investigation_id=investigation_id, limit=500) if row["action"] == action]
+
+
+@pytest.mark.asyncio
+async def test_creating_a_case_is_attributed_to_the_person_not_to_system(audit_client: AsyncClient):
+    """Trước đây ``investigation_created`` luôn ghi ``actor="system"`` — không biết ai mở ca."""
+    response = await audit_client.post(
+        "/api/v1/investigations", json=CLAIM, headers=_headers("usr_tao_moi", "investigator")
+    )
+    assert response.status_code == 202, response.text
+    case_id = response.json()["investigation_id"]
+
+    created = _rows("investigation_created", investigation_id=case_id)
+    assert created and created[0]["actor"] == "usr_tao_moi"
+    assert created[0]["actor_role"] == "investigator"
+    assert created[0]["legacy_actor"] is False
+
+
+@pytest.mark.asyncio
+async def test_cancelling_a_case_is_attributed_to_the_person_who_clicked(audit_client: AsyncClient):
+    """Trước đây hủy ca ghi ``system``, nên không truy được ai đã dừng cuộc điều tra."""
+    case_id, _ = _seed_case("usr_nguoi_huy")
+    response = await audit_client.post(
+        f"/api/v1/investigations/{case_id}/cancel", headers=_headers("usr_nguoi_huy", "investigator")
+    )
+    assert response.status_code == 200, response.text
+
+    saved = _rows("state_saved", investigation_id=case_id)
+    assert saved and saved[-1]["actor"] == "usr_nguoi_huy"
+    assert saved[-1]["actor_role"] == "investigator"
+    assert saved[-1]["actor"] != "system"
+    assert saved[-1]["payload"]["run_status"] == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_exporting_a_dossier_is_recorded(audit_client: AsyncClient, monkeypatch):
+    """Trước đây tải hồ sơ **không** để lại vết nào — không biết ai đã lấy dữ liệu ra ngoài."""
+    case_id, _ = _seed_case("usr_nguoi_xuat")
+    monkeypatch.setattr(
+        "src.api.investigations.export_markdown",
+        lambda store, investigation_id: f"# Hồ sơ {investigation_id}\n",
+    )
+    response = await audit_client.get(
+        f"/api/v1/investigations/{case_id}/export", headers=_headers("usr_nguoi_xuat", "investigator")
+    )
+    assert response.status_code == 200, response.text
+
+    exported = _rows("dossier_exported", investigation_id=case_id)
+    assert exported and exported[0]["actor"] == "usr_nguoi_xuat"
+    assert exported[0]["actor_role"] == "investigator"
+    assert exported[0]["payload"]["bytes"] == len(response.text.encode("utf-8"))
+
+
+@pytest.mark.asyncio
+async def test_a_failed_export_leaves_no_export_row(audit_client: AsyncClient):
+    """Chỉ ghi nhật ký khi hồ sơ thật sự ra khỏi hệ thống, không ghi cho lần bị chặn."""
+    case_id, _ = _seed_case("usr_nguoi_xuat_hong")
+    blocked = await audit_client.get(
+        f"/api/v1/investigations/{case_id}/export", headers=_headers("usr_nguoi_xuat_hong", "investigator")
+    )
+    assert blocked.status_code == 409, blocked.text
+    assert _rows("dossier_exported", investigation_id=case_id) == []
+
+
+def test_role_and_status_changes_are_recorded_with_the_actor_who_made_them(audit_client: AsyncClient):
+    """Đổi vai / khoá tài khoản phải trả lời được "ai đã cấp quyền cho ai"."""
+    store = get_mvp_store()
+    store.create_user(user_id="usr_bi_doi", email="bi-doi@benhvien.test", role="investigator")
+    store.update_user(
+        "usr_bi_doi", role="reviewer", actor="usr_quan_tri", actor_role="admin"
+    )
+    store.update_user("usr_bi_doi", status="disabled", actor="usr_quan_tri", actor_role="admin")
+
+    role_rows = _rows("user_role_changed")
+    status_rows = _rows("user_status_changed")
+    assert role_rows and role_rows[-1]["actor"] == "usr_quan_tri"
+    assert role_rows[-1]["actor_role"] == "admin"
+    assert role_rows[-1]["payload"] == {"user_id": "usr_bi_doi", "role": "reviewer", "status": None}
+    assert status_rows and status_rows[-1]["actor"] == "usr_quan_tri"
+    assert status_rows[-1]["payload"]["status"] == "disabled"
+    # Không được lẫn người bị đổi với người thực hiện.
+    assert role_rows[-1]["actor"] != "usr_bi_doi"
+
+
+def test_creating_an_account_is_recorded_with_its_creator(audit_client: AsyncClient):
+    """Không có tài khoản nào tồn tại mà không rõ ai tạo."""
+    store = get_mvp_store()
+    store.create_user(
+        user_id="usr_moi",
+        email="moi@benhvien.test",
+        role="investigator",
+        created_by="usr_quan_tri",
+        actor_role="admin",
+    )
+    rows = _rows("user_created")
+    assert rows and rows[-1]["actor"] == "usr_quan_tri"
+    assert rows[-1]["payload"]["user_id"] == "usr_moi"
+    assert rows[-1]["payload"]["role"] == "investigator"

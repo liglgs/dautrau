@@ -309,6 +309,7 @@ class MvpStore:
         idempotency_key: str | None = None,
         investigation_id: str | None = None,
         created_by: str = "anonymous",
+        actor_role: str | None = None,
     ) -> tuple[InvestigationState, bool]:
         """Tạo cuộc điều tra mới; trả ``(state, created)``.
 
@@ -368,7 +369,13 @@ class MvpStore:
                 ),
             )
             self._append_event(identifier, "created", "Tạo cuộc điều tra mới.")
-            self._audit(identifier, "system", "investigation_created", {"claim": claim.model_dump()})
+            self._audit(
+                identifier,
+                created_by,
+                "investigation_created",
+                {"claim": claim.model_dump()},
+                actor_role=actor_role,
+            )
         return state, True
 
     def get_state(self, investigation_id: str) -> InvestigationState:
@@ -390,6 +397,7 @@ class MvpStore:
         expected_version: int | None = None,
         event: tuple[str, str] | None = None,
         actor: str = "system",
+        actor_role: str | None = None,
     ) -> InvestigationState:
         """Lưu state với kiểm tra phiên bản (stale version không được ghi đè)."""
         with self._lock, self._conn:
@@ -429,6 +437,7 @@ class MvpStore:
                 actor,
                 "state_saved",
                 {"version": updated.version, "run_status": str(updated.run_status)},
+                actor_role=actor_role,
             )
         return updated
 
@@ -1126,8 +1135,13 @@ class MvpStore:
         display_name: str = "",
         password_hash: str | None = None,
         created_by: str = "system",
+        actor_role: str | None = None,
     ) -> dict[str, Any]:
-        """Tạo tài khoản. ``email`` duy nhất — trùng thì ném lỗi ràng buộc của cơ sở dữ liệu."""
+        """Tạo tài khoản. ``email`` duy nhất — trùng thì ném lỗi ràng buộc của cơ sở dữ liệu.
+
+        ``created_by`` là **mã người cấp tài khoản**; sự kiện được ghi nhật ký trong cùng giao dịch
+        với INSERT, nên không có tài khoản nào tồn tại mà không rõ ai tạo.
+        """
         timestamp = now_iso()
         with self._lock, self._conn:
             self._conn.execute(
@@ -1135,6 +1149,13 @@ class MvpStore:
                    (user_id, email, display_name, role, status, password_hash, created_at, updated_at, created_by)
                    VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?)""",
                 (user_id, email.lower().strip(), display_name or email, role, password_hash, timestamp, timestamp, created_by),
+            )
+            self._audit(
+                None,
+                created_by,
+                "user_created",
+                {"user_id": user_id, "email": email.lower().strip(), "role": role},
+                actor_role=actor_role,
             )
         return self.get_user(user_id)
 
@@ -1165,8 +1186,14 @@ class MvpStore:
         status: str | None = None,
         display_name: str | None = None,
         password_hash: str | None = None,
+        actor: str = "system",
+        actor_role: str | None = None,
     ) -> dict[str, Any] | None:
-        """Đổi vai/trạng thái. Đổi vai hoặc khoá tài khoản thì **thu hồi mọi phiên** của người đó."""
+        """Đổi vai/trạng thái. Đổi vai hoặc khoá tài khoản thì **thu hồi mọi phiên** của người đó.
+
+        ``actor`` là **mã người thực hiện** thay đổi, không phải người bị đổi — nhật ký phải trả lời
+        được "ai đã cấp quyền cho ai".
+        """
         fields: list[str] = []
         params: list[Any] = []
         for column, value in (
@@ -1191,6 +1218,15 @@ class MvpStore:
                 self._conn.execute(
                     "UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",
                     (now_iso(), user_id),
+                )
+                # B1.7 mục 3: đổi vai và khoá tài khoản phải để lại vết. Ghi **sau** khi đã thu hồi
+                # phiên, trong cùng giao dịch, để nhật ký không bao giờ nói dối về trạng thái.
+                self._audit(
+                    None,
+                    actor,
+                    "user_role_changed" if role is not None else "user_status_changed",
+                    {"user_id": user_id, "role": role, "status": status},
+                    actor_role=actor_role,
                 )
         return self.get_user(user_id)
 

@@ -89,10 +89,10 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
   if (authRoute) {
     for (const cookie of upstream.headers.getSetCookie()) {
       if (cookie.startsWith("session_id=")) {
-        responseHeaders.append(
-          "Set-Cookie",
-          request.nextUrl.protocol === "https:" ? `${cookie}; Secure` : cookie,
-        );
+        // Đừng lặp thuộc tính: upstream đã đặt `Secure` khi chạy sau HTTPS thì giữ nguyên.
+        const alreadySecure = /(^|;)\s*secure\s*(;|$)/i.test(cookie);
+        const needsSecure = request.nextUrl.protocol === "https:" && !alreadySecure;
+        responseHeaders.append("Set-Cookie", needsSecure ? `${cookie}; Secure` : cookie);
       }
     }
   }

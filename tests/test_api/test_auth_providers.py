@@ -169,6 +169,47 @@ async def test_production_rejects_the_legacy_static_token(provider_client: Async
 
 
 @pytest.mark.asyncio
+async def test_the_legacy_token_needs_an_explicit_opt_in(provider_client: AsyncClient, monkeypatch):
+    """Bỏ cờ bật thì khoá tĩnh cũ **không** chạy, dù môi trường chỉ là phát triển.
+
+    Trước đây nhánh này chỉ chặn ở ``APP_ENV=production``: một bản triển khai quên đặt ``APP_ENV``
+    mang mặc định ``development``, nên khoá dùng chung cũ tự sống lại. Nay phải bật tường minh.
+    """
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("INVESTIGATOR_TOKEN", "khoa-tam")
+    monkeypatch.setenv("VIGILENS_ALLOW_LEGACY_TOKENS", "0")
+    get_settings.cache_clear()
+    response = await provider_client.get(
+        "/api/v1/investigations", headers={"X-API-Token": "khoa-tam"}
+    )
+    assert response.status_code == 401, response.text
+
+
+@pytest.mark.asyncio
+async def test_the_legacy_token_works_when_it_is_deliberately_enabled(provider_client: AsyncClient, monkeypatch):
+    """Bật cờ ở môi trường phát triển thì nhánh cũ vẫn dùng được — đây là đường chạy ngoại tuyến."""
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("INVESTIGATOR_TOKEN", "khoa-tam")
+    monkeypatch.setenv("VIGILENS_ALLOW_LEGACY_TOKENS", "1")
+    get_settings.cache_clear()
+    response = await provider_client.get(
+        "/api/v1/investigations", headers={"X-API-Token": "khoa-tam"}
+    )
+    assert response.status_code == 200, response.text
+    me = await provider_client.get("/api/v1/auth/me", headers={"X-API-Token": "khoa-tam"})
+    assert me.json()["auth_method"] == "legacy_token"
+
+
+def test_an_environment_that_is_not_development_is_treated_as_production():
+    """``is_production_like`` là chốt chặn cuối: chỉ ``development``/``test`` mới là ngoài production."""
+    from src.config import Settings
+
+    assert Settings(app_env="development").is_production_like is False
+    assert Settings(app_env="test").is_production_like is False
+    assert Settings(app_env="production").is_production_like is True
+
+
+@pytest.mark.asyncio
 async def test_test_header_works_outside_production(provider_client: AsyncClient, monkeypatch):
     """Ngoài production, với cờ bật, ``X-Test-User`` dựng được danh tính — đây là đường kiểm thử."""
     monkeypatch.setenv("AUTH_PROVIDER", "local")

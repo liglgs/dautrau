@@ -18,6 +18,8 @@ TEST_AUTH_ENV = {
     "APP_ENV": "test",
     "VIGILENS_TEST_AUTH": "1",
     "SUPABASE_URL": "",
+    #: Khoá tĩnh cũ mặc định **tắt** (B1.7); bộ kiểm thử bật tường minh để vẫn phủ được nhánh đó.
+    "VIGILENS_ALLOW_LEGACY_TOKENS": "1",
 }
 #: Khoá Supabase bị bỏ khỏi môi trường kiểm thử để không nhà cung cấp nào chạm tới mạng.
 SUPABASE_ENV_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY")

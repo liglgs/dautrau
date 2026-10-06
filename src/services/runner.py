@@ -121,8 +121,12 @@ class InProcessRunner:
     def is_cancelled(self, investigation_id: str) -> bool:
         return investigation_id in self._cancelled_ids
 
-    def cancel(self, investigation_id: str) -> InvestigationState:
-        """Hủy cuộc điều tra: giải phóng runner nếu đang chạy, chuyển trạng thái sang CANCELLED."""
+    def cancel(self, investigation_id: str, *, actor: str = "system", actor_role: str | None = None) -> InvestigationState:
+        """Hủy cuộc điều tra: giải phóng runner nếu đang chạy, chuyển trạng thái sang CANCELLED.
+
+        ``actor`` là **mã người** bấm hủy (AUTH-03/B1.7 mục 3) — trước đây thao tác của người dùng
+        bị ghi nhật ký thành ``system``, nên không truy được ai đã hủy.
+        """
         state = self.store.get_state(investigation_id)
         if state.run_status in (RunStatus.COMPLETED, RunStatus.FAILED, RunStatus.CANCELLED):
             raise invalid_state(
@@ -131,7 +135,12 @@ class InProcessRunner:
             )
         self._cancelled_ids.add(investigation_id)
         cancelled_state = state.model_copy(update={"run_status": RunStatus.CANCELLED})
-        saved = self.store.save_state(cancelled_state, event=("cancelled", "Người dùng đã hủy cuộc điều tra."))
+        saved = self.store.save_state(
+            cancelled_state,
+            event=("cancelled", "Người dùng đã hủy cuộc điều tra."),
+            actor=actor,
+            actor_role=actor_role,
+        )
         return saved
 
     def register_resume(self, investigation_id: str, token: str | None) -> bool:
