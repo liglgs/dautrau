@@ -90,9 +90,13 @@ def _outcome_from_error(error: str | None) -> Outcome:
 def _coverage(documents: list[Any], *, partial: bool) -> str:
     if not documents:
         return "empty"
-    if all((document.metadata or {}).get("content_level") == "abstract_only" for document in documents):
+    abstract_only = [
+        (document.metadata or {}).get("content_level") == "abstract_only"
+        for document in documents
+    ]
+    if all(abstract_only):
         return "abstract_only"
-    return "partial" if partial else "complete"
+    return "partial" if partial or any(abstract_only) else "complete"
 
 
 def source_result_from_search(result: SourceSearchResult) -> SourceResult:
@@ -170,12 +174,13 @@ def source_result_from_fetch(fetch_result: Any, *, partial: bool = False, metada
     return SourceResult(
         source=str(getattr(fetch_result, "source", "")),
         outcome=outcome,
-        retryable=outcome in {"timeout", "rate_limited"} or (status is not None and status >= 500),
+        retryable=outcome in {"timeout", "rate_limited", "unavailable"} or (status is not None and status >= 500),
         source_gap=status == 404 or str(error or "").casefold().startswith("http_404"),
         error=error,
         http_status=status,
         coverage=(
-            "partial" if outcome == "partial"
+            "abstract_only" if outcome == "ok" and metadata.get("content_level") == "abstract_only"
+            else "partial" if outcome == "partial"
             else "empty" if outcome == "empty"
             else "complete" if outcome == "ok"
             else "unavailable"

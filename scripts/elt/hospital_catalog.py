@@ -99,6 +99,10 @@ def _normalise_strength(value: str) -> str:
 
     text = unicodedata.normalize("NFKD", _value(value)).casefold()
     text = "".join(character for character in text if not unicodedata.combining(character))
+    if re.search(r"\d[.,]\d{3}(?=\s*[a-zµμ%])", text):
+        # A separator followed by three digits can be decimal or thousands.
+        # Do not guess the catalog locale.
+        return "ambiguous:" + re.sub(r"\s+", "", text)
     match = _STRENGTH.fullmatch(text)
     if match:
         try:
@@ -179,7 +183,12 @@ def map_dailymed(record: HospitalDrugRecord, products: list[DailyMedProduct]) ->
             "dosage_form": _normalise(product.dosage_form),
             "route": _normalise(product.route),
         }
-        mismatches = tuple(field for field in expected if expected[field] != actual[field])
+        mismatches = tuple(
+            field
+            for field in expected
+            if expected[field] != actual[field]
+            or (field == "strength" and (expected[field].startswith("ambiguous:") or actual[field].startswith("ambiguous:")))
+        )
         if not mismatches:
             mappings.append(
                 DailyMedMapping(
@@ -219,7 +228,9 @@ def map_dailymed(record: HospitalDrugRecord, products: list[DailyMedProduct]) ->
                         "strength": _normalise_strength(product.strength),
                         "dosage_form": _normalise(product.dosage_form),
                         "route": _normalise(product.route),
-                    }.items() if expected[field] != value
+                    }.items()
+                    if expected[field] != value
+                    or (field == "strength" and (expected[field].startswith("ambiguous:") or value.startswith("ambiguous:")))
                 ),
                 provenance={
                     "source": "dailymed",

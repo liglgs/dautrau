@@ -25,6 +25,11 @@ def _document(*, warnings: list[str] | None = None) -> SourceDocument:
     )
 
 
+def _full_text_document() -> SourceDocument:
+    document = _document()
+    return document.model_copy(update={"doc_id": "pubmed:2:1", "source_id": "2", "metadata": {"content_level": "full_text"}})
+
+
 def test_source_result_keeps_abstract_only_coverage_when_document_is_truncated() -> None:
     result = SourceSearchResult(
         source="pubmed", query="drug event", fingerprint="query", status=SourceStatus.OK,
@@ -46,6 +51,15 @@ def test_skipped_and_ok_without_documents_are_non_results() -> None:
 
     assert (skipped.outcome, skipped.coverage, skipped.ok) == ("skipped", "not_requested", False)
     assert (no_documents.outcome, no_documents.coverage, no_documents.ok) == ("empty", "empty", False)
+
+
+def test_mixed_abstract_and_full_text_results_are_partial() -> None:
+    result = SourceSearchResult(
+        source="pubmed", query="drug event", fingerprint="query", status=SourceStatus.OK,
+        documents=[_document(), _full_text_document()], requests_used=1,
+    )
+
+    assert source_result_from_search(result).coverage == "partial"
 
 
 def test_source_result_distinguishes_timeout_rate_limit_and_empty() -> None:
@@ -112,3 +126,27 @@ def test_fetch_404_is_source_gap_not_empty_and_metadata_is_preserved() -> None:
     assert result.published_date == "2026-01-01"
     assert result.effective_time == "2025-11-01"
     assert result.retrieved_at == "2026-10-06T17:31:41+00:00"
+
+
+def test_fetch_preserves_abstract_only_and_network_retry_semantics() -> None:
+    class AbstractFetch:
+        source = "pubmed"
+        status = 200
+        error = None
+        body = b"abstract"
+        url = "https://pubmed.ncbi.nlm.nih.gov/1/"
+        params = {}
+        sha256 = "a" * 64
+        path = "snapshot.xml"
+
+    class NetworkFetch(AbstractFetch):
+        status = None
+        error = "network: ConnectError: unavailable"
+        body = b""
+
+    abstract = source_result_from_fetch(AbstractFetch(), metadata={"content_level": "abstract_only"})
+    network = source_result_from_fetch(NetworkFetch())
+
+    assert abstract.coverage == "abstract_only"
+    assert network.outcome == "unavailable"
+    assert network.retryable is True

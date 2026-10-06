@@ -26,6 +26,7 @@
 | `citation_integrity` | `verified`, `failed`, `unavailable` | Quote/locator/version phải kiểm với snapshot. |
 | `citation_entailment` | `supported`, `unsupported`, `uncertain` | Quote đúng vị trí chưa đủ chứng minh conclusion. |
 | `coverage` | `abstract_only`, `partial`, `complete_for_question`, `unknown` | `abstract_only` không được mô tả là full text. |
-| `disagreement.status` | `none`, `open`, `resolved` | `resolved` yêu cầu dược sĩ/đơn vị phê duyệt quy trình. |
+| `disagreement.status` | `not_compared`, `none`, `open`, `resolved` | Mẫu trống dùng `not_compared`; chỉ dùng `none` sau khi đã so sánh hai nhãn độc lập. |
+| `ai_generated` | `null`, `true`, `false` | Mẫu trống dùng `null`; `true` không bao giờ được dùng làm gold. |
 
 Mọi output từ ledger phải kèm: **đề xuất, chờ dược sĩ xác nhận**.

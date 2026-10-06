@@ -14,7 +14,7 @@ from scripts.elt.hospital_catalog import (
     map_dailymed,
 )
 
-FIXTURE = Path("data/dictionaries/hospital-drug-catalog.synthetic.csv")
+FIXTURE = Path(__file__).resolve().parents[2] / "data/dictionaries/hospital-drug-catalog.synthetic.csv"
 
 
 def test_synthetic_catalog_is_labelled_at_file_and_record_level() -> None:
@@ -141,3 +141,18 @@ def test_dailymed_mapping_never_collapses_decimal_strengths(
 
     assert mapping.status == "unknown"
     assert mapping.mismatch_fields == ("strength",)
+
+
+@pytest.mark.parametrize("catalog_strength", ["1,000 mg", "1.000 mg"])
+def test_dailymed_mapping_rejects_ambiguous_thousands_separators(catalog_strength: str) -> None:
+    record = replace(import_hospital_catalog(FIXTURE)[2], strength=catalog_strength)
+    one_mg = DailyMedProduct(
+        setid="one-mg", version=1, active_ingredient="pantoprazole", strength="1 mg",
+        dosage_form="tablet", route="oral",
+    )
+    same_ambiguous_text = replace(one_mg, setid="same-text", strength=catalog_strength)
+
+    mappings = map_dailymed(record, [one_mg, same_ambiguous_text])
+
+    assert all(mapping.status == "unknown" for mapping in mappings)
+    assert all("strength" in mapping.mismatch_fields for mapping in mappings)

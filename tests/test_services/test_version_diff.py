@@ -44,6 +44,14 @@ def test_whitespace_only_change_does_not_create_review_work() -> None:
     assert changes.reason == "content_normalized_unchanged"
 
 
+def test_paragraph_merge_is_a_visible_change() -> None:
+    changes = diff_versions(_document(1, "A\n\nB"), _document(2, "A B"))
+
+    assert changes.changed is True
+    assert changes.requires_review is True
+    assert changes.changes
+
+
 def test_changed_content_has_paragraph_diff_and_provenance() -> None:
     changes = diff_versions(
         _document(1, "Title\n\nWarnings\nTake with food."),

@@ -1793,7 +1793,25 @@
             ],
             "properties": {
               "assessed_by": {
-                "$ref": "#/$defs/Actor"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Actor"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "role"
+                    ],
+                    "properties": {
+                      "role": {
+                        "enum": [
+                          "pharmacist",
+                          "reviewer"
+                        ]
+                      }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -1818,7 +1836,62 @@
             ],
             "properties": {
               "assessed_by": {
-                "$ref": "#/$defs/Actor"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Actor"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "role"
+                    ],
+                    "properties": {
+                      "role": {
+                        "enum": [
+                          "pharmacist",
+                          "reviewer"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "const": "confirmed_by_pharmacist"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "assessed_by"
+            ],
+            "properties": {
+              "assessed_by": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Actor"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "role"
+                    ],
+                    "properties": {
+                      "role": {
+                        "const": "pharmacist"
+                      }
+                    }
+                  }
+                ]
               }
             }
           }

@@ -223,12 +223,23 @@ def test_case_record_rejects_unowned_assessments_and_unsafe_unknowns(schemas: di
     proposed = deepcopy(record["assessments"][0])
     proposed.update({"status": "proposed_needs_pharmacist_confirmation", "framework": "local_rubric", "value": "draft"})
     assert _validation_errors(schemas, "CaseAssessment", proposed), "assessment không-unknown cần assessed_by"
-    proposed["assessed_by"] = {"id": "synthetic-pharmacist", "role": "pharmacist"}
+    proposed["assessed_by"] = {"id": "synthetic-reviewer", "role": "reviewer"}
     assert not _validation_errors(schemas, "CaseAssessment", proposed)
+    proposed["assessed_by"] = {"id": "llm-agent", "role": "service"}
+    assert _validation_errors(schemas, "CaseAssessment", proposed), "assessment đề xuất cần người đánh giá"
 
     naranjo = deepcopy(record["assessments"][0])
     naranjo.update({"status": "proposed_needs_pharmacist_confirmation", "framework": "naranjo", "value": "4"})
     assert _validation_errors(schemas, "CaseAssessment", naranjo), "Naranjo cần assessed_by"
+    naranjo["assessed_by"] = {"id": "llm-agent", "role": "service"}
+    assert _validation_errors(schemas, "CaseAssessment", naranjo), "Naranjo không cho service tự đánh giá"
+
+    confirmed = deepcopy(naranjo)
+    confirmed.update({"status": "confirmed_by_pharmacist", "framework": "local_rubric", "value": "confirmed"})
+    confirmed["assessed_by"] = {"id": "reviewer-1", "role": "reviewer"}
+    assert _validation_errors(schemas, "CaseAssessment", confirmed), "confirmed cần vai trò pharmacist"
+    confirmed["assessed_by"] = {"id": "pharmacist-1", "role": "pharmacist"}
+    assert not _validation_errors(schemas, "CaseAssessment", confirmed)
 
     unsafe_synthetic = deepcopy(record)
     unsafe_synthetic["record_status"] = "confirmed_by_pharmacist"

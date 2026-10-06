@@ -64,8 +64,8 @@ def _hash(text: str) -> str:
 
 
 def _normalised_content(text: str) -> str:
-    """Collapse formatting-only whitespace before deciding whether human review is needed."""
-    return re.sub(r"\s+", " ", text).strip()
+    """Collapse whitespace inside paragraphs while preserving paragraph boundaries."""
+    return "\n\n".join(re.sub(r"\s+", " ", paragraph).strip() for paragraph in _paragraphs(text))
 
 
 def _validate(document: VersionedDocument) -> None:
