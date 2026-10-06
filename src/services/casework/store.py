@@ -114,6 +114,11 @@ INVESTIGATION_ID_MAX_LENGTH = 120
 REVISION_REASON_MAX_LENGTH = 300
 REVIEW_REASON_MAX_LENGTH = 1000
 
+#: Trần của cột ``version`` (int4). ``expected_version`` lớn hơn giá trị này thì ``expected + 1``
+#: tràn số **trong cơ sở dữ liệu**, và lỗi đó thoát ra thành 500 văn bản trần — không phải thân lỗi
+#: hợp đồng, và không phải điều người gọi gây ra có thể hiểu được. So sánh trước khi cộng.
+VERSION_MAX = 2**31 - 1
+
 WORK_ITEM_REVIEW_TARGET = {
     "approve": "approved",
     "reject": "rejected",
@@ -561,6 +566,14 @@ class CaseWorkStore:
         changed_fields: list[str] | None = None,
     ) -> dict[str, Any]:
         """Cập nhật có khoá lạc quan: chỉ một người thắng mỗi phiên bản."""
+        # Một số phiên bản không thể tồn tại thì là **xung đột phiên bản**, không phải lỗi máy chủ.
+        # Không kiểm ở đây thì ``expected + 1`` tràn int4 và người gọi nhận 500 văn bản trần. Đường
+        # duyệt phiếu trả lời đã so sánh trước từ lâu; đường này thì chưa.
+        if expected >= VERSION_MAX:
+            current = session.get(WorkItem, work_item_id)
+            if current is None:
+                raise not_found("yêu cầu", work_item_id)
+            raise version_conflict(expected, current.version)
         values = {WORK_ITEM_COLUMNS[field]: changes[field] for field in changes}
         values.update(
             version=expected + 1,

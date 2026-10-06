@@ -176,6 +176,12 @@ class LocalProvider:
         )
 
 
+#: Sau một lần lấy JWKS hỏng, **không** thử lại trong ngần này giây. Không có chốt này thì mỗi yêu
+#: cầu mang thông tin xác thực đúng dạng JWT lại chờ đủ 10 giây thời gian chờ mạng khi Supabase
+#: không tới được — và người chưa xác thực cũng kích hoạt được đường đó.
+_JWKS_FAILURE_BACKOFF_SECONDS = 30.0
+
+
 class SupabaseProvider:
     """Chế độ Supabase: kiểm chữ ký JWT bằng JWKS của dự án, vai tra từ ``app_users``.
 
@@ -187,6 +193,8 @@ class SupabaseProvider:
     def __init__(self) -> None:
         self._jwks: dict[str, Any] | None = None
         self._jwks_at: float = 0.0
+        self._jwks_error: Exception | None = None
+        self._jwks_error_at: float = 0.0
 
     def _load_jwks(self) -> dict[str, Any]:
         import json
@@ -197,10 +205,25 @@ class SupabaseProvider:
         # Đệm 5 phút: JWKS gần như không đổi, mà gọi mỗi request thì chậm và dễ bị chặn.
         if self._jwks is not None and (time.monotonic() - self._jwks_at) < 300:
             return self._jwks
+        # Lần hỏng **không** được ghi vào đệm, nên không có chốt này thì mỗi yêu cầu lại chờ đủ thời
+        # gian chờ mạng. Đo được: một thông tin xác thực đúng dạng JWT (``aaa.bbb.ccc``) gửi tới khi
+        # Supabase không tới được giữ yêu cầu **10,02 giây**, và người **chưa xác thực** cũng kích
+        # hoạt được đường đó — đủ để rút cạn nhóm luồng. Nhớ lần hỏng trong 30 giây để hoá đơn đó
+        # không trả được nhiều lần liên tiếp.
+        if (
+            self._jwks_error is not None
+            and (time.monotonic() - self._jwks_error_at) < _JWKS_FAILURE_BACKOFF_SECONDS
+        ):
+            raise self._jwks_error
         url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
-        with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310 - URL do cấu hình, không do người dùng
-            payload = json.loads(response.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310 - URL do cấu hình, không do người dùng
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception as exc:
+            self._jwks_error, self._jwks_error_at = exc, time.monotonic()
+            raise
         self._jwks, self._jwks_at = payload, time.monotonic()
+        self._jwks_error = None
         return payload
 
     def _decode(self, token: str) -> dict[str, Any]:

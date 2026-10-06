@@ -436,6 +436,14 @@ def _split_older_bundles(
     kept: list[dict[str, Any]] = []
     dropped: list[dict[str, Any]] = []
     for bundle in bundles[:-1]:
+        # Mục không phải đối tượng thì bản thân nó là dữ liệu hỏng, không phải lỗi máy chủ. Không
+        # kiểm ở đây thì ``bundle.get`` ném ``AttributeError``, và vì hàm này nằm trên đường 500
+        # dùng chung nên cả ca đổ theo — đúng thứ mà hàm này sinh ra để chặn.
+        if not isinstance(bundle, dict):
+            dropped.append(
+                {"bundle_id": None, "violations": [f"<gốc>: gói bằng chứng không phải đối tượng ({type(bundle).__name__})"]}
+            )
+            continue
         violations = contract_violations("EvidenceBundle", bundle)
         if violations:
             dropped.append({"bundle_id": bundle.get("bundle_id"), "violations": violations})

@@ -345,3 +345,94 @@ async def test_http_has_no_local_fallback_in_supabase_mode(supabase_client):
     """``AUTH_PROVIDER=supabase`` là chế độ cứng: không có đường lùi về mật khẩu nội bộ."""
     response = await supabase_client.get("/api/v1/investigations")
     assert response.status_code == 401, response.text
+
+
+def test_a_failed_jwks_fetch_is_not_paid_for_twice_in_a_row(monkeypatch):
+    """Lần lấy JWKS hỏng phải được nhớ tạm, không thì mỗi yêu cầu lại trả đủ 10 giây.
+
+    Đo được trước khi sửa: một thông tin xác thực đúng dạng JWT (``aaa.bbb.ccc``) gửi tới khi
+    Supabase không tới được giữ yêu cầu **10,02 giây**, và người **chưa xác thực** cũng kích hoạt
+    được đường đó — đủ để rút cạn nhóm luồng. Bài này khoá lại việc lần hỏng được ghi nhớ.
+    """
+    import time
+    import urllib.error
+    import urllib.request
+
+    calls = []
+
+    def failing_urlopen(url, timeout=None):
+        calls.append(url)
+        time.sleep(0.2)  # giả làm thời gian chờ mạng
+        raise urllib.error.URLError("không tới được")
+
+    monkeypatch.setattr(urllib.request, "urlopen", failing_urlopen)
+    provider = SupabaseProvider()
+
+    started = time.monotonic()
+    with pytest.raises(urllib.error.URLError):
+        provider._load_jwks()
+    first = time.monotonic() - started
+
+    started = time.monotonic()
+    with pytest.raises(urllib.error.URLError):
+        provider._load_jwks()
+    second = time.monotonic() - started
+
+    assert len(calls) == 1, "lần hỏng phải được nhớ tạm, không gọi mạng lại ngay"
+    assert first >= 0.2, "lần đầu phải thật sự chờ mạng"
+    assert second < 0.1, f"lần sau phải trả lời ngay, đo được {second:.3f} giây"
+
+
+def test_the_jwks_backoff_expires_and_a_good_fetch_clears_it(monkeypatch):
+    """Chốt tạm phải hết hạn, và một lần lấy thành công phải xoá nó hẳn.
+
+    Không có bài này thì một lần hỏng thoáng qua sẽ khoá người dùng Supabase thật lâu hơn 30 giây
+    dự kiến, hoặc khoá vĩnh viễn nếu nhánh xoá bị bỏ quên.
+    """
+    import urllib.error
+    import urllib.request
+
+    from src.api import auth as auth_module
+
+    state = {"fail": True}
+    calls = []
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return b'{"keys": []}'
+
+    def urlopen(url, timeout=None):
+        calls.append(url)
+        if state["fail"]:
+            raise urllib.error.URLError("không tới được")
+        return FakeResponse()
+
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(auth_module, "_JWKS_FAILURE_BACKOFF_SECONDS", 0.05)
+    provider = SupabaseProvider()
+
+    with pytest.raises(urllib.error.URLError):
+        provider._load_jwks()
+    assert len(calls) == 1
+
+    # Trong cửa sổ chốt tạm: không gọi mạng.
+    with pytest.raises(urllib.error.URLError):
+        provider._load_jwks()
+    assert len(calls) == 1
+
+    # Hết cửa sổ: thử lại, lần này thành công.
+    time_module = __import__("time")
+    time_module.sleep(0.06)
+    state["fail"] = False
+    assert provider._load_jwks() == {"keys": []}
+    assert len(calls) == 2
+
+    # Thành công rồi thì chốt tạm biến mất: lần sau lấy từ đệm, không gọi mạng nữa.
+    assert provider._load_jwks() == {"keys": []}
+    assert len(calls) == 2

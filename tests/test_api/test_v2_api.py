@@ -1541,3 +1541,77 @@ async def test_a_broken_newest_bundle_still_stops_the_read(v2_client_with_store)
     body = response.json()
     assert body["error"]["code"] == "unavailable"
     assert body["error"]["details"]["bundle_id"] == "eb_moi_hong"
+
+
+# ---------------------------------------------- hai lỗ của vòng kiểm thử thứ tư
+@pytest.mark.asyncio
+async def test_an_impossible_expected_version_is_a_conflict_not_a_crash(v2_client_with_store):
+    """``expected_version`` vượt trần int4 phải là **409**, không phải 500 văn bản trần.
+
+    Đo được trước khi sửa: ``PATCH`` với ``expected_version = 2147483647`` trả **500**
+    ``text/plain`` "Internal Server Error" — ``_apply_work_item_change`` cộng ``expected + 1`` rồi
+    gán vào cột ``version`` (int4) nên cơ sở dữ liệu ném ``NumericValueOutOfRange``. Lỗi đó do người
+    gọi gây ra và trả lời được, nên phải là một thân lỗi hợp đồng. Đường duyệt phiếu trả lời đã so
+    sánh trước từ lâu và trả 409 cho đúng giá trị này — hai đường phải nói cùng một câu.
+
+    Giới hạn của bài này: **SQLite không có int4**, nên ở đây bài xanh cả khi thiếu chốt trần (nó
+    vẫn 409 nhờ nhánh ``rowcount != 1``). Bài chỉ thật sự phân biệt trên PostgreSQL. Đã chứng minh
+    đỏ ở đó: không có chốt trần thì ``PATCH`` trả **500** ``text/plain`` "Internal Server Error";
+    có chốt trần thì **409** ``application/json`` với thân lỗi hợp đồng.
+    """
+    client, store = v2_client_with_store
+    created = await client.post(
+        "/api/v2/work-items",
+        headers=_headers("investigator"),
+        json={"question": "Câu hỏi?", "context": {"requester": {"id": "usr_investigator"}, "channel": "web", "raw_text": "x", "language": "vi"}},
+    )
+    assert created.status_code == 201, created.text
+    work_item_id = created.json()["work_item_id"]
+
+    response = await client.patch(
+        f"/api/v2/work-items/{work_item_id}",
+        headers=_headers("investigator"),
+        json={"expected_version": 2**31 - 1, "priority": "urgent"},
+    )
+    assert response.status_code == 409, response.text
+    body = response.json()
+    assert set(body) == {"error"}
+    assert body["error"]["code"] == ErrorCode.VERSION_CONFLICT.value
+    assert body["error"]["details"]["expected_version"] == 2**31 - 1
+    # Và bản ghi không được đổi: yêu cầu vẫn ở phiên bản cũ.
+    reread = await client.get(f"/api/v2/work-items/{work_item_id}", headers=_headers("investigator"))
+    assert reread.json()["work_item"]["version"] == 1
+
+
+def test_a_bundle_entry_that_is_not_an_object_is_dropped_not_fatal():
+    """Mục không phải đối tượng là **dữ liệu hỏng**, không phải lỗi máy chủ.
+
+    Hàm này nằm trên đường 500 dùng chung, nên ``bundle.get`` ném ``AttributeError`` là cả ca đổ
+    theo — đúng thứ mà nó sinh ra để chặn. Đo được trước khi sửa:
+    ``AttributeError: 'NoneType' object has no attribute 'get'``.
+    """
+    from src.api.v2_routes import _split_older_bundles
+
+    newest = {
+        "bundle_id": "eb_moi",
+        "work_item_id": "wi_1",
+        "investigation_id": "INV-1",
+        "created_at": "2026-01-02T00:00:00Z",
+        "items": [],
+        "gaps": [],
+        "coverage": {
+            "documents_retrieved": 0,
+            "sources_ok": [],
+            "sources_empty": [],
+            "sources_error": [],
+            "abstract_only": False,
+        },
+        "assessment_status": "insufficient_evidence",
+        "source_errors": [],
+    }
+    kept, dropped = _split_older_bundles("wi_1", [None, "chuỗi", 7, [1, 2], newest])
+    assert kept == [newest]
+    assert len(dropped) == 4
+    assert all(item["bundle_id"] is None for item in dropped)
+    assert all(item["violations"] for item in dropped)
+    assert all("không phải đối tượng" in item["violations"][0] for item in dropped)
