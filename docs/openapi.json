@@ -319,6 +319,7 @@
           "note": {
             "anyOf": [
               {
+                "maxLength": 400,
                 "type": "string"
               },
               {
@@ -1488,7 +1489,7 @@
             "type": "string"
           },
           "raw_text": {
-            "maxLength": 20000,
+            "maxLength": 4000,
             "minLength": 1,
             "title": "Raw Text",
             "type": "string"
@@ -1769,13 +1770,73 @@
       },
       "Scope": {
         "additionalProperties": false,
-        "description": "Phạm vi của yêu cầu. Hợp đồng đòi **cả hai** khóa ``drug`` và ``event``.",
+        "description": "Phạm vi của yêu cầu: ``drug`` và ``event`` bắt buộc, sáu trường còn lại tuỳ chọn.",
         "properties": {
+          "comparator": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dose": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "drug": {
             "$ref": "#/components/schemas/ScopeField"
           },
           "event": {
             "$ref": "#/components/schemas/ScopeField"
+          },
+          "indication": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "population": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "route": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "time_window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeField"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1974,7 +2035,7 @@
         "additionalProperties": false,
         "properties": {
           "field": {
-            "maxLength": 200,
+            "maxLength": 80,
             "minLength": 1,
             "title": "Field",
             "type": "string"
@@ -1985,7 +2046,7 @@
             "type": "boolean"
           },
           "reason": {
-            "maxLength": 500,
+            "maxLength": 300,
             "minLength": 1,
             "title": "Reason",
             "type": "string"
@@ -2074,7 +2135,10 @@
             "$ref": "#/components/schemas/RequestContext"
           },
           "labels": {
-            "additionalProperties": true,
+            "additionalProperties": {
+              "maxLength": 80,
+              "type": "string"
+            },
             "title": "Labels",
             "type": "object"
           },
@@ -2119,7 +2183,7 @@
           "revision_reason": {
             "anyOf": [
               {
-                "maxLength": 500,
+                "maxLength": 300,
                 "type": "string"
               },
               {
@@ -2157,7 +2221,10 @@
           "labels": {
             "anyOf": [
               {
-                "additionalProperties": true,
+                "additionalProperties": {
+                  "maxLength": 80,
+                  "type": "string"
+                },
                 "type": "object"
               },
               {

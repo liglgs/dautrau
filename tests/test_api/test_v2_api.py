@@ -704,12 +704,14 @@ async def test_the_scope_carries_what_the_caller_did_say(v2_client):
             "event": {"value": "nhiễm toan lactic", "resolution": "candidate"},
         },
     )
+    # ``source`` có mặt vì người gọi nêu; ``evidence_ref`` **vắng hẳn** chứ không bằng ``null`` —
+    # hợp đồng cho phép vắng trường tuỳ chọn nhưng không cho ``null``.
     assert document["scope"]["drug"] == {
         "value": "metformin",
         "resolution": "confirmed",
         "source": "requester",
-        "evidence_ref": None,
     }
+    assert "evidence_ref" not in document["scope"]["drug"]
     assert document["scope"]["event"]["resolution"] == "candidate"
 
 
@@ -786,3 +788,129 @@ async def test_lengths_follow_the_contract_not_the_router(v2_client):
         headers=_headers("investigator"),
     )
     assert long_note.status_code == 422, long_note.text
+
+
+@pytest.mark.asyncio
+async def test_the_other_six_scope_fields_are_accepted_and_kept(v2_client):
+    """Hợp đồng có **tám** trường phạm vi, không phải hai.
+
+    Chỉ khai ``drug``/``event`` thì một yêu cầu hợp lệ có nêu dân số hay đường dùng bị trả 422, và
+    B4.3 sẽ không có chỗ đặt sáu trường còn lại.
+    """
+    client = v2_client
+    document = await _create(
+        client,
+        scope={
+            "drug": {"value": "metformin", "resolution": "confirmed"},
+            "event": {"value": "nhiễm toan lactic", "resolution": "candidate"},
+            "population": {"value": "người suy thận giai đoạn 3b", "resolution": "confirmed"},
+            "route": {"value": "uống", "resolution": "confirmed"},
+            "dose": {"resolution": "unknown"},
+            "time_window": {"value": "12 tuần", "resolution": "candidate"},
+            "indication": {"value": "đái tháo đường týp 2", "resolution": "confirmed"},
+            "comparator": {"resolution": "unknown"},
+        },
+    )
+    scope = document["scope"]
+    assert set(scope) == {
+        "drug",
+        "event",
+        "population",
+        "route",
+        "dose",
+        "time_window",
+        "indication",
+        "comparator",
+    }
+    assert scope["population"]["value"] == "người suy thận giai đoạn 3b"
+    assert scope["comparator"] == {"value": None, "resolution": "unknown"}
+
+
+@pytest.mark.asyncio
+async def test_a_scope_field_never_carries_a_null_source(v2_client):
+    """Trường tuỳ chọn của ``ScopeField`` vắng hẳn khi chưa biết, không mang giá trị ``null``."""
+    client = v2_client
+    document = await _create(client)
+    for name in ("drug", "event"):
+        assert set(document["scope"][name]) == {"value", "resolution"}, document["scope"][name]
+
+
+@pytest.mark.asyncio
+async def test_the_context_never_carries_a_null_optional_field(v2_client):
+    """``Actor.role`` và ``source_system`` vắng hẳn khi chưa biết: hợp đồng cho vắng, không cho ``null``."""
+    client = v2_client
+    document = await _create(client)
+    context = document["context"]
+    assert set(context["requester"]) == {"id"}, context["requester"]
+    assert "source_system" not in context
+    assert context["request_id"] and context["received_at"]
+
+
+@pytest.mark.asyncio
+async def test_clearing_an_owner_is_a_queue_operation(v2_client):
+    """Xoá chủ sở hữu cũng phải có ``queue:assign``.
+
+    Không chặn thì người điều tra tạo ca với ``requester.id`` của người khác rồi xoá chủ sở hữu, và
+    ca tự rơi vào hàng đợi của người đó — quyền ``queue:assign`` bị lách đúng bằng đường vòng.
+    """
+    client = v2_client
+    created = await _create(client, "investigator")
+    denied = await client.patch(
+        f"/api/v2/work-items/{created['work_item_id']}",
+        json={"expected_version": created["version"], "owner": None},
+        headers=_headers("investigator"),
+    )
+    assert denied.status_code == 403, denied.text
+
+    allowed = await client.patch(
+        f"/api/v2/work-items/{created['work_item_id']}",
+        json={"expected_version": created["version"], "owner": None},
+        headers=_headers("reviewer"),
+    )
+    assert allowed.status_code == 200, allowed.text
+    assert not allowed.json()["owner"]
+
+
+@pytest.mark.asyncio
+async def test_naming_someone_else_as_the_requester_needs_queue_assign(v2_client):
+    """``context.requester`` cấp quyền đọc qua đường dự phòng, nên nêu tên người khác cũng là giao việc."""
+    client = v2_client
+    forged = _body()
+    forged["context"]["requester"] = {"id": "usr_nguoi_khac"}
+    denied = await client.post("/api/v2/work-items", json=forged, headers=_headers("investigator"))
+    assert denied.status_code == 403, denied.text
+
+    allowed = await client.post("/api/v2/work-items", json=forged, headers=_headers("reviewer"))
+    assert allowed.status_code == 201, allowed.text
+
+    self_named = _body()
+    self_named["context"]["requester"] = {"id": "usr_investigator"}
+    mine = await client.post("/api/v2/work-items", json=self_named, headers=_headers("investigator"))
+    assert mine.status_code == 201, mine.text
+
+
+@pytest.mark.asyncio
+async def test_the_response_never_carries_a_null_coverage_list(v2_client):
+    """``full_text_sources`` và ``note`` vắng hẳn khi chưa biết."""
+    client = v2_client
+    created = await _create(client, "investigator")
+    response = await client.post(
+        f"/api/v2/work-items/{created['work_item_id']}/responses",
+        json={
+            "sections": [{"key": "summary", "title": "Tóm tắt", "text": "Nháp.", "citations": []}],
+            "assessment_status": "insufficient_evidence",
+            "coverage": {
+                "documents_retrieved": 1,
+                "sources_ok": ["pubmed"],
+                "sources_empty": [],
+                "sources_error": [],
+                "abstract_only": True,
+            },
+        },
+        headers=_headers("investigator"),
+    )
+    assert response.status_code == 201, response.text
+    coverage = response.json()["coverage"]
+    assert "full_text_sources" not in coverage
+    assert "note" not in coverage
+    assert coverage["abstract_only"] is True

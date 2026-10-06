@@ -16,10 +16,12 @@ Bốn quy tắc chi phối toàn bộ tệp:
 * **Phiếu trả lời luôn sinh ra ở dạng nháp.** ``POST /responses`` không có tham số nào để tạo bản
   đã duyệt; chỉ ``POST /responses/{id}/review`` với quyền ``review:decide`` mới đổi được trạng thái.
   "Xuất" và "gửi" cũng là hai việc khác nhau — tệp này không gửi đi đâu cả.
-* **Danh tính lấy từ phiên đăng nhập, không lấy từ thân yêu cầu.** Ai duyệt, ai soạn phiếu đều do
-  máy chủ điền từ danh tính đã xác thực. Không có trường nào trong thân yêu cầu ghi đè được, vì
-  như vậy bất kỳ ai cũng ký được quyết định dưới tên đồng nghiệp. Người ta **chỉ** được nêu tên
-  người khác khi giao việc (``owner``, ``assignee``) và phải có quyền ``queue:assign``.
+* **Danh tính lấy từ phiên đăng nhập, không lấy từ thân yêu cầu.** Ai duyệt và ai soạn phiếu đều
+  do máy chủ điền từ danh tính đã xác thực; không có trường nào trong thân yêu cầu ghi đè được, vì
+  như vậy bất kỳ ai cũng ký được quyết định dưới tên đồng nghiệp. Ba chỗ còn lại **được** nêu tên
+  người khác — ``owner``, ``assignee``, ``context.requester`` — nhưng đều đòi quyền ``queue:assign``,
+  vì cả ba đều là giao việc hoặc cấp quyền đọc cho người khác. ``role``/``unit`` đi kèm những cái
+  tên đó là dữ liệu ghi lại, **không** cấp quyền gì.
 
 Chỗ tệp này cố ý khác hợp đồng ``docs/spec/hospital-v2`` (ghi ra để người đọc không tưởng là sót):
 
@@ -32,6 +34,10 @@ Chỗ tệp này cố ý khác hợp đồng ``docs/spec/hospital-v2`` (ghi ra �
 * ``ETag`` trả ở dạng ``W/"..."``; các tuyến đọc không gửi ``ETag``.
 * Chưa đọc ``If-Match`` và ``Idempotency-Key`` mà hợp đồng có khai báo; khoá lạc quan đi qua
   ``expected_version`` trong thân yêu cầu.
+* ``POST /responses`` **cố ý** không đòi ``expected_version``: đây là đường chỉ-thêm, bản trước
+  chuyển sang ``superseded`` chứ không bị đè, nên hai lần lưu đua nhau không làm mất dữ liệu. Đổi
+  lại, một người soạn có thể vô hiệu hoá phiên bản mà người duyệt đang chuẩn bị quyết — chấp nhận
+  vì quyết định duyệt vẫn có khoá riêng của nó.
 
 Các hàm xử lý cố ý viết dạng ``def`` (không ``async``) vì chúng gọi SQLAlchemy đồng bộ; FastAPI chạy
 chúng trong threadpool nên một truy vấn chậm không chặn vòng lặp sự kiện.
@@ -138,17 +144,56 @@ class ScopeField(BaseModel):
     evidence_ref: str | None = Field(default=None, max_length=200)
 
 
+#: Sáu trường phạm vi **tuỳ chọn** của hợp đồng. Khai đủ chứ không chỉ ``drug``/``event``: bỏ sót
+#: chúng thì một yêu cầu hợp lệ có nêu dân số hay đường dùng sẽ bị trả 422, và B4.3 sẽ phải nhét
+#: chúng vào chỗ khác.
+_OPTIONAL_SCOPE_FIELDS = ("population", "route", "dose", "time_window", "indication", "comparator")
+
+
 class Scope(BaseModel):
-    """Phạm vi của yêu cầu. Hợp đồng đòi **cả hai** khóa ``drug`` và ``event``."""
+    """Phạm vi của yêu cầu: ``drug`` và ``event`` bắt buộc, sáu trường còn lại tuỳ chọn."""
 
     model_config = ConfigDict(extra="forbid")
 
     drug: ScopeField
     event: ScopeField
+    population: ScopeField | None = None
+    route: ScopeField | None = None
+    dose: ScopeField | None = None
+    time_window: ScopeField | None = None
+    indication: ScopeField | None = None
+    comparator: ScopeField | None = None
 
 
 def _unknown_scope() -> Scope:
     return Scope(drug=ScopeField(resolution="unknown"), event=ScopeField(resolution="unknown"))
+
+
+def _scope_field_payload(field: ScopeField) -> dict[str, Any]:
+    """Một trường phạm vi theo đúng ``ScopeField`` của hợp đồng.
+
+    ``value`` **luôn có mặt** kể cả khi là ``null`` (hợp đồng bắt buộc trường này), còn ``source`` và
+    ``evidence_ref`` **bỏ hẳn** khi chưa biết — hợp đồng cho phép vắng, nhưng không cho ``null``.
+    """
+    payload: dict[str, Any] = {"value": field.value, "resolution": field.resolution}
+    if field.source is not None:
+        payload["source"] = field.source
+    if field.evidence_ref is not None:
+        payload["evidence_ref"] = field.evidence_ref
+    return payload
+
+
+def _scope_payload(scope: Scope) -> dict[str, Any]:
+    """Phạm vi ở dạng ghi xuống kho, đúng hợp đồng: đủ hai khóa bắt buộc, không có khóa ``null``."""
+    payload: dict[str, Any] = {
+        "drug": _scope_field_payload(scope.drug),
+        "event": _scope_field_payload(scope.event),
+    }
+    for name in _OPTIONAL_SCOPE_FIELDS:
+        field = getattr(scope, name)
+        if field is not None:
+            payload[name] = _scope_field_payload(field)
+    return payload
 
 
 class CoverageReport(BaseModel):
@@ -165,7 +210,7 @@ class CoverageReport(BaseModel):
     sources_error: list[str]
     abstract_only: bool
     full_text_sources: list[str] | None = None
-    note: str | None = None
+    note: str | None = Field(default=None, max_length=400)
 
 
 class RequestContext(BaseModel):
@@ -175,7 +220,7 @@ class RequestContext(BaseModel):
 
     requester: Actor
     channel: Channel = "api"
-    raw_text: str = Field(min_length=1, max_length=20000)
+    raw_text: str = Field(min_length=1, max_length=4000)
     language: Language = "vi"
     source_system: dict[str, Any] | None = None
     attachments: list[dict[str, Any]] = Field(default_factory=list)
@@ -184,8 +229,8 @@ class RequestContext(BaseModel):
 class UnknownField(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    field: str = Field(min_length=1, max_length=200)
-    reason: str = Field(min_length=1, max_length=500)
+    field: str = Field(min_length=1, max_length=80)
+    reason: str = Field(min_length=1, max_length=300)
     needs_confirmation: bool = True
 
 
@@ -200,9 +245,9 @@ class WorkItemCreate(BaseModel):
     unknowns: list[UnknownField] = Field(default_factory=list)
     priority: Priority = "routine"
     owner: Actor | None = None
-    labels: dict[str, Any] = Field(default_factory=dict)
+    labels: dict[str, Annotated[str, Field(max_length=80)]] = Field(default_factory=dict)
     revision_of: str | None = Field(default=None, max_length=120)
-    revision_reason: str | None = Field(default=None, max_length=500)
+    revision_reason: str | None = Field(default=None, max_length=300)
 
 
 class WorkItemPatch(BaseModel):
@@ -214,7 +259,7 @@ class WorkItemPatch(BaseModel):
     unknowns: list[UnknownField] | None = None
     priority: Priority | None = None
     owner: Actor | None = None
-    labels: dict[str, Any] | None = None
+    labels: dict[str, Annotated[str, Field(max_length=80)]] | None = None
     work_status: WorkStatus | None = None
     reason: str | None = Field(default=None, max_length=500)
 
@@ -372,16 +417,21 @@ def create_work_item(
     không có đường tắt tạo thẳng một ca "đã duyệt" hay "đã huỷ". ``request_id`` và ``received_at``
     do máy chủ sinh — người gọi không được tự đặt, vì nhật ký truy vết dựa vào chúng.
     """
-    context = payload.context.model_dump()
+    # ``exclude_none`` để các trường tuỳ chọn chưa biết **vắng mặt** thay vì bằng ``null``:
+    # hợp đồng cho phép vắng, nhưng ``null`` thì không (``Actor.role``, ``source_system``...).
+    context = payload.context.model_dump(exclude_none=True)
     context["request_id"] = _request_id()
     context["received_at"] = _now_iso()
     actor = _actor_of(principal)
     _require_assign_permission(principal, payload.owner.model_dump() if payload.owner else None)
+    # ``context.requester`` cũng là một chỗ nêu tên người khác, và nó **cấp quyền đọc** qua đường dự
+    # phòng của ``_is_owner`` khi ca chưa có chủ. Không kiểm thì quyền ``queue:assign`` bị lách.
+    _require_assign_permission(principal, payload.context.requester.model_dump())
     document = store.create_work_item(
         question=payload.question,
         context=context,
-        scope=payload.scope.model_dump(),
-        unknowns=[item.model_dump() for item in payload.unknowns],
+        scope=_scope_payload(payload.scope),
+        unknowns=[item.model_dump(exclude_none=True) for item in payload.unknowns],
         priority=payload.priority,
         owner=payload.owner.model_dump() if payload.owner else actor,
         labels=payload.labels,
@@ -461,14 +511,16 @@ def update_work_item(
         if value is not None:
             changes[field] = value
     if payload.scope is not None:
-        changes["scope"] = payload.scope.model_dump()
+        changes["scope"] = _scope_payload(payload.scope)
     if payload.unknowns is not None:
         changes["unknowns"] = [item.model_dump() for item in payload.unknowns]
     if "owner" in payload.model_fields_set:
         # ``owner: null`` là xoá chủ sở hữu (ca quay về cho người gửi), khác hẳn với không gửi gì.
-        target = payload.owner.model_dump() if payload.owner else None
-        _require_assign_permission(principal, target)
-        changes["owner"] = target
+        # Xoá cũng là một thao tác của hàng đợi: không đòi quyền thì người điều tra tự đẩy ca vào
+        # hàng đợi của người khác bằng cách tạo ca với ``requester.id`` của người đó rồi xoá chủ.
+        if not principal.has(Permission.QUEUE_ASSIGN):
+            raise forbidden(f"Vai {principal.role} không có quyền queue:assign để đổi chủ sở hữu.")
+        changes["owner"] = payload.owner.model_dump() if payload.owner else None
     if not changes:
         raise invalid_request("Không có trường nào để sửa.")
     if any(field != "owner" for field in changes):
@@ -551,7 +603,7 @@ def create_response(
         sections=[section.model_dump() for section in payload.sections],
         status="draft",
         assessment_status=payload.assessment_status,
-        coverage=payload.coverage.model_dump(),
+        coverage=payload.coverage.model_dump(exclude_none=True),
         drafted_by=_actor_of(principal),
         actor=_actor_of(principal),
     )
