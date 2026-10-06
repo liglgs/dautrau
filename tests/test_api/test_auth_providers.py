@@ -15,6 +15,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
+from src.api import auth as auth_module
 from src.api.auth import LocalProvider, SupabaseProvider, TestProvider, provider_chain
 from src.api.mvp_runtime import configure_mvp, reset_mvp
 from src.config import get_settings
@@ -34,7 +35,15 @@ def _clean_settings(monkeypatch):
     monkeypatch.delenv("AUTH_PROVIDER", raising=False)
     monkeypatch.delenv("APP_ENV", raising=False)
     get_settings.cache_clear()
+    # Nhà cung cấp Supabase dùng chung cho cả tiến trình (để đệm JWKS và bộ nhớ lần hỏng không chết
+    # theo yêu cầu), nên nó là trạng thái **giữa các bài**. Bài nào ở đây khai ``SUPABASE_URL``
+    # cũng dựng một thực thể; không xoá thì bài sau — kể cả bài ở mô-đun khác — thừa hưởng đệm của
+    # dự án cũ. Đây là bẫy im lặng: nó chỉ lộ ra khi thứ tự chạy đổi.
+    auth_module._supabase_provider = None
+    auth_module._supabase_provider_key = None
     yield
+    auth_module._supabase_provider = None
+    auth_module._supabase_provider_key = None
     get_settings.cache_clear()
 
 
