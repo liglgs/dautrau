@@ -31,6 +31,8 @@ ENTITY_DEFS = [
     "FollowUp",
     "VersionRef",
     "ReviewRef",
+    "CaseRecord",
+    "SyntheticCaseRecordFile",
 ]
 
 
@@ -120,6 +122,57 @@ def test_unknown_is_a_first_class_value(schemas: dict) -> None:
     assert "unknown" in schemas["$defs"]["EvidenceItem"]["properties"]["scope_match"]["enum"]
     unknown = schemas["$defs"]["UnknownField"]
     assert {"field", "reason", "needs_confirmation"} <= set(unknown["required"])
+
+
+def test_case_record_b_is_proposed_and_keeps_unknowns_explicit(schemas: dict, openapi: dict) -> None:
+    """Lát B chỉ là contract nháp: giữ ca/đánh giá riêng và không bịa thời điểm."""
+    defs = schemas["$defs"]
+    case = defs["CaseRecord"]
+    assert {"medications", "administrations", "timeline", "labs", "observations", "assessments", "report_revisions", "supplements"} <= set(
+        case["required"]
+    )
+    assert "chờ dược sĩ xác nhận" in case["description"]
+    assert defs["LabResult"]["properties"]["unit"]["minLength"] == 1
+    partial = defs["PartialDateTime"]
+    assert {"resolution", "date", "time", "timezone"} <= set(partial["required"])
+    assert "unknown" in partial["properties"]["resolution"]["enum"]
+    assessment = defs["CaseAssessment"]
+    assert {"naranjo", "who_umc"} <= set(assessment["properties"]["framework"]["enum"])
+    assert "literature stance" in assessment["description"]
+    assert "CaseRecord" not in json.dumps(openapi), "lát B nháp không được tự thêm API/OpenAPI"
+
+
+def test_synthetic_case_examples_keep_case_identity_and_missing_data(index: list[dict]) -> None:
+    """Fixture R2-1-05 không chứa ca thật và không biến bổ sung thành ca mới."""
+    entries = [entry for entry in index if entry["def"] == "SyntheticCaseRecordFile"]
+    assert len(entries) >= 2, "cần ít nhất hai fixture CaseRecord synthetic"
+    payloads = [json.loads((EXAMPLES_DIR / entry["file"]).read_text(encoding="utf-8")) for entry in entries]
+    assert all(payload["synthetic"] is True for payload in payloads), "mỗi tệp phải mang nhãn synthetic"
+    records = [record for payload in payloads for record in payload["records"]]
+    assert records and all(record["synthetic"] is True for record in records), "mỗi record phải mang nhãn synthetic"
+    assert all(record["case_id"].startswith("synthetic-case-") for record in records)
+    assert any(len(record["medications"]) > 1 for record in records), "thiếu ca nhiều thuốc"
+    assert any(record["labs"] and all(lab["unit"] for lab in record["labs"]) for record in records), "thiếu lab có đơn vị"
+    assert any(not record["administrations"] for record in records), "thiếu fixture giữ trường administrations là thiếu"
+
+    unknown_moments = [
+        point
+        for record in records
+        for administration in record["administrations"]
+        for point in [administration["administered_at"]]
+    ] + [event["occurred_at"] for record in records for event in record["timeline"]]
+    assert any(point["resolution"] == "unknown" for point in unknown_moments), "thiếu ngày/giờ unknown"
+    for point in unknown_moments:
+        if point["resolution"] == "unknown":
+            assert point["date"] is point["time"] is point["timezone"] is None
+
+    for record in records:
+        assert all(item["case_id"] == record["case_id"] for item in record["supplements"])
+        assert all(item["case_id"] == record["case_id"] for item in record["report_revisions"])
+        for assessment in record["assessments"]:
+            if assessment["status"] == "unknown":
+                assert assessment["framework"] == "none"
+                assert assessment["value"] is None
 
 
 # ------------------------------------------------------------------ đồng bộ với MVP

@@ -1,0 +1,223 @@
+{
+  "artifact_version": "r2-3-02.1",
+  "status": "đề xuất, chờ dược sĩ xác nhận",
+  "synthetic": false,
+  "purpose": "Offline fixtures for extracting study fields from committed PubMed XML abstracts; not clinical conclusions.",
+  "source_manifest": {
+    "path": "docs/research/2026-10-05/data-real/manifest.json",
+    "retrieval_mode": "committed_snapshot_only",
+    "quote_validation": "Each quote must be found after XML parsing in the stated PubMed AbstractText Label."
+  },
+  "evidence_bundles": [
+    {
+      "bundle_id": "r2-pubmed-39975698",
+      "status": "đề xuất, chờ dược sĩ xác nhận",
+      "source": {
+        "pmid": "39975698",
+        "snapshot_file": "docs/research/2026-10-05/data-real/pubmed-39975698.xml",
+        "snapshot_sha256": "ec44cee1ec40a48658f548afd65e73f7a8fe3ad0b834057b22825069d477d2e9",
+        "source_url": "https://pubmed.ncbi.nlm.nih.gov/39975698/",
+        "coverage": "abstract_only",
+        "coverage_note": "Committed source is PubMed XML metadata and abstract, not full text."
+      },
+      "study": {
+        "title": "Risk of aortic aneurysm or dissection following use of fluoroquinolones: a retrospective multinational network cohort study.",
+        "design": "retrospective cohort study; distributed network analysis; 1:1 propensity-score matching; calibrated Cox models; Bayesian random-effects pooling",
+        "population": "13,588,837 patients aged 35 or older initiating systemic fluoroquinolones or comparator antibiotics for UTI",
+        "setting": "14 databases in the United States, South Korea, Japan, Taiwan, and Australia; outpatient UTI treatment; 2010-01-01 to 2019-12-31",
+        "exposure": "systemic fluoroquinolones",
+        "route": {
+          "value": null,
+          "status": "unknown",
+          "reason": "systemic; specific route not reported in the abstract"
+        },
+        "comparators": [
+          "trimethoprim with or without sulfamethoxazole (TMP)",
+          "cephalosporins (CPHs)"
+        ],
+        "outcome": "aortic aneurysm or dissection occurrence",
+        "time_window": "60 days after exposure; AA and AD separately as secondary outcomes",
+        "estimates": [
+          {
+            "comparison": "FQ versus TMP",
+            "measure": "calibrated hazard ratio",
+            "estimate": 0.91,
+            "ci_95": [
+              0.73,
+              1.1
+            ],
+            "absolute_rate_difference": 0.21,
+            "absolute_rate_difference_unit": "per 1000 person-year",
+            "unit": "hazard ratio"
+          },
+          {
+            "comparison": "FQ versus CPH",
+            "measure": "calibrated hazard ratio",
+            "estimate": 1.01,
+            "ci_95": [
+              0.82,
+              1.25
+            ],
+            "absolute_rate_difference": 0.11,
+            "absolute_rate_difference_unit": "per 1000 person-year",
+            "unit": "hazard ratio"
+          }
+        ],
+        "limitations": [
+          "Abstract-only fixture; methodological details beyond the abstract are not asserted.",
+          "Authors state results may not generalise to other indications with different severity.",
+          "Specific administration route is not reported in the abstract."
+        ],
+        "comparator": [
+          "trimethoprim with or without sulfamethoxazole (TMP)",
+          "cephalosporins (CPHs)"
+        ]
+      },
+      "quotes": [
+        {
+          "field": "design_population_setting_comparator_outcome_time",
+          "xml_tag": "AbstractText",
+          "xml_label": "METHODS",
+          "text": "A retrospective cohort study was conducted using a large, distributed network analysis across 14 databases from 5 countries (United States, South Korea, Japan, Taiwan, and Australia)."
+        },
+        {
+          "field": "population_setting_exposure_comparator",
+          "xml_tag": "AbstractText",
+          "xml_label": "METHODS",
+          "text": "The study included 13,588,837 patients aged 35 or older who initiated systemic fluoroquinolones (FQs) or comparable antibiotics (trimethoprim with or without sulfamethoxazole [TMP] or cephalosporins [CPHs]) for UTI treatment in the outpatient setting between JAN 01, 2010 and DEC 31, 2019."
+        },
+        {
+          "field": "outcome_time_estimates",
+          "xml_tag": "AbstractText",
+          "xml_label": "FINDINGS",
+          "text": "For the 60-day follow-up there was no difference in risk of AA/AD between FQ and TMP (absolute rate difference [ARD], 0.21 per 1000 person-year; calibrated HR, 0.91 [95% CI 0.73-1.10]). There was no significant difference in risk for FQ versus CPH (ARD, 0.11 per 1000 person-year; calibrated HR, 1.01 [95% CI 0.82-1.25])."
+        },
+        {
+          "field": "limitations",
+          "xml_tag": "AbstractText",
+          "xml_label": "INTERPRETATION",
+          "text": "As we only examined FQ used to treat UTIs in the outpatient setting, the results may not be generalisable to other indications with different severity."
+        }
+      ]
+    },
+    {
+      "bundle_id": "r2-pubmed-40285433",
+      "status": "đề xuất, chờ dược sĩ xác nhận",
+      "source": {
+        "pmid": "40285433",
+        "snapshot_file": "docs/research/2026-10-05/data-real/pubmed-40285433.xml",
+        "snapshot_sha256": "2b83686ead5c87daab6d8e71ea9e7afe4489151635053c241d6574166ca5e6a3",
+        "source_url": "https://pubmed.ncbi.nlm.nih.gov/40285433/",
+        "coverage": "abstract_only",
+        "coverage_note": "Committed source is PubMed XML metadata and abstract, not full text."
+      },
+      "study": {
+        "title": "Fluoroquinolones and the risk of aortic aneurysm or dissection: A population-based propensity score-matched German cohort study.",
+        "design": "population-based cohort; active-comparator new-user design; nearest-neighbor 1:1 propensity-score matching",
+        "population": "adults with at least one new prescription fill for FQ or active comparator antibiotics; exclusions include prior antibiotic fills, AA/AD diagnoses, or hospitalisation in the 365 days before cohort entry",
+        "setting": "German statutory health insurance (AOK), January 2013 to December 2019",
+        "exposure": "fluoroquinolone prescription",
+        "route": {
+          "value": null,
+          "status": "unknown",
+          "reason": "not reported in the abstract"
+        },
+        "comparators": [
+          "macrolides",
+          "tetracyclines",
+          "extended-spectrum penicillins",
+          "penicillin and beta-lactamase inhibitor combinations",
+          "second- and third-generation cephalosporins",
+          "sulfonamide and trimethoprim combinations",
+          "lincosamides"
+        ],
+        "outcome": "incident inpatient aortic aneurysm or dissection",
+        "time_window": "60-day risk window; 90-day sensitivity window",
+        "estimates": [
+          {
+            "comparison": "FQ versus macrolides",
+            "measure": "adjusted hazard ratio",
+            "estimate": 1.52,
+            "ci_95": [
+              1.33,
+              1.74
+            ],
+            "unit": "hazard ratio"
+          },
+          {
+            "comparison": "moxifloxacin versus macrolides",
+            "measure": "adjusted hazard ratio",
+            "estimate": 2.13,
+            "ci_95": [
+              1.64,
+              2.77
+            ],
+            "unit": "hazard ratio"
+          },
+          {
+            "comparison": "FQ versus tetracyclines",
+            "measure": "adjusted hazard ratio",
+            "estimate": 1.86,
+            "ci_95": [
+              1.54,
+              2.24
+            ],
+            "unit": "hazard ratio"
+          }
+        ],
+        "limitations": [
+          "Abstract-only fixture; no full-text methods, coding definitions, or absolute risks are asserted.",
+          "The abstract says effect size may depend on the active comparator.",
+          "Specific administration route is not reported in the abstract."
+        ],
+        "comparator": [
+          "macrolides",
+          "tetracyclines",
+          "extended-spectrum penicillins",
+          "penicillin and beta-lactamase inhibitor combinations",
+          "second- and third-generation cephalosporins",
+          "sulfonamide and trimethoprim combinations",
+          "lincosamides"
+        ]
+      },
+      "quotes": [
+        {
+          "field": "design_comparator",
+          "xml_tag": "AbstractText",
+          "xml_label": "DESIGN",
+          "text": "Cohort study in active comparator new user design comparing FQ with macrolides, tetracyclines, penicillins with extended spectrum, penicillins and beta-lactamase inhibitor combinations, second- and third-generation cephalosporins, sulfonamide and trimethoprim combinations, and lincosamides."
+        },
+        {
+          "field": "setting",
+          "xml_tag": "AbstractText",
+          "xml_label": "SETTING",
+          "text": "German statutory health insurance, the \"Allgemeine Ortskrankenkasse\" (AOK), January 2013 to December 2019."
+        },
+        {
+          "field": "population",
+          "xml_tag": "AbstractText",
+          "xml_label": "PARTICIPANTS",
+          "text": "Adults with at least one new prescription fill for FQ or active comparator antibiotics."
+        },
+        {
+          "field": "outcome_time",
+          "xml_tag": "AbstractText",
+          "xml_label": "MAIN OUTCOME MEASURES",
+          "text": "Incident inpatient aortic aneurysm or dissection was observed within a 60-day risk window. In sensitivity analyses, an extended risk window of 90 days was applied, and specific FQ agents, dosages, and diagnoses were stratified."
+        },
+        {
+          "field": "estimate_comparator",
+          "xml_tag": "AbstractText",
+          "xml_label": "RESULTS",
+          "text": "FQ episodes were associated with an increased risk for aortic aneurysm or dissection compared to macrolides (aHR = 1.52 [1.33; 1.74]), which replicates the risk estimate of Garg et al. (aHR = 1.34 [1.17; 1.54])."
+        },
+        {
+          "field": "limitation",
+          "xml_tag": "AbstractText",
+          "xml_label": "CONCLUSION",
+          "text": "Extending the analysis, we provided new insights that the effect size may depend on the chosen AC."
+        }
+      ]
+    }
+  ]
+}

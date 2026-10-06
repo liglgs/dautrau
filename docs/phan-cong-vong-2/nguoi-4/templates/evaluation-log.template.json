@@ -1,0 +1,65 @@
+{
+  "template_version": "r2-4-07-1",
+  "status": "proposed_not_collected",
+  "purpose": "Mẫu log trước-sau; không phải kết quả pilot hoặc clinical review.",
+  "rules": {
+    "workflow_is_hypothesis": true,
+    "do_not_store_phi_in_repository": true,
+    "keep_data_sources_separate": true,
+    "do_not_claim_clinical_pass": true,
+    "time_accounting": {
+      "active_time_seconds": "Thời gian người tham gia trực tiếp thao tác tác vụ.",
+      "waiting_time_seconds": "Thời gian chờ nguồn, hệ thống, quyền hoặc người khác.",
+      "unclassified_time_seconds": "Thời gian chưa đủ log để phân loại.",
+      "validation": "active_time_seconds + waiting_time_seconds + unclassified_time_seconds <= elapsed_time_seconds khi elapsed có giá trị"
+    }
+  },
+  "allowed_data_sources": [
+    "real_source_snapshot",
+    "synthetic_technical_fixture",
+    "hospital_profile"
+  ],
+  "sample_flow": {
+    "n_invited": null,
+    "n_started": null,
+    "n_eligible": null,
+    "n_completed": null,
+    "n_rubric_scored": null,
+    "exclusion_reasons": []
+  },
+  "attempts": [
+    {
+      "task_attempt_id": "<deidentified-attempt-id>",
+      "data_source": "synthetic_technical_fixture",
+      "synthetic": true,
+      "condition": "before_or_after",
+      "task_type": "<confirmed-task-type>",
+      "participant_role": "<confirmed-role-or-null>",
+      "participant_id": null,
+      "started_at": null,
+      "ended_at": null,
+      "active_time_seconds": null,
+      "waiting_time_seconds": null,
+      "unclassified_time_seconds": null,
+      "elapsed_time_seconds": null,
+      "completion_status": "not_assessed",
+      "completion_reason": null,
+      "revision_count": null,
+      "error_events": [],
+      "rubric": {
+        "rubric_version": null,
+        "reviewer_id": null,
+        "clinical_review_status": "not_reviewed",
+        "score": null,
+        "rationale": null
+      },
+      "provenance": {
+        "fixture_or_snapshot_id": "<required>",
+        "version_or_hash": "<required>",
+        "permission_or_sop_reference": null,
+        "deidentification_status": "not_applicable_for_synthetic"
+      },
+      "notes": "Template row only; replace or remove before collection."
+    }
+  ]
+}

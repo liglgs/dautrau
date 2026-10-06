@@ -106,6 +106,7 @@ class Fetcher:
             return FetchResult(source, kind, url, params, error="offline_mode")
 
         last_error = ""
+        last_status: int | None = None
         for attempt in range(retries + 1):
             self._throttle(host)
             try:
@@ -127,6 +128,7 @@ class Fetcher:
                 )
                 return FetchResult(source, kind, url, params, 200, body, entry["sha256"], path,
                                    response.headers.get("content-type", ""))
+            last_status = response.status_code
             last_error = f"http_{response.status_code}"
             if response.status_code in {429, 500, 502, 503, 504} and attempt < retries:
                 retry_after = response.headers.get("Retry-After")
@@ -136,9 +138,9 @@ class Fetcher:
             break
         entry = self.manifest.add_artifact(
             source=source, kind=kind, url=url, params=params,
-            status=None, error=last_error, extra={"label": label},
+            status=last_status, error=last_error, extra={"label": label},
         )
-        return FetchResult(source, kind, url, params, None, error=last_error)
+        return FetchResult(source, kind, url, params, last_status, error=last_error)
 
     def close(self) -> None:
         self._client.close()
