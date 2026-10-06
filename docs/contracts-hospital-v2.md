@@ -58,6 +58,25 @@ một yêu cầu có thể `awaiting_information` trong khi lần chạy trướ
 
 - **Unknown.** `ScopeField.resolution = "unknown"` với `value = null`; kèm mục trong `unknowns`
   (`field`, `reason`, `needs_confirmation`). Chỉ người dùng hoặc người duyệt được đổi thành `confirmed`.
+
+  Quy ước "chưa rõ" phân biệt **ba** trạng thái, không phải hai (chốt IN-06):
+
+  | Dạng trên dây | Nghĩa |
+  | --- | --- |
+  | `{"value": null, "resolution": "unknown"}` | Đã hỏi nhưng chưa xác định được |
+  | Trường **vắng hẳn** | Chưa hỏi — chưa ai đặt câu hỏi này |
+  | `{"value": "metformin", "resolution": "confirmed"}` | Đã xác định |
+
+  Chuỗi rỗng `""` và chuỗi `"chưa rõ"` **không** phải giá trị sentinel: `""` lẫn với câu trả lời
+  rỗng hợp lệ và không phân biệt được "chưa hỏi" với "đã hỏi, chưa ra"; `"chưa rõ"` dính vào mọi
+  so khớp, tìm kiếm và dịch, và không tách được khỏi trường hợp người dùng thật sự gõ "chưa rõ".
+
+  Hai mức bắt buộc khác nhau, và điều đó quyết định dạng nào dùng được ở đâu. `scope.required` là
+  `["drug", "event"]`, và mỗi `ScopeField` bắt buộc `["value", "resolution"]` — nên **gửi `scope`
+  thì phải gửi cả hai trường, kể cả trường chưa biết**: "chưa biết thuốc" vẫn phải nói ra bằng
+  `null` + `unknown`, không được bỏ qua. Ngược lại `source` và `evidence_ref` là tuỳ chọn, nên chưa
+  biết thì **vắng hẳn** chứ không ghi `null` — lược đồ từ chối `null` ở đó. Bỏ hẳn `scope` khỏi thân
+  yêu cầu cũng hợp lệ, và khi đó tầng API tự điền hai trường ở dạng "chưa rõ".
 - **Draft.** `ProfessionalResponse.status = "draft"` không được xuất chính thức; chỉ `approved` mới xuất.
 - **Lỗi.** Envelope lỗi giữ nguyên của MVP: `{"error": {code, message, details, request_id}}`;
   danh mục `code` **bằng đúng** `ErrorCode` của MVP (test đồng bộ).

@@ -492,3 +492,101 @@ async def test_the_old_api_keeps_its_wide_envelope(client):
     assert "error" in body
     assert "retryable" in body["error"], "tầng cũ vẫn phải giữ khoá retryable"
     assert "code" in body and "message" in body, "tầng cũ vẫn phải giữ khoá phẳng ở cấp gốc"
+
+
+@pytest.mark.asyncio
+async def test_unknown_is_null_and_never_an_empty_string(client):
+    """Chốt IN-06: "chưa rõ" là `value: null` + `resolution: "unknown"`, không phải chuỗi sentinel.
+
+    Phân biệt được hai trạng thái khác nhau về nghĩa: **đã hỏi nhưng chưa xác định** (`null` +
+    `unknown`) và **chưa hỏi** (trường tuỳ chọn vắng hẳn). Dùng `""` làm sentinel thì lẫn với câu
+    trả lời rỗng hợp lệ; dùng `"chưa rõ"` thì dính vào mọi so khớp và tìm kiếm. Bài này khoá quy ước
+    lại để nó không trôi mất khi có người thêm đường ghi mới.
+    """
+    http, store = client
+
+    def _context(text: str) -> dict[str, Any]:
+        return {
+            "requester": {"id": "usr_contract"},
+            "channel": "api",
+            "raw_text": text,
+            "language": "vi",
+        }
+
+    # Không gửi `scope` chút nào: hợp đồng bắt buộc `drug` và `event` phải có mặt, nên tầng này tự
+    # điền hai trường đó ở dạng "đã hỏi nhưng chưa xác định" — `value` là `null`, không phải `""`.
+    created = await http.post(
+        "/api/v2/work-items",
+        json={"question": "Chưa rõ loại thuốc, mới chỉ có biến cố.", "context": _context("Chưa rõ loại thuốc.")},
+        headers=_headers("investigator", "usr_contract"),
+    )
+    assert created.status_code == 201, created.text
+    _assert_matches("WorkItem", created.json())
+    scope = created.json()["scope"]
+    assert scope["drug"] == {"value": None, "resolution": "unknown"}, scope["drug"]
+    assert scope["event"] == {"value": None, "resolution": "unknown"}, scope["event"]
+
+    # Đã xác định thì `value` là chuỗi thật, và `resolution` nói rõ nguồn.
+    confirmed = await http.post(
+        "/api/v2/work-items",
+        json={
+            "question": "Metformin có gây nhiễm toan lactic không?",
+            "context": _context("Metformin có gây nhiễm toan lactic không?"),
+            # Gửi `scope` thì phải gửi **cả hai** trường bắt buộc, kể cả trường chưa biết: hợp đồng
+            # khai `scope.required = ["drug", "event"]`, nên "chưa biết thuốc" vẫn phải nói ra.
+            "scope": {
+                "drug": {"value": None, "resolution": "unknown"},
+                "event": {"value": "nhiễm toan lactic", "resolution": "confirmed"},
+            },
+        },
+        headers=_headers("investigator", "usr_contract"),
+    )
+    assert confirmed.status_code == 201, confirmed.text
+    confirmed_scope = confirmed.json()["scope"]
+    _assert_matches("WorkItem", confirmed.json())
+    assert confirmed_scope["event"] == {"value": "nhiễm toan lactic", "resolution": "confirmed"}
+    assert confirmed_scope["drug"] == {"value": None, "resolution": "unknown"}
+
+    # Không có giá trị sentinel nào lọt vào `value`, và trường tuỳ chọn chưa biết thì vắng hẳn.
+    for scope_document in (scope, confirmed_scope):
+        for field in ("drug", "event"):
+            value = scope_document[field]["value"]
+            assert value is None or (isinstance(value, str) and value.strip() != ""), scope_document[field]
+            assert value not in ("chưa rõ", "unknown", "N/A", "-"), scope_document[field]
+            assert "source" not in scope_document[field], scope_document[field]
+            assert "evidence_ref" not in scope_document[field], scope_document[field]
+
+    # Và `""` gửi lên bị từ chối thẳng, thay vì được nhận rồi ngầm hiểu là "chưa rõ".
+    rejected = await http.post(
+        "/api/v2/work-items",
+        json={
+            "question": "Câu hỏi có phạm vi rỗng.",
+            "context": _context("Câu hỏi có phạm vi rỗng."),
+            "scope": {"drug": {"value": "", "resolution": "confirmed"}},
+        },
+        headers=_headers("investigator", "usr_contract"),
+    )
+    assert rejected.status_code == 422, rejected.text
+
+
+@pytest.mark.asyncio
+async def test_the_old_api_keeps_the_exact_shape_of_its_mvp_errors(client):
+    """``/api/v1`` phải không đổi **gì**, kể cả những chỗ dễ đổi lây khi tách envelope.
+
+    Lỗi ``MvpError`` của đường cũ trước đây chỉ có ``{"error": {...}}``, không có khoá phẳng. Khi
+    hợp nhất bốn handler về một đường, dùng chung envelope rộng sẽ lặng lẽ thêm bốn khoá vào một API
+    đang chạy — không vỡ bài kiểm nào, nhưng là một thay đổi API không ai công bố.
+    """
+    http, _ = client
+    # 404 của đường cũ là ``StarletteHTTPException``: giữ khoá phẳng như trước.
+    routing_404 = await http.get("/api/v1/khong-ton-tai", headers=_headers("investigator"))
+    assert routing_404.status_code == 404, routing_404.text
+    assert "code" in routing_404.json() and "message" in routing_404.json()
+
+    # 401 của đường cũ là ``MvpError``: chỉ ``{"error": {...}}``, đúng như trước.
+    anonymous = await http.get("/api/v1/investigations")
+    assert anonymous.status_code == 401, anonymous.text
+    body = anonymous.json()
+    assert set(body) == {"error"}, body
+    assert body["error"]["code"] == "unauthorized"
+    assert "retryable" in body["error"]

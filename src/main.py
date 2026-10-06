@@ -211,13 +211,22 @@ def _error_response(
     *,
     details: dict | None = None,
     retryable: bool = False,
+    legacy: dict | None = None,
 ) -> JSONResponse:
-    """Dựng phản hồi lỗi theo đúng hợp đồng mà đường dẫn yêu cầu phải theo."""
+    """Dựng phản hồi lỗi theo đúng hợp đồng mà đường dẫn yêu cầu phải theo.
+
+    ``legacy`` cho phép đường cũ giữ nguyên **đúng** thân phản hồi cũ của nó. Lỗi ``MvpError`` của
+    ``/api/v1`` trước đây chỉ có ``{"error": {...}}``, không có khoá phẳng; dùng chung
+    ``_error_envelope`` sẽ lặng lẽ thêm bốn khoá vào một API đang chạy. Việc này chỉ nhằm tách
+    envelope cho ``/api/v2``, nên đường cũ không được đổi gì.
+    """
     if _wants_contract_envelope(request):
         return JSONResponse(
             status_code=status,
             content=_contract_error_envelope(_contract_code(status, code), message, details=details),
         )
+    if legacy is not None:
+        return JSONResponse(status_code=status, content=legacy)
     return JSONResponse(
         status_code=status, content=_error_envelope(code, message, details=details, retryable=retryable)
     )
@@ -232,6 +241,7 @@ async def mvp_error(request: Request, exc: MvpError):
         exc.message,
         details=exc.details,
         retryable=exc.retryable,
+        legacy=exc.envelope(current_request_id() or str(uuid4())),
     )
 
 
