@@ -151,6 +151,10 @@ Hai điều tầng `/api/v2` phải nhớ khi gọi kho:
   số — bỏ hẳn sẽ thành `TypeError` của Python (lỗi hệ thống) thay vì `422`.
 * `VersionRef.version` luôn bằng `1` cho `investigation_link` và `follow_up`: hai bảng này chưa có
   cột `version`, nên mỗi liên kết/việc theo dõi chỉ có một dòng nhật ký và `etag` không đổi theo lần sửa.
+* `history()` trả **bản mở rộng** của `VersionRef`: sáu trường lõi (`entity`, `id`, `version`, `etag`,
+  `updated_at`, `updated_by`) cộng thêm `revision`, `change_kind`, `changed_fields`, `snapshot`.
+  Lược đồ `VersionRef` đặt `additionalProperties: false`, nên endpoint lịch sử ở `/api/v2` phải
+  chiếu lại sáu trường lõi, **không** trả nguyên dòng của `history()`.
 
 Ba chỗ hợp đồng đã nới cho khớp thực tế lưu trữ:
 

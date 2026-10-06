@@ -1078,3 +1078,19 @@ def test_duplicate_response_id_is_reported_as_a_conflict(legacy_db):
             work_item_id, sections=[{"key": "summary", "text": "Bản khác."}], response_id="resp-1"
         )
     assert duplicate.value.code == ErrorCode.IDEMPOTENCY_CONFLICT
+
+
+def test_response_save_conflict_covers_both_unique_constraints():
+    """Bên thua trong đua lưu phiếu nhận *cùng một* lỗi dù ràng buộc nào chặn nó.
+
+    Ràng buộc số phiên bản và ràng buộc "một bản hiện hành" bắt hai tình huống khác nhau
+    của cùng một cuộc đua; mã lỗi không được phụ thuộc vào việc ràng buộc nào bắt được.
+    """
+    from src.services.casework.store import _response_save_conflicts
+
+    conflicts = _response_save_conflicts("wi_1", 3)
+    assert set(conflicts) == {"uq_response_version", "uq_response_current"}
+    assert len(set(map(id, conflicts.values()))) == 1
+    only = next(iter(conflicts.values()))
+    assert only.code == ErrorCode.INVALID_STATE
+    assert only.details == {"work_item_id": "wi_1", "attempted_version": 3}

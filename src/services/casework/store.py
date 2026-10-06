@@ -220,6 +220,19 @@ def _actor(value: Any, field: str = "actor") -> dict[str, Any] | None:
     return actor
 
 
+def _response_save_conflicts(work_item_id: str, version: int) -> dict[str, MvpError]:
+    """Lỗi trả khi hai lần lưu phiếu trả lời đua nhau, cho *cả hai* ràng buộc duy nhất.
+
+    Bên thua có thể bị chặn bởi ràng buộc số phiên bản hoặc bởi ràng buộc "một bản hiện
+    hành"; dùng chung một lỗi để mã lỗi không phụ thuộc vào việc ràng buộc nào bắt được.
+    """
+    error = invalid_state(
+        "Có phiếu trả lời khác vừa được lưu; đọc lại yêu cầu rồi gửi lại.",
+        {"work_item_id": work_item_id, "attempted_version": version},
+    )
+    return dict.fromkeys(("uq_response_version", "uq_response_current"), error)
+
+
 def _constraint_name(exc: IntegrityError) -> str | None:
     """Tên ràng buộc/chỉ mục mà cơ sở dữ liệu nêu trong lỗi, nếu đọc được.
 
@@ -960,15 +973,11 @@ class CaseWorkStore:
                 session,
                 row,
                 key=response_id,
-                # Lưới an toàn: nếu vì lý do nào đó hai bản cùng số phiên bản lọt qua
-                # khoá dòng, ràng buộc duy nhất chặn lại và báo đúng là xung đột phiên bản.
+                # Lưới an toàn: nếu vì lý do nào đó hai lần lưu lọt qua khoá dòng, một trong
+                # hai ràng buộc duy nhất chặn lại — báo cùng một lỗi dù bị chặn bởi ràng buộc
+                # số phiên bản hay ràng buộc "một bản hiện hành", để mã lỗi không gây hiểu nhầm.
                 # Mã phiếu trùng vẫn rơi về IDEMPOTENCY_CONFLICT như các bảng khác.
-                conflicts={
-                    "uq_response_version": invalid_state(
-                        "Có phiếu trả lời khác vừa được lưu; đọc lại yêu cầu rồi gửi lại.",
-                        {"work_item_id": work_item_id, "attempted_version": version},
-                    )
-                },
+                conflicts=_response_save_conflicts(work_item_id, version),
             )
             document = _response_document(row)
             self._record_version(
