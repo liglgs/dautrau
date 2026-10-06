@@ -158,3 +158,76 @@ async def test_audit_records_the_role_at_the_time_of_the_action(audit_client: As
     decision_row = next(row for row in log.json()["items"] if row["action"] == "review_reject")
     assert decision_row["actor_role"] == "reviewer"
     assert decision_row["actor"] == REVIEWER_A
+
+
+@pytest.mark.asyncio
+async def test_audit_rows_carry_the_request_id_the_caller_sees(audit_client: AsyncClient):
+    """``request_id`` trong nhật ký phải **trùng** mã trong header ``X-Request-Id`` của phản hồi.
+
+    Trước đây mã chỉ được sinh cho phản hồi lỗi, nên mọi dòng nhật ký đều có ``request_id = NULL``
+    và không tra ngược được "lỗi này là do thao tác nào".
+    """
+    store = get_mvp_store()
+    case_id, version = _seed_case("usr_tao_f")
+
+    response = await audit_client.post(
+        f"/api/v1/investigations/{case_id}/reviews",
+        json={
+            "decision_id": "qđ-f",
+            "action": "reject",
+            "checkpoint": "assessment",
+            "expected_version": version,
+            "reason": REASON,
+        },
+        headers=_headers(REVIEWER_A),
+    )
+    assert response.status_code == 200, response.text
+    request_id = response.headers["x-request-id"]
+    assert request_id
+
+    log = await audit_client.get(
+        "/api/v1/admin/audit",
+        params={"investigation_id": case_id},
+        headers=_headers("usr_kt", "auditor"),
+    )
+    decision_row = next(row for row in log.json()["items"] if row["action"] == "review_reject")
+    assert decision_row["request_id"] == request_id
+    # Đọc thẳng từ kho cũng phải thấy cùng mã, không chỉ qua tuyến admin.
+    stored = next(row for row in store.list_audit(investigation_id=case_id, limit=50) if row["action"] == "review_reject")
+    assert stored["request_id"] == request_id
+
+
+@pytest.mark.asyncio
+async def test_every_audit_row_written_during_a_request_has_a_request_id(audit_client: AsyncClient):
+    """Mọi dòng sinh ra **trong một yêu cầu** đều có mã; dòng do việc chạy nền vẫn được phép trống."""
+    case_id, version = _seed_case("usr_tao_g")
+    store = get_mvp_store()
+    before = {row["id"] for row in store.list_audit(investigation_id=case_id, limit=200)}
+
+    response = await audit_client.post(
+        f"/api/v1/investigations/{case_id}/reviews",
+        json={
+            "decision_id": "qđ-g",
+            "action": "reject",
+            "checkpoint": "assessment",
+            "expected_version": version,
+            "reason": REASON,
+        },
+        headers=_headers(REVIEWER_A),
+    )
+    assert response.status_code == 200, response.text
+
+    fresh = [row for row in store.list_audit(investigation_id=case_id, limit=200) if row["id"] not in before]
+    assert fresh, "yêu cầu duyệt phải ghi ít nhất một dòng nhật ký"
+    assert all(row["request_id"] == response.headers["x-request-id"] for row in fresh), [
+        row["action"] for row in fresh if row["request_id"] != response.headers["x-request-id"]
+    ]
+
+
+@pytest.mark.asyncio
+async def test_inbound_request_id_is_reused_so_traces_join_across_tiers(audit_client: AsyncClient):
+    """Cầu nối hoặc hệ thống ngoài gửi ``X-Request-Id`` thì nhật ký dùng đúng mã đó."""
+    response = await audit_client.get(
+        "/api/v1/admin/audit", params={"limit": 1}, headers={**_headers("usr_kt", "auditor"), "X-Request-Id": "trace-ngoai-01"}
+    )
+    assert response.headers["x-request-id"] == "trace-ngoai-01"

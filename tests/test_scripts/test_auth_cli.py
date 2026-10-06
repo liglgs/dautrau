@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import os
+import sys
+from pathlib import Path
+
 import pytest
 
 from src.api.auth import SESSION_COOKIE_NAME
 from src.api.mvp_runtime import configure_mvp, get_mvp_store, reset_mvp
 from src.config import get_settings
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture
@@ -143,3 +149,32 @@ def test_migrate_legacy_reports_an_unreadable_source(cli_store, monkeypatch, cap
 def test_session_cookie_name_is_stable(cli_store):
     """Tên cookie là một phần giao kèo với cầu nối frontend; đổi tên là đổi giao kèo."""
     assert SESSION_COOKIE_NAME == "session_id"
+
+
+def test_runs_as_a_file_path_not_only_as_a_module(tmp_path):
+    """Tài liệu hướng dẫn gọi ``python scripts/auth_cli.py ...``; dạng đó phải chạy được.
+
+    Trước đây chỉ ``python -m scripts.auth_cli`` mới chạy, còn dạng tệp thì lỗi
+    ``ModuleNotFoundError: No module named 'src'`` — đúng dạng mà tài liệu bảo người vận hành dùng.
+    """
+    import subprocess
+
+    env = {
+        **os.environ,
+        "APP_ENV": "development",
+        "MVP_DB_PATH": str(tmp_path / "cli-path.sqlite3"),
+        "AUTH_PROVIDER": "local",
+        "SUPABASE_URL": "",
+    }
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "auth_cli.py"), "list-users"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "ModuleNotFoundError" not in result.stderr
+    assert "app_users" in result.stdout

@@ -20,6 +20,7 @@ from src.api.vmec_routes import router as vmec_router
 from src.api.warehouse_routes import router as warehouse_router
 from src.config import get_settings
 from src.services.errors import MvpError, validation_details
+from src.services.request_context import current_request_id, reset_request_id, set_request_id
 from src.vmec import DomainError
 
 
@@ -47,6 +48,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def attach_request_id(request: Request, call_next):
+    """Gắn một mã cho mỗi yêu cầu, dùng chung cho envelope lỗi và nhật ký kiểm toán.
+
+    Nhận ``X-Request-Id`` do cầu nối hoặc hệ thống ngoài gửi vào để tra vết xuyên tầng; nếu không
+    có thì tự sinh. Mã được trả lại trong header cùng tên.
+    """
+    incoming = (request.headers.get("x-request-id") or "").strip()
+    request_id = incoming[:128] if incoming else str(uuid4())
+    token = set_request_id(request_id)
+    try:
+        response = await call_next(request)
+    finally:
+        reset_request_id(token)
+    response.headers["X-Request-Id"] = request_id
+    return response
+
 
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(investigations_router, prefix="/api/v1")
@@ -91,7 +110,7 @@ app.openapi = custom_openapi
 
 @app.exception_handler(MvpError)
 async def mvp_error(request: Request, exc: MvpError):
-    return JSONResponse(status_code=exc.status, content=exc.envelope(str(uuid4())))
+    return JSONResponse(status_code=exc.status, content=exc.envelope(current_request_id() or str(uuid4())))
 
 
 def _error_envelope(
@@ -102,7 +121,7 @@ def _error_envelope(
     MVP (Người 4) đọc ``error.code``/``error.request_id``; các route VMEC cũ đọc trực tiếp
     ``code``/``message`` nên giữ thêm khoá phẳng để không phá vỡ hợp đồng cũ.
     """
-    request_id = str(uuid4())
+    request_id = current_request_id() or str(uuid4())
     return {
         "error": {
             "code": code,

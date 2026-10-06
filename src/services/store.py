@@ -35,6 +35,7 @@ from src.models.schemas import (
     SourceDocument,
 )
 from src.services.errors import idempotency_conflict, invalid_state, not_found, version_conflict
+from src.services.request_context import current_request_id
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS investigations (
@@ -588,6 +589,8 @@ class MvpStore:
         actor_role: str | None = None,
         request_id: str | None = None,
     ) -> None:
+        # Mã yêu cầu lấy từ middleware khi lời gọi không truyền tường minh, để dòng nhật ký trùng
+        # với ``request_id`` mà người dùng thấy trong phản hồi lỗi.
         self._conn.execute(
             """INSERT INTO audit_events
                (investigation_id, actor, actor_role, action, request_id, payload_json, created_at)
@@ -597,7 +600,7 @@ class MvpStore:
                 actor,
                 actor_role,
                 action,
-                request_id,
+                request_id if request_id is not None else current_request_id(),
                 json.dumps(payload or {}, ensure_ascii=False),
                 now_iso(),
             ),

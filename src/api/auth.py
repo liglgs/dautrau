@@ -487,7 +487,7 @@ async def login(payload: LoginRequest, request: Request, response: Response) -> 
         samesite="lax",
         path="/",
         max_age=43200,
-        secure=settings.session_cookie_secure,
+        secure=settings.session_cookie_secure or settings.app_env == "production",
     )
     store.audit(
         None,

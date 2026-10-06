@@ -125,6 +125,38 @@ async def test_cookie_is_secure_when_app_env_is_production(monkeypatch, tmp_path
 
 
 @pytest.mark.asyncio
+async def test_production_forces_secure_even_without_the_variable(monkeypatch, tmp_path):
+    """``APP_ENV=production`` tự bật ``Secure``; không phụ thuộc người vận hành nhớ đặt biến.
+
+    Trước đây chỉ ``SESSION_COOKIE_SECURE`` mới bật cờ này, nên một bản triển khai quên biến sẽ
+    âm thầm phát cookie phiên đi được trên HTTP thường.
+    """
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.delenv("SESSION_COOKIE_SECURE", raising=False)
+    monkeypatch.setenv("MVP_DB_PATH", str(tmp_path / "prod-no-var.db"))
+    get_settings.cache_clear()
+    reset_mvp()
+    try:
+        configure_mvp(str(tmp_path / "prod-no-var.db"))
+        get_mvp_store().create_user(
+            user_id="usr_prod2",
+            email="prod2@benhvien.test",
+            role="investigator",
+            display_name="Người dùng production",
+            password_hash=hash_password(PASSWORD),
+        )
+        async with _client() as client:
+            response = await client.post(
+                "/api/v1/auth/login", json={"email": "prod2@benhvien.test", "password": PASSWORD}
+            )
+            assert response.status_code == 200, response.text
+            assert "Secure" in response.headers["set-cookie"]
+    finally:
+        reset_mvp()
+        get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
 async def test_browser_chosen_role_header_changes_nothing(hardening_client: AsyncClient):
     """Đổi ``X-Vigilens-Role`` không đổi quyền: vai chỉ đến từ credential đã xác minh."""
     response = await hardening_client.post(

@@ -23,6 +23,12 @@ from __future__ import annotations
 import argparse
 import sys
 from collections import Counter
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+# Cho phép chạy thẳng `python scripts/auth_cli.py ...` như tài liệu hướng dẫn, không chỉ `-m`.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 #: Ánh xạ vai VMEC cũ → vai mới (B1.1).
 LEGACY_ROLE_MAP = {
