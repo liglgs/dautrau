@@ -12,8 +12,9 @@ import json
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 
 from src.services.casework.models import (
     CaseworkCommand,
@@ -186,14 +187,38 @@ class CaseWorkflowService:
             if existing.request_hash != request_hash:
                 raise idempotency_conflict(key)
             return existing.response_json
-        response = create()
-        session.add(
-            IdempotencyRecord(
-                actor_id=actor_id, route=route, idempotency_key=key, request_hash=request_hash, response_json=response
-            )
-        )
-        session.flush()
-        return response
+        # The savepoint turns a same-key insert race into a deterministic replay rather
+        # than poisoning the outer transaction or leaking a database 500.
+        try:
+            with session.begin_nested():
+                response = create()
+                session.add(
+                    IdempotencyRecord(
+                        actor_id=actor_id,
+                        route=route,
+                        idempotency_key=key,
+                        request_hash=request_hash,
+                        response_json=response,
+                    )
+                )
+                session.flush()
+                return response
+        except IntegrityError:
+            existing = session.execute(
+                select(IdempotencyRecord).where(
+                    IdempotencyRecord.actor_id == actor_id,
+                    IdempotencyRecord.route == route,
+                    IdempotencyRecord.idempotency_key == key,
+                )
+            ).scalar_one_or_none()
+            if existing is None or existing.request_hash != request_hash:
+                raise idempotency_conflict(key)
+            return existing.response_json
+
+    def mutate(self, *, actor: dict[str, Any], route: str, idempotency_key: str, body: dict[str, Any], create):
+        """Execute one route mutation and durable replay record in one transaction."""
+        with session_scope(self.engine) as session:
+            return self._idempotent(session, _actor(actor), route, idempotency_key, body, lambda: create(session))
 
     def create_intake(
         self,
@@ -249,8 +274,9 @@ class CaseWorkflowService:
                     readiness_json=self._readiness([], kind),
                     adr_intake_json=self._adr_document(adr),
                 )
+                command_id = new_id("cmd")
                 command = CaseworkCommand(
-                    command_id=new_id("cmd"),
+                    command_id=command_id,
                     work_item_id=work_item_id,
                     command_type="extract_fields",
                     operation_key=f"intake:{work_item_id}:1",
@@ -346,6 +372,22 @@ class CaseWorkflowService:
                 )
             ).scalar_one()
             sources = list(previous.sources_json or [])
+            assertions = [dict(item) for item in assertions]
+            # A correction is new human input; attach a real source and exact span rather
+            # than relabelling the old extraction quote as if it said the new value.
+            for assertion in assertions:
+                correction = assertion.pop("manual_correction", None)
+                if correction is not None:
+                    source = _source(new_id("src"), len(sources) + 1, "manual_correction", str(correction), actor)
+                    sources.append(source)
+                    assertion["source_spans"] = [
+                        {
+                            "source_id": source["source_id"],
+                            "start": 0,
+                            "end": len(source["text"]),
+                            "quote": source["text"],
+                        }
+                    ]
             if source_text is not None:
                 sources.append(_source(new_id("src"), len(sources) + 1, "manual_correction", source_text, actor))
             checked = validate_assertions(assertions, sources)
@@ -357,7 +399,18 @@ class CaseWorkflowService:
                 assertion = dict(item)
                 prior = previous_by_id.get(assertion.get("assertion_id"))
                 assertion["assertion_id"] = assertion.get("assertion_id") or new_id("assert")
-                assertion["version"] = int(prior.get("version", 0)) + 1 if prior else int(assertion.get("version", 1))
+                changed = prior is None or _canonical(
+                    {k: v for k, v in assertion.items() if k not in {"version", "confirmed_by", "confirmed_at"}}
+                ) != _canonical(
+                    {k: v for k, v in prior.items() if k not in {"version", "confirmed_by", "confirmed_at"}}
+                )
+                assertion["version"] = (
+                    int(prior.get("version", 0)) + 1
+                    if changed and prior
+                    else int(prior.get("version", 1))
+                    if prior
+                    else int(assertion.get("version", 1))
+                )
                 if assertion.get("status") == "confirmed":
                     assertion["confirmed_by"] = actor
                     assertion["confirmed_at"] = _utc(now())
@@ -421,7 +474,7 @@ class CaseWorkflowService:
                 raise version_conflict(expected_version, work.version)
             if target not in WORK_TRANSITIONS.get(work.work_status, set()):
                 raise invalid_state("Work status transition không hợp lệ.", {"from": work.work_status, "to": target})
-            session.execute(
+            result = session.execute(
                 update(WorkItem)
                 .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected_version)
                 .values(
@@ -431,6 +484,8 @@ class CaseWorkflowService:
                     updated_at=now(),
                 )
             )
+            if result.rowcount != 1:
+                raise version_conflict(expected_version, work.version)
             return {"work_item_id": work_item_id, "work_status": target, "version": expected_version + 1}
 
     def create_clarification(
@@ -500,15 +555,43 @@ class CaseWorkflowService:
                 raise version_conflict(expected_version, work.version)
             if row.status != "open":
                 raise invalid_state("Clarification đã được đóng.")
-            row.status = "unknown" if unknown else "answered"
-            row.answered_by_json = actor
-            row.answered_at = now()
-            row.answer_source_json = (
+            previous = session.execute(
+                select(InputRevision).where(
+                    InputRevision.work_item_id == work_item_id, InputRevision.revision == workflow.input_revision
+                )
+            ).scalar_one()
+            sources = list(previous.sources_json or [])
+            answer_source = (
                 None
                 if unknown
                 else _source(new_id("src"), workflow.input_revision + 1, "clarification_answer", answer or "", actor)
             )
-            session.execute(
+            if answer_source:
+                sources.append(answer_source)
+            row.status = "unknown" if unknown else "answered"
+            row.answered_by_json = actor
+            row.answered_at = now()
+            row.answer_source_json = answer_source
+            revision_number = workflow.input_revision + 1
+            session.add(
+                InputRevision(
+                    input_revision_id=new_id("inrev"),
+                    work_item_id=work_item_id,
+                    revision=revision_number,
+                    sources_json=sources,
+                    assertions_json=previous.assertions_json or [],
+                    adr_facts_json=previous.adr_facts_json,
+                    content_hash=_hash(
+                        {
+                            "sources": sources,
+                            "assertions": previous.assertions_json or [],
+                            "adr": previous.adr_facts_json,
+                        }
+                    ),
+                    created_by_json=actor,
+                )
+            )
+            result = session.execute(
                 update(WorkItem)
                 .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected_version)
                 .values(
@@ -517,10 +600,28 @@ class CaseWorkflowService:
                     updated_at=now(),
                 )
             )
-            return {**self._clarification_document(row), "version": expected_version + 1}
+            if result.rowcount != 1:
+                raise version_conflict(expected_version, work.version)
+            workflow.input_revision, workflow.readiness_json, workflow.updated_at = (
+                revision_number,
+                self._readiness(previous.assertions_json or [], workflow.kind),
+                now(),
+            )
+            self._invalidate(session, work_item_id, "clarification_answer")
+            return {
+                **self._clarification_document(row),
+                "version": expected_version + 1,
+                "input_revision": revision_number,
+            }
 
     def create_run(
-        self, *, work_item_id: str, purpose: str, actor: dict[str, Any], idempotency_key: str | None = None
+        self,
+        *,
+        work_item_id: str,
+        purpose: str,
+        actor: dict[str, Any],
+        expected_version: int | None = None,
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         if purpose not in RUN_PURPOSES:
             raise invalid_request("Run purpose không hợp lệ.")
@@ -529,6 +630,11 @@ class CaseWorkflowService:
 
             def create():
                 workflow = self._workflow(session, work_item_id)
+                work = session.get(WorkItem, work_item_id)
+                if work is None:
+                    raise not_found("work_item", work_item_id)
+                if expected_version is not None and work.version != expected_version:
+                    raise version_conflict(expected_version, work.version)
                 revision = session.execute(
                     select(InputRevision).where(
                         InputRevision.work_item_id == work_item_id, InputRevision.revision == workflow.input_revision
@@ -536,6 +642,8 @@ class CaseWorkflowService:
                 ).scalar_one()
                 if purpose == "scoped_analysis" and not workflow.readiness_json.get("can_run_scoped_analysis"):
                     raise invalid_state("Chưa đủ readiness để chạy scoped analysis.", workflow.readiness_json)
+                if purpose == "preliminary_retrieval" and not workflow.readiness_json.get("can_retrieve_preliminary"):
+                    raise invalid_state("Chưa đủ readiness để chạy preliminary retrieval.", workflow.readiness_json)
                 run = CaseworkRun(
                     run_id=new_id("run"),
                     work_item_id=work_item_id,
@@ -543,13 +651,19 @@ class CaseWorkflowService:
                     input_revision=workflow.input_revision,
                     input_hash=revision.content_hash,
                 )
+                command_id = new_id("cmd")
                 command = CaseworkCommand(
-                    command_id=new_id("cmd"),
+                    command_id=command_id,
                     work_item_id=work_item_id,
                     run_id=run.run_id,
                     command_type=purpose,
-                    operation_key=f"{purpose}:{work_item_id}:{workflow.input_revision}",
-                    payload_json={"input_revision": workflow.input_revision, "run_id": run.run_id},
+                    operation_key=f"{purpose}:{work_item_id}:{workflow.input_revision}:{command_id}",
+                    payload_json={
+                        "input_revision": workflow.input_revision,
+                        "input_hash": revision.content_hash,
+                        "run_id": run.run_id,
+                        "run_revision": 1,
+                    },
                 )
                 workflow.current_run_id = run.run_id
                 session.add_all([run, command])
@@ -561,7 +675,12 @@ class CaseWorkflowService:
                 }
 
             return self._idempotent(
-                session, actor, f"/api/v2/work-items/{work_item_id}/runs", idempotency_key, {"purpose": purpose}, create
+                session,
+                actor,
+                f"/api/v2/work-items/{work_item_id}/runs",
+                idempotency_key,
+                {"purpose": purpose, "expected_version": expected_version},
+                create,
             )
 
     def save_editor_draft(
@@ -705,6 +824,7 @@ class CaseWorkflowService:
         *,
         work_item_id: str,
         basis_hash: str,
+        response_id: str | None = None,
         reviewer: dict[str, Any],
         decision: str,
         expected_version: int,
@@ -728,6 +848,19 @@ class CaseWorkflowService:
                 ).scalar_one_or_none()
                 if basis is None or not basis.valid:
                     raise invalid_state("Basis không còn hiệu lực để duyệt.")
+                if response_id is not None and basis.response_id != response_id:
+                    raise invalid_state("URL response_id không khớp basis.")
+                response = session.get(ProfessionalResponse, basis.response_id)
+                workflow = self._workflow(session, work_item_id)
+                if (
+                    response is None
+                    or workflow.current_response_id != basis.response_id
+                    or response.version != basis.response_version
+                    or response.status != "in_review"
+                    or basis.input_revision != workflow.input_revision
+                    or work.work_status != "awaiting_review"
+                ):
+                    raise invalid_state("Chỉ current response đang in_review với basis current được duyệt.")
                 if reviewer["id"] in set(basis.author_ids_json or []):
                     raise invalid_state("Người soạn hoặc sửa nội dung quan trọng không được tự duyệt.")
                 session.add(
@@ -752,6 +885,16 @@ class CaseWorkflowService:
                 )
                 if result.rowcount != 1:
                     raise version_conflict(expected_version, work.version)
+                response.status = (
+                    "approved" if decision == "approved" else "rejected" if decision == "rejected" else "draft"
+                )
+                response.approval_json = {
+                    "decision": decision,
+                    "reviewer": reviewer,
+                    "basis_hash": basis_hash,
+                    "decided_at": _utc(now()),
+                }
+                response.updated_at = now()
                 return {"basis_hash": basis_hash, "decision": decision, "version": expected_version + 1}
 
             return self._idempotent(
@@ -771,27 +914,317 @@ class CaseWorkflowService:
         self,
         *,
         work_item_id: str,
+        expected_version: int,
         status: str,
         assessor: dict[str, Any] | None,
         reason: str | None,
         policy_reference: str | None,
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         if status not in ADR_REPORTABILITY:
             raise invalid_request("ADR reportability không hợp lệ.")
         with session_scope(self.engine) as session:
-            workflow = self._workflow(session, work_item_id)
-            if workflow.kind != "adr":
-                raise invalid_state("Chỉ ADR có reportability.")
-            intake = dict(workflow.adr_intake_json or {})
-            intake["reportability"] = {
-                "status": status,
-                "basis_input_revision": workflow.input_revision,
-                "assessor": _actor(assessor) if assessor else None,
-                "reason": reason,
-                "policy_reference": policy_reference,
+
+            def create():
+                workflow, work = self._workflow(session, work_item_id), session.get(WorkItem, work_item_id)
+                if workflow.kind != "adr":
+                    raise invalid_state("Chỉ ADR có reportability.")
+                if work is None or work.version != expected_version:
+                    raise version_conflict(expected_version, work.version if work else 0)
+                intake = dict(workflow.adr_intake_json or {})
+                intake["reportability"] = {
+                    "status": status,
+                    "basis_input_revision": workflow.input_revision,
+                    "assessor": _actor(assessor) if assessor else None,
+                    "reason": reason,
+                    "policy_reference": policy_reference,
+                }
+                result = session.execute(
+                    update(WorkItem)
+                    .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected_version)
+                    .values(
+                        version=expected_version + 1,
+                        etag=etag_for("work_item", work_item_id, expected_version + 1),
+                        updated_at=now(),
+                    )
+                )
+                if result.rowcount != 1:
+                    raise version_conflict(expected_version, work.version)
+                workflow.adr_intake_json, workflow.updated_at = intake, now()
+                return intake["reportability"] | {"version": expected_version + 1}
+
+            return self._idempotent(
+                session,
+                _actor(assessor),
+                f"/api/v2/work-items/{work_item_id}/adr-reportability",
+                idempotency_key,
+                {
+                    "expected_version": expected_version,
+                    "status": status,
+                    "reason": reason,
+                    "policy_reference": policy_reference,
+                },
+                create,
+            )
+
+    def patch_adr(
+        self,
+        *,
+        work_item_id: str,
+        expected_version: int,
+        actor: dict[str, Any],
+        patch: dict[str, Any],
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        actor = _actor(actor)
+        if "reportability" in patch or "confirmed_by" in _canonical(patch):
+            raise invalid_request("ADR patch không được ghi reportability hoặc confirmed_by.")
+
+        def create(session):
+            work, flow = session.get(WorkItem, work_item_id), self._workflow(session, work_item_id)
+            if work is None or flow.kind != "adr":
+                raise invalid_state("Chỉ ADR có adr-intake.")
+            if work.version != expected_version:
+                raise version_conflict(expected_version, work.version)
+            prior = session.execute(
+                select(InputRevision).where(
+                    InputRevision.work_item_id == work_item_id, InputRevision.revision == flow.input_revision
+                )
+            ).scalar_one()
+            current = dict(flow.adr_intake_json or {})
+            current.update(patch)
+            facts = current.get("groups") or current.get("minimum_four") or {}
+            adr = adr_minimum_four(facts if isinstance(facts, dict) else {})
+            intake = {
+                **current,
+                **adr,
+                "reportability": {
+                    "status": "not_assessed",
+                    "basis_input_revision": None,
+                    "assessor": None,
+                    "reason": None,
+                    "policy_reference": None,
+                },
             }
-            workflow.adr_intake_json, workflow.updated_at = intake, now()
-            return intake["reportability"]
+            revision = flow.input_revision + 1
+            session.add(
+                InputRevision(
+                    input_revision_id=new_id("inrev"),
+                    work_item_id=work_item_id,
+                    revision=revision,
+                    sources_json=prior.sources_json or [],
+                    assertions_json=prior.assertions_json or [],
+                    adr_facts_json=adr,
+                    content_hash=_hash(
+                        {"sources": prior.sources_json or [], "assertions": prior.assertions_json or [], "adr": adr}
+                    ),
+                    created_by_json=actor,
+                )
+            )
+            result = session.execute(
+                update(WorkItem)
+                .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected_version)
+                .values(
+                    version=expected_version + 1,
+                    etag=etag_for("work_item", work_item_id, expected_version + 1),
+                    review_status="pending",
+                    updated_at=now(),
+                )
+            )
+            if result.rowcount != 1:
+                raise version_conflict(expected_version, work.version)
+            flow.input_revision, flow.adr_intake_json, flow.readiness_json, flow.updated_at = (
+                revision,
+                intake,
+                self._readiness(prior.assertions_json or [], "adr"),
+                now(),
+            )
+            self._invalidate(session, work_item_id, "adr_intake_change")
+            return {"work_item_id": work_item_id, "version": expected_version + 1, "input_revision": revision}
+
+        return self.mutate(
+            actor=actor,
+            route=f"/api/v2/work-items/{work_item_id}/adr-intake",
+            idempotency_key=idempotency_key,
+            body={"expected_version": expected_version, "patch": patch},
+            create=create,
+        )
+
+    def save_response_with_basis(
+        self,
+        *,
+        work_item_id: str,
+        expected_version: int,
+        input_revision: int,
+        sections: list[dict[str, Any]],
+        bundle_id: str | None,
+        actor: dict[str, Any],
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        actor = _actor(actor)
+
+        def create(session):
+            work, flow = session.get(WorkItem, work_item_id), self._workflow(session, work_item_id)
+            if work is None or work.version != expected_version:
+                raise version_conflict(expected_version, work.version if work else 0)
+            if flow.input_revision != input_revision:
+                raise invalid_state("Input revision đã cũ.")
+            old = session.get(ProfessionalResponse, flow.current_response_id) if flow.current_response_id else None
+            if old:
+                old.status, old.updated_at = "superseded", now()
+            self._invalidate(session, work_item_id, "new_response")
+            version = (
+                int(
+                    session.execute(
+                        select(func.max(ProfessionalResponse.version)).where(
+                            ProfessionalResponse.work_item_id == work_item_id
+                        )
+                    ).scalar()
+                    or 0
+                )
+                + 1
+            )
+            response = ProfessionalResponse(
+                response_id=new_id("resp"),
+                work_item_id=work_item_id,
+                version=version,
+                etag=etag_for("response", work_item_id, version),
+                status="draft",
+                sections_json=sections,
+                assessment_status="insufficient_evidence",
+                coverage_json={"status": "not_requested"},
+                drafted_by_json=actor,
+                supersedes=old.response_id if old else None,
+            )
+            session.add(response)
+            session.flush()
+            immutable = {
+                "input_revision": input_revision,
+                "bundle_id": bundle_id,
+                "response_content_hash": _hash(sections),
+                "response_id": response.response_id,
+                "response_version": version,
+            }
+            basis = OutputBasis(
+                basis_id=new_id("basis"),
+                work_item_id=work_item_id,
+                response_id=response.response_id,
+                response_version=version,
+                basis_hash=_hash(immutable),
+                input_revision=input_revision,
+                basis_json=immutable,
+                author_ids_json=[actor["id"]],
+            )
+            session.add(basis)
+            result = session.execute(
+                update(WorkItem)
+                .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected_version)
+                .values(
+                    version=expected_version + 1,
+                    etag=etag_for("work_item", work_item_id, expected_version + 1),
+                    review_status="pending",
+                    updated_at=now(),
+                )
+            )
+            if result.rowcount != 1:
+                raise version_conflict(expected_version, work.version)
+            flow.current_response_id, flow.updated_at = response.response_id, now()
+            return {
+                "response_id": response.response_id,
+                "version": version,
+                "status": "draft",
+                "basis_id": basis.basis_id,
+                "basis_hash": basis.basis_hash,
+                "author_ids": [actor["id"]],
+            }
+
+        return self.mutate(
+            actor=actor,
+            route=f"/api/v2/work-items/{work_item_id}/drafts",
+            idempotency_key=idempotency_key,
+            body={
+                "expected_version": expected_version,
+                "input_revision": input_revision,
+                "sections": sections,
+                "bundle_id": bundle_id,
+            },
+            create=create,
+        )
+
+    def submit_response(
+        self,
+        *,
+        response_id: str,
+        expected_response_version: int,
+        expected_work_version: int,
+        basis_hash: str,
+        actor: dict[str, Any],
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        actor = _actor(actor)
+
+        def create(session):
+            response = session.get(ProfessionalResponse, response_id)
+            if response is None:
+                raise not_found("response", response_id)
+            flow, work = self._workflow(session, response.work_item_id), session.get(WorkItem, response.work_item_id)
+            if (
+                response_id != flow.current_response_id
+                or response.version != expected_response_version
+                or response.status != "draft"
+            ):
+                raise invalid_state("Chỉ response current ở draft được submit.")
+            if work.version != expected_work_version or work.work_status not in {
+                "accepted",
+                "in_progress",
+                "awaiting_information",
+            }:
+                raise invalid_state("Work không ở trạng thái cho phép submit.")
+            basis = session.execute(
+                select(OutputBasis).where(
+                    OutputBasis.response_id == response_id,
+                    OutputBasis.basis_hash == basis_hash,
+                    OutputBasis.valid.is_(True),
+                )
+            ).scalar_one_or_none()
+            if (
+                basis is None
+                or basis.input_revision != flow.input_revision
+                or basis.response_version != response.version
+            ):
+                raise invalid_state("Basis không còn current/hợp lệ.")
+            response.status, response.updated_at = "in_review", now()
+            result = session.execute(
+                update(WorkItem)
+                .where(WorkItem.work_item_id == work.work_item_id, WorkItem.version == expected_work_version)
+                .values(
+                    version=expected_work_version + 1,
+                    etag=etag_for("work_item", work.work_item_id, expected_work_version + 1),
+                    review_status="pending",
+                    work_status="awaiting_review",
+                    updated_at=now(),
+                )
+            )
+            if result.rowcount != 1:
+                raise version_conflict(expected_work_version, work.version)
+            return {
+                "response_id": response_id,
+                "status": "in_review",
+                "basis_hash": basis_hash,
+                "version": expected_work_version + 1,
+            }
+
+        return self.mutate(
+            actor=actor,
+            route=f"/api/v2/responses/{response_id}/submit-review",
+            idempotency_key=idempotency_key,
+            body={
+                "response_version": expected_response_version,
+                "work_version": expected_work_version,
+                "basis_hash": basis_hash,
+            },
+            create=create,
+        )
 
     def _clarification_document(self, row: Clarification) -> dict[str, Any]:
         return {

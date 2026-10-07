@@ -23,6 +23,15 @@ export interface WorkItemSummary {
   next_action?: string | null;
 }
 
+export interface FollowUp {
+  follow_up_id: string;
+  version?: number;
+  kind: string;
+  status: "open" | "in_progress" | "done" | "cancelled" | string;
+  note: string;
+  resolution?: string | null;
+}
+
 export interface SourceSpan {
   source_id: string;
   source_version: number;
@@ -140,6 +149,8 @@ export interface WorkflowAggregate {
   version_basis?: VersionBasis | null;
   adr_intake?: AdrIntake | null;
   allowed_actions: string[];
+  follow_ups?: FollowUp[];
+  stale_approval_reason?: string | null;
   aggregate_etag?: string;
 }
 
@@ -176,4 +187,8 @@ export interface CaseworkDataSource {
   submitReview(responseId: string, input: { expected_version: number; expected_work_version: number; basis_hash: string }, idempotencyKey: string): Promise<void>;
   reviewResponse(responseId: string, input: { expected_version: number; expected_work_version: number; basis_hash: string; action: "approve" | "reject" | "changes_requested"; reason: string }, idempotencyKey: string): Promise<void>;
   patchAdrIntake(id: string, input: { expected_version: number; patch: Record<string, unknown>; reason?: string }, idempotencyKey: string): Promise<WorkflowAggregate>;
+  setAdrReportability(id: string, input: { expected_version: number; status: "not_assessed" | "needs_information" | "reportable" | "not_reportable"; reason?: string; policy_reference?: string }, idempotencyKey: string): Promise<WorkflowAggregate>;
+  closeFollowUp(id: string, followUpId: string, input: { expected_version: number; status: "done" | "cancelled"; resolution: string }, idempotencyKey: string): Promise<FollowUp>;
+  exportApprovedResponse(id: string): Promise<{ response_id: string; version: number; sections: { key?: string; title?: string; text?: string }[]; basis_hash: string; approved_at?: string }>;
+  getEvents(id: string): Promise<{ events: { id: number; kind: string; operation_id?: string; state?: string; created_at?: string }[] }>;
 }

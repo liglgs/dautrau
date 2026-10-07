@@ -10,7 +10,7 @@ def test_processor_completes_persisted_intake_command_and_is_replay_safe(tmp_pat
     engine = get_warehouse_engine(f"sqlite:///{tmp_path / 'processor.db'}")
     store = CaseWorkStore(engine)
     receipt = store.create_intake(
-        kind="di",
+        kind="adr",
         raw_text="Cần tư vấn thuốc?",
         actor={"id": "investigator", "role": "investigator"},
         idempotency_key="intake-command",
@@ -29,7 +29,7 @@ def test_processor_preserves_missing_source_semantics_without_inventing_claims(t
     engine = get_warehouse_engine(f"sqlite:///{tmp_path / 'processor-scope.db'}")
     store = CaseWorkStore(engine)
     receipt = store.create_intake(
-        kind="di",
+        kind="adr",
         raw_text="Cần tư vấn?",
         actor={"id": "investigator", "role": "investigator"},
         idempotency_key="scoped-intake",

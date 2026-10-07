@@ -7,8 +7,6 @@ only publish, review, and export through the version-bound operations below.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Header, Query, Response
@@ -30,7 +28,7 @@ from src.services.casework.models import (
     WorkItem,
 )
 from src.services.casework.store import CaseWorkStore, etag_for, new_id
-from src.services.casework.workflow import CaseWorkflowService, adr_minimum_four
+from src.services.casework.workflow import CaseWorkflowService
 from src.services.errors import invalid_request, invalid_state, not_found, version_conflict
 from src.services.identity import Permission
 from src.services.warehouse.db import session_scope
@@ -381,7 +379,7 @@ def fields(
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
     if_match: Annotated[str | None, Header(alias="If-Match")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
+    idempotency_key = _require_key(idempotency_key)
     _assert_match(if_match, payload.expected_version)
     _work(store, work_item_id, principal, write=True)
     before = _aggregate(store, work_item_id, principal)
@@ -403,11 +401,19 @@ def fields(
             if op.value is None:
                 raise invalid_request("correct cần value.")
             assertion["value"] = op.value
-    store.update_fields(
-        work_item_id=work_item_id,
-        expected_version=payload.expected_version,
+            assertion["manual_correction"] = op.value
+    service = CaseWorkflowService(store.engine)
+    service.mutate(
         actor=_actor(principal),
-        assertions=assertions,
+        route=f"/api/v2/work-items/{work_item_id}/fields",
+        idempotency_key=idempotency_key,
+        body=payload.model_dump(),
+        create=lambda _session: store.update_fields(
+            work_item_id=work_item_id,
+            expected_version=payload.expected_version,
+            actor=_actor(principal),
+            assertions=assertions,
+        ),
     )
     return _aggregate(store, work_item_id, principal)
 
@@ -420,19 +426,27 @@ def clarification_answers(
     principal: RunPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
+    idempotency_key = _require_key(idempotency_key)
     _work(store, work_item_id, principal, write=True)
     version = payload.expected_version
+    # Each answer is its own immutable input revision.  The whole HTTP command is
+    # replayed through one durable key, so a retry cannot close a second question.
     for answer in payload.answers:
         if answer.expected_clarification_version != 1:
             raise version_conflict(answer.expected_clarification_version, 1)
-        store.answer_clarification(
-            work_item_id=work_item_id,
-            clarification_id=answer.clarification_id,
-            expected_version=version,
+        CaseWorkflowService(store.engine).mutate(
             actor=_actor(principal),
-            answer=answer.text,
-            unknown=answer.answer_state == "unknown",
+            route=f"/api/v2/work-items/{work_item_id}/clarification-answers/{answer.clarification_id}",
+            idempotency_key=f"{idempotency_key}:{answer.clarification_id}",
+            body=answer.model_dump() | {"expected_version": version},
+            create=lambda _session, answer=answer, version=version: store.answer_clarification(
+                work_item_id=work_item_id,
+                clarification_id=answer.clarification_id,
+                expected_version=version,
+                actor=_actor(principal),
+                answer=answer.text,
+                unknown=answer.answer_state == "unknown",
+            ),
         )
         version += 1
     return _aggregate(store, work_item_id, principal)
@@ -446,13 +460,15 @@ def start_run(
     principal: RunPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
-    work = _work(store, work_item_id, principal, write=True)
-    if work.version != payload.expected_version:
-        raise version_conflict(payload.expected_version, work.version)
+    idempotency_key = _require_key(idempotency_key)
+    _work(store, work_item_id, principal, write=True)
     purpose = "preliminary_retrieval" if payload.purpose == "preliminary" else payload.purpose
     return store.create_casework_run(
-        work_item_id=work_item_id, purpose=purpose, actor=_actor(principal), idempotency_key=idempotency_key
+        work_item_id=work_item_id,
+        purpose=purpose,
+        actor=_actor(principal),
+        expected_version=payload.expected_version,
+        idempotency_key=idempotency_key,
     )
 
 
@@ -464,9 +480,10 @@ def continue_run(
     principal: RunPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
+    key = _require_key(idempotency_key)
     _work(store, work_item_id, principal, write=True)
-    with session_scope(store.engine) as session:
+
+    def create(session):
         row = session.get(CaseworkRun, run_id)
         if row is None or row.work_item_id != work_item_id:
             raise not_found("run", run_id)
@@ -481,10 +498,23 @@ def continue_run(
             run_id=run_id,
             command_type=row.purpose,
             operation_key=f"continue:{run_id}:{row.progress_revision}",
-            payload_json={"run_id": run_id},
+            payload_json={
+                "run_id": run_id,
+                "run_revision": row.progress_revision,
+                "input_revision": row.input_revision,
+                "input_hash": row.input_hash,
+            },
         )
         session.add(cmd)
         return {"run_id": run_id, "operation_id": cmd.command_id, "state": "queued"}
+
+    return CaseWorkflowService(store.engine).mutate(
+        actor=_actor(principal),
+        route=f"/api/v2/work-items/{work_item_id}/runs/{run_id}/continue",
+        idempotency_key=key,
+        body={},
+        create=create,
+    )
 
 
 @router.post("/work-items/{work_item_id}/runs/{run_id}/cancel")
@@ -495,9 +525,10 @@ def cancel_run(
     principal: RunPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
+    key = _require_key(idempotency_key)
     _work(store, work_item_id, principal, write=True)
-    with session_scope(store.engine) as session:
+
+    def create(session):
         row = session.get(CaseworkRun, run_id)
         if row is None or row.work_item_id != work_item_id:
             raise not_found("run", run_id)
@@ -513,6 +544,14 @@ def cancel_run(
         )
         return _run_doc(row)
 
+    return CaseWorkflowService(store.engine).mutate(
+        actor=_actor(principal),
+        route=f"/api/v2/work-items/{work_item_id}/runs/{run_id}/cancel",
+        idempotency_key=key,
+        body={},
+        create=create,
+    )
+
 
 @router.post("/work-items/{work_item_id}/runs/{run_id}/review")
 def review_run(
@@ -524,11 +563,13 @@ def review_run(
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
     """Record a human run checkpoint without treating it as response approval."""
-    _require_key(idempotency_key)
-    work = _work(store, work_item_id, principal)
-    if work.version != payload.expected_work_version:
-        raise version_conflict(payload.expected_work_version, work.version)
-    with session_scope(store.engine) as session:
+    key = _require_key(idempotency_key)
+    _work(store, work_item_id, principal)
+
+    def create(session):
+        work = session.get(WorkItem, work_item_id)
+        if work is None or work.version != payload.expected_work_version:
+            raise version_conflict(payload.expected_work_version, work.version if work else 0)
         row = session.get(CaseworkRun, run_id)
         if row is None or row.work_item_id != work_item_id:
             raise not_found("run", run_id)
@@ -544,6 +585,14 @@ def review_run(
         )
         return _run_doc(row)
 
+    return CaseWorkflowService(store.engine).mutate(
+        actor=_actor(principal),
+        route=f"/api/v2/work-items/{work_item_id}/runs/{run_id}/review",
+        idempotency_key=key,
+        body=payload.model_dump(),
+        create=create,
+    )
+
 
 @router.post("/work-items/{work_item_id}/drafts", status_code=201)
 def create_draft(
@@ -554,47 +603,21 @@ def create_draft(
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
     _require_key(idempotency_key)
-    work = _work(store, work_item_id, principal, write=True)
-    if work.version != payload.expected_version:
-        raise version_conflict(payload.expected_version, work.version)
-    aggregate = _aggregate(store, work_item_id, principal)
-    if aggregate["work_item"]["input_revision"] != payload.expected_input_revision:
-        raise invalid_state("Input revision đã cũ.")
+    _work(store, work_item_id, principal, write=True)
     sections = [
         {"key": key, "title": key, "text": text, "citations": []} for key, text in payload.sections.items() if text
     ]
     if not sections:
         sections = [{"key": "summary", "title": "Nháp", "text": "Chưa có nội dung lâm sàng.", "citations": []}]
-    response = store.save_response(
+    return CaseWorkflowService(store.engine).save_response_with_basis(
         work_item_id=work_item_id,
+        expected_version=payload.expected_version,
+        input_revision=payload.expected_input_revision,
         sections=sections,
-        status="draft",
-        assessment_status="insufficient_evidence",
-        coverage={"status": "not_requested"},
-        drafted_by=_actor(principal),
+        bundle_id=payload.bundle_id,
         actor=_actor(principal),
-    )
-    content_hash = hashlib.sha256(json.dumps(sections, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
-    basis = store.create_output_basis(
-        work_item_id=work_item_id,
-        response_id=response["response_id"],
-        response_version=response["version"],
-        basis={
-            "input_revision": payload.expected_input_revision,
-            "bundle_id": payload.bundle_id,
-            "response_content_hash": content_hash,
-            "source_results": aggregate["runs"],
-        },
-        author_ids=[principal.user_id],
-    )
-    return {
-        "response_id": response["response_id"],
-        "version": response["version"],
-        "status": "draft",
-        "sections": payload.sections,
-        "author_ids": [principal.user_id],
-        **basis,
-    }
+        idempotency_key=idempotency_key,
+    ) | {"sections": payload.sections}
 
 
 @router.get("/work-items/{work_item_id}/editor-draft")
@@ -633,40 +656,16 @@ def submit_review(
     principal: RunPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
-    response, work = _response_for(store, response_id, principal)
-    if response.version != payload.expected_version or work.version != payload.expected_work_version:
-        raise version_conflict(payload.expected_work_version, work.version)
-    with session_scope(store.engine) as session:
-        basis = session.execute(
-            select(OutputBasis).where(
-                OutputBasis.response_id == response_id,
-                OutputBasis.basis_hash == payload.basis_hash,
-                OutputBasis.valid.is_(True),
-            )
-        ).scalar_one_or_none()
-        if basis is None:
-            raise invalid_state("Basis không còn hiệu lực.")
-        session.execute(
-            update(ProfessionalResponse)
-            .where(
-                ProfessionalResponse.response_id == response_id,
-                ProfessionalResponse.version == payload.expected_version,
-            )
-            .values(status="in_review", updated_at=now())
-        )
-        session.execute(
-            update(WorkItem)
-            .where(WorkItem.work_item_id == work.work_item_id, WorkItem.version == payload.expected_work_version)
-            .values(
-                review_status="pending",
-                work_status="awaiting_review",
-                version=work.version + 1,
-                etag=etag_for("work_item", work.work_item_id, work.version + 1),
-                updated_at=now(),
-            )
-        )
-    return {"response_id": response_id, "status": "in_review", "basis_hash": payload.basis_hash}
+    idempotency_key = _require_key(idempotency_key)
+    _response_for(store, response_id, principal)
+    return CaseWorkflowService(store.engine).submit_response(
+        response_id=response_id,
+        expected_response_version=payload.expected_version,
+        expected_work_version=payload.expected_work_version,
+        basis_hash=payload.basis_hash,
+        actor=_actor(principal),
+        idempotency_key=idempotency_key,
+    )
 
 
 @router.get("/work-items/{work_item_id}/events")
@@ -760,29 +759,15 @@ def patch_adr(
     principal: RunPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
+    idempotency_key = _require_key(idempotency_key)
     _work(store, work_item_id, principal, write=True)
-    with session_scope(store.engine) as session:
-        work, flow = session.get(WorkItem, work_item_id), session.get(CaseworkWorkflow, work_item_id)
-        if flow.kind != "adr":
-            raise invalid_state("Chỉ ADR có adr-intake.")
-        if work.version != payload.expected_version:
-            raise version_conflict(payload.expected_version, work.version)
-        current = dict(flow.adr_intake_json or {})
-        current.update(payload.patch)
-        facts = current.get("groups") or current.get("minimum_four") or {}
-        if isinstance(facts, list):
-            facts = {item.get("key"): item for item in facts if isinstance(item, dict)}
-        adr = adr_minimum_four(facts)
-        current.update(adr)
-        current.setdefault("reportability", {"status": "not_assessed"})
-        flow.adr_intake_json, flow.input_revision, flow.updated_at = current, flow.input_revision + 1, now()
-        work.version, work.etag, work.review_status, work.updated_at = (
-            work.version + 1,
-            etag_for("work_item", work_item_id, work.version + 1),
-            "pending",
-            now(),
-        )
+    CaseWorkflowService(store.engine).patch_adr(
+        work_item_id=work_item_id,
+        expected_version=payload.expected_version,
+        actor=_actor(principal),
+        patch=payload.patch,
+        idempotency_key=idempotency_key,
+    )
     return _aggregate(store, work_item_id, principal)
 
 
@@ -794,16 +779,16 @@ def adr_reportability(
     principal: ReviewPrincipal,
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
-    _require_key(idempotency_key)
-    work = _work(store, work_item_id, principal)
-    if work.version != payload.expected_version:
-        raise version_conflict(payload.expected_version, work.version)
+    key = _require_key(idempotency_key)
+    _work(store, work_item_id, principal)
     return CaseWorkflowService(store.engine).set_adr_reportability(
         work_item_id=work_item_id,
+        expected_version=payload.expected_version,
         status=payload.status,
         assessor=_actor(principal),
         reason=payload.reason,
         policy_reference=payload.policy_reference,
+        idempotency_key=key,
     )
 
 

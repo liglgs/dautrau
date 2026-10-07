@@ -3013,7 +3013,8 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "purpose"
+        "purpose",
+        "expected_version"
       ],
       "properties": {
         "purpose": {
@@ -3022,6 +3023,10 @@
             "preliminary_retrieval",
             "scoped_analysis"
           ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
@@ -3056,19 +3061,20 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "work_item_id",
         "basis_hash",
-        "expected_version"
+        "expected_version",
+        "expected_work_version"
       ],
       "properties": {
-        "work_item_id": {
-          "$ref": "#/$defs/Identifier"
-        },
         "basis_hash": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
         },
         "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expected_work_version": {
           "type": "integer",
           "minimum": 1
         }

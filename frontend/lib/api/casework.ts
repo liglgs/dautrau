@@ -2,7 +2,6 @@ import { DATA_MODE } from "@/lib/api";
 import { request } from "@/lib/api/real";
 import type {
   CaseworkDataSource,
-  CaseworkListResult,
   CaseworkRun,
   EditorDraft,
   IntakeCreateInput,
@@ -14,12 +13,29 @@ import type {
 const key = () => crypto.randomUUID();
 const encoded = (id: string) => encodeURIComponent(id);
 
+function summary(raw: unknown): WorkItemSummary | null {
+  if (!raw || typeof raw !== "object") return null;
+  const item = raw as Record<string, unknown>;
+  const id = typeof item.id === "string" ? item.id : typeof item.work_item_id === "string" ? item.work_item_id : null;
+  const text = typeof item.raw_text === "string" ? item.raw_text : typeof item.question === "string" ? item.question : "";
+  if (!id || !text) return null;
+  return {
+    id, raw_text: text, kind: item.kind === "adr" ? "adr" : "di", priority: typeof item.priority === "string" ? item.priority : "routine",
+    version: typeof item.version === "number" ? item.version : 1, input_revision: typeof item.input_revision === "number" ? item.input_revision : 1,
+    work_status: typeof item.work_status === "string" ? item.work_status as WorkItemSummary["work_status"] : "draft",
+    run_status: typeof item.run_status === "string" ? item.run_status as WorkItemSummary["run_status"] : "not_started",
+    review_status: typeof item.review_status === "string" ? item.review_status as WorkItemSummary["review_status"] : "not_required",
+    created_at: typeof item.created_at === "string" ? item.created_at : new Date(0).toISOString(), updated_at: typeof item.updated_at === "string" ? item.updated_at : undefined,
+  };
+}
+
 export function createCaseworkApiSource(): CaseworkDataSource {
   return {
-    listWorkItems: (filters = {}) => {
+    listWorkItems: async (filters = {}) => {
       const query = new URLSearchParams();
       for (const [name, value] of Object.entries(filters)) if (value) query.set(name, value);
-      return request<CaseworkListResult>(`/api/v2/work-items${query.size ? `?${query}` : ""}`);
+      const response = await request<{ items?: unknown[]; next_cursor?: string | null }>(`/api/v2/work-items${query.size ? `?${query}` : ""}`);
+      return { items: (response.items ?? []).map(summary).filter((item): item is WorkItemSummary => item !== null), next_cursor: response.next_cursor ?? null };
     },
     createIntake: (input: IntakeCreateInput, idempotencyKey = key()) => request<WorkItemSummary>("/api/v2/work-items/intake", { method: "POST", body: input, headers: { "Idempotency-Key": idempotencyKey } }),
     getWorkflow: (id) => request<WorkflowAggregate>(`/api/v2/work-items/${encoded(id)}/workflow`),
@@ -32,6 +48,10 @@ export function createCaseworkApiSource(): CaseworkDataSource {
     submitReview: (responseId, input, idempotencyKey = key()) => request<void>(`/api/v2/responses/${encoded(responseId)}/submit-review`, { method: "POST", body: input, headers: { "Idempotency-Key": idempotencyKey } }),
     reviewResponse: (responseId, input, idempotencyKey = key()) => request<void>(`/api/v2/responses/${encoded(responseId)}/review`, { method: "POST", body: input, headers: { "Idempotency-Key": idempotencyKey } }),
     patchAdrIntake: (id, input, idempotencyKey = key()) => request<WorkflowAggregate>(`/api/v2/work-items/${encoded(id)}/adr-intake`, { method: "PATCH", body: input, headers: { "Idempotency-Key": idempotencyKey } }),
+    setAdrReportability: (id, input, idempotencyKey = key()) => request<WorkflowAggregate>(`/api/v2/work-items/${encoded(id)}/adr-reportability`, { method: "POST", body: input, headers: { "Idempotency-Key": idempotencyKey } }),
+    closeFollowUp: (id, followUpId, input, idempotencyKey = key()) => request(`/api/v2/work-items/${encoded(id)}/follow-ups/${encoded(followUpId)}`, { method: "PATCH", body: input, headers: { "Idempotency-Key": idempotencyKey } }),
+    exportApprovedResponse: (id) => request(`/api/v2/work-items/${encoded(id)}/response-export`),
+    getEvents: (id) => request(`/api/v2/work-items/${encoded(id)}/events`),
   };
 }
 
@@ -59,6 +79,10 @@ function mockSource(): CaseworkDataSource {
     submitReview: async () => undefined,
     reviewResponse: async () => undefined,
     patchAdrIntake: async () => aggregate,
+    setAdrReportability: async () => aggregate,
+    closeFollowUp: async (_id, followUpId, input) => ({ follow_up_id: followUpId, status: input.status, kind: "information", note: "", resolution: input.resolution }),
+    exportApprovedResponse: async () => ({ response_id: "response-demo", version: 1, sections: [], basis_hash: "demo" }),
+    getEvents: async () => ({ events: [] }),
   };
 }
 

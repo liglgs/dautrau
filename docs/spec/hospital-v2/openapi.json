@@ -496,6 +496,9 @@
           },
           {
             "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
           }
         ],
         "requestBody": {
@@ -877,6 +880,287 @@
           }
         },
         "operationId": "workflow_post_api_v2_responses_response_id_submit_review"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs/{run_id}/continue": {
+      "post": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work-items_work_item_id_runs_run_id_continue"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs/{run_id}/cancel": {
+      "post": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work-items_work_item_id_runs_run_id_cancel"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs/{run_id}/review": {
+      "post": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work-items_work_item_id_runs_run_id_review"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/drafts": {
+      "post": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work-items_work_item_id_drafts"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/events": {
+      "get": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_get_api_v2_work-items_work_item_id_events"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/operations/{operation_id}": {
+      "get": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_get_api_v2_work-items_work_item_id_operations_operation_id"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/response-export": {
+      "get": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_get_api_v2_work-items_work_item_id_response-export"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/adr-intake": {
+      "patch": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_patch_api_v2_work-items_work_item_id_adr-intake"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/adr-reportability": {
+      "post": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work-items_work_item_id_adr-reportability"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/follow-ups/{follow_up_id}": {
+      "patch": {
+        "summary": "Managed durable workflow operation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "name": "follow_up_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          },
+          "202": {
+            "description": "Đã xếp hàng"
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_patch_api_v2_work-items_work_item_id_follow-ups_follow_up_id"
       }
     }
   }

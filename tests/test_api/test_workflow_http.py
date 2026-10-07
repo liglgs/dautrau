@@ -64,7 +64,7 @@ async def test_raw_intake_to_independent_approval_export_and_reload(workflow_cli
     assert draft.status_code == 201, draft.text
     submitted = await client.post(
         f"/api/v2/responses/{draft.json()['response_id']}/submit-review",
-        json={"expected_version": 1, "expected_work_version": 1, "basis_hash": draft.json()["basis_hash"]},
+        json={"expected_version": 1, "expected_work_version": 2, "basis_hash": draft.json()["basis_hash"]},
         headers=headers("author", "reviewer", "submit-1"),
     )
     assert submitted.status_code == 200, submitted.text
@@ -73,7 +73,7 @@ async def test_raw_intake_to_independent_approval_export_and_reload(workflow_cli
         f"/api/v2/responses/{draft.json()['response_id']}/review",
         json={
             "expected_version": 1,
-            "expected_work_version": 2,
+            "expected_work_version": 3,
             "basis_hash": draft.json()["basis_hash"],
             "action": "approve",
         },
@@ -84,7 +84,7 @@ async def test_raw_intake_to_independent_approval_export_and_reload(workflow_cli
         f"/api/v2/responses/{draft.json()['response_id']}/review",
         json={
             "expected_version": 1,
-            "expected_work_version": 2,
+            "expected_work_version": 3,
             "basis_hash": draft.json()["basis_hash"],
             "action": "approve",
         },
@@ -95,7 +95,7 @@ async def test_raw_intake_to_independent_approval_export_and_reload(workflow_cli
         f"/api/v2/responses/{draft.json()['response_id']}/review",
         json={
             "expected_version": 1,
-            "expected_work_version": 2,
+            "expected_work_version": 3,
             "basis_hash": draft.json()["basis_hash"],
             "action": "approve",
         },
@@ -195,7 +195,7 @@ async def test_version_conflict_and_source_partial_error_are_preserved(workflow_
 
     run = store.create_casework_run(
         work_item_id=work_id,
-        purpose="preliminary_retrieval",
+        purpose="extraction",
         actor={"id": "owner", "role": "investigator"},
         idempotency_key="run-seed",
     )
@@ -241,3 +241,33 @@ async def test_adr_with_all_minimum_groups_missing_is_saved(workflow_client):
     assert aggregate.status_code == 200
     assert aggregate.json()["adr_intake"]["validity"] == "incomplete"
     assert aggregate.json()["adr_intake"]["reportability"]["status"] == "not_assessed"
+
+
+@pytest.mark.asyncio
+async def test_adr_patch_creates_revision_invalidates_basis_and_replays(workflow_client):
+    client, store = workflow_client
+    created = await client.post(
+        "/api/v2/work-items/intake",
+        json={"kind": "adr", "raw_text": "ADR cần bổ sung."},
+        headers=headers("owner", "reviewer", "adr-patch-intake"),
+    )
+    work_id = created.json()["id"]
+    patch = {"expected_version": 1, "patch": {"groups": {"identifiable_patient": {"status": "present"}}}}
+    first = await client.patch(
+        f"/api/v2/work-items/{work_id}/adr-intake", json=patch, headers=headers("owner", "reviewer", "adr-patch-1")
+    )
+    assert first.status_code == 200, first.text
+    retry = await client.patch(
+        f"/api/v2/work-items/{work_id}/adr-intake", json=patch, headers=headers("owner", "reviewer", "adr-patch-1")
+    )
+    assert retry.status_code == 200 and retry.json()["work_item"]["input_revision"] == 2
+    with session_scope(store.engine) as session:
+        revisions = session.execute(select(InputRevision).where(InputRevision.work_item_id == work_id)).scalars().all()
+        assert len(revisions) == 2
+        assert revisions[-1].adr_facts_json["groups"]["identifiable_patient"]["status"] == "present"
+    bypass = await client.patch(
+        f"/api/v2/work-items/{work_id}/adr-intake",
+        json={"expected_version": 2, "patch": {"reportability": {"status": "reportable"}}},
+        headers=headers("owner", "reviewer", "adr-bypass"),
+    )
+    assert bypass.status_code == 422

@@ -27,4 +27,23 @@ describe("casework v2 route contract", () => {
     expect(fetch.mock.calls[0][0]).toContain("/api/v2/work-items/CW%2F1/editor-draft");
     expect(fetch.mock.calls[0][1].method).toBe("PATCH");
   });
+
+  it("maps the managed-workflow list shape and drops rows without a safe route id", async () => {
+    const fetch = vi.fn().mockResolvedValue(json({ items: [
+      { work_item_id: "CW/1", question: "Câu hỏi legacy", priority: "routine", version: 2, work_status: "accepted", run_status: "not_started", review_status: "pending", created_at: "2026-10-07T00:00:00Z" },
+      { question: "Không có định danh" },
+    ] })); vi.stubGlobal("fetch", fetch);
+    const result = await createCaseworkApiSource().listWorkItems();
+    expect(result.items).toEqual([expect.objectContaining({ id: "CW/1", raw_text: "Câu hỏi legacy", review_status: "pending" })]);
+  });
+
+  it("keeps ADR supplements in the same work-item and uses the authorized reportability route", async () => {
+    const fetch = vi.fn().mockImplementation(() => Promise.resolve(json({}))); vi.stubGlobal("fetch", fetch);
+    const api = createCaseworkApiSource();
+    await api.patchAdrIntake("CW-ADR", { expected_version: 2, patch: { supplement_text: "Bổ sung cùng ca", groups: { suspected_product: { status: "missing" } } } }, "supplement-key");
+    await api.setAdrReportability("CW-ADR", { expected_version: 3, status: "needs_information" }, "report-key");
+    expect(fetch.mock.calls[0][0]).toContain("/work-items/CW-ADR/adr-intake");
+    expect(fetch.mock.calls[0][1].headers["Idempotency-Key"]).toBe("supplement-key");
+    expect(fetch.mock.calls[1][0]).toContain("/work-items/CW-ADR/adr-reportability");
+  });
 });

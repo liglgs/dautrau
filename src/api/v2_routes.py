@@ -787,6 +787,8 @@ def review_response(
             raise invalid_request("Managed response review cần expected_work_version và basis_hash.")
         if document["version"] != payload.expected_version:
             raise version_conflict(payload.expected_version, document["version"])
+        if payload.action not in {"approve", "reject", "request_changes", "changes_requested"}:
+            raise invalid_request("Managed review action không hợp lệ.")
         decision = {
             "approve": "approved",
             "reject": "rejected",
@@ -795,6 +797,7 @@ def review_response(
         }[payload.action]
         return store.decide_workflow_review(
             work_item_id=current["work_item_id"],
+            response_id=response_id,
             basis_hash=payload.basis_hash,
             reviewer=_actor_of(principal),
             decision=decision,
@@ -802,6 +805,8 @@ def review_response(
             idempotency_key=idempotency_key,
         )
 
+    if payload.action == "changes_requested":
+        raise invalid_request("Legacy review action không hợp lệ.")
     review = store.add_review(
         entity="response",
         entity_id=response_id,

@@ -81,9 +81,15 @@ class CaseworkCommandProcessor:
         if kind == "extract_fields":
             # Intake was already committed.  We deliberately do not infer or confirm facts
             # from free text in this safe offline processor.
-            self._finish(
+            if self._finish(
                 command, state="completed", cursor={"stage": "extraction", "outcome": "no_automatic_confirmation"}
-            )
+            ):
+                with session_scope(self.engine) as session:
+                    session.execute(
+                        update(WorkItem)
+                        .where(WorkItem.work_item_id == command["work_item_id"], WorkItem.run_status == "queued")
+                        .values(run_status="completed", updated_at=now())
+                    )
             return {"command_id": command["command_id"], "state": "completed"}
         if kind in {"preliminary_retrieval", "scoped_analysis"}:
             return self._run_retrieval(command)
@@ -104,15 +110,36 @@ class CaseworkCommandProcessor:
             run = session.get(CaseworkRun, command["run_id"])
             if run is None:
                 raise RuntimeError("run missing for command")
+            # A worker may only publish for the exact input/run generation it leased.
+            if (
+                run.state == "cancelled"
+                or run.progress_revision != command["payload"].get("run_revision", run.progress_revision)
+                or run.input_hash != command["payload"].get("input_hash", run.input_hash)
+            ):
+                return {
+                    "command_id": command["command_id"],
+                    "state": "cancelled" if run.state == "cancelled" else "stale",
+                }
             assertions = list(revision.assertions_json or [])
             readiness = dict(workflow.readiness_json or {})
             if command["command_type"] == "scoped_analysis" and (
                 self.bridge is None or not self.bridge.can_start_scoped(readiness, assertions)
             ):
-                run.state, run.error_json, run.updated_at = (
-                    "failed",
-                    {"kind": "readiness", "message": "Scoped analysis requires confirmed, unambiguous DI scope."},
-                    now(),
+                session.execute(
+                    update(CaseworkRun)
+                    .where(
+                        CaseworkRun.run_id == run.run_id,
+                        CaseworkRun.progress_revision == run.progress_revision,
+                        CaseworkRun.state != "cancelled",
+                    )
+                    .values(
+                        state="failed",
+                        error_json={
+                            "kind": "readiness",
+                            "message": "Scoped analysis requires confirmed, unambiguous DI scope.",
+                        },
+                        updated_at=now(),
+                    )
                 )
                 result = {"command_id": command["command_id"], "state": "failed"}
             else:
@@ -121,7 +148,7 @@ class CaseworkCommandProcessor:
                 # enables a runtime bridge; absent adapters is explicit, never an empty result.
                 adapters = self.bridge.source_adapters(assertions) if self.bridge else {}
                 outcome = "not_requested" if not adapters else "partial"
-                run.source_results_json = [
+                source_results = [
                     {"source": name, "outcome": "skipped", "coverage": "not_requested", "retryable": False}
                     for name in adapters
                 ] or [
@@ -133,10 +160,22 @@ class CaseworkCommandProcessor:
                         "detail": "No live retrieval was performed by this worker.",
                     }
                 ]
-                run.state, run.updated_at = "completed", now()
-                work = session.get(WorkItem, command["work_item_id"])
-                if work is not None:
-                    work.run_status = "completed"
+                published = session.execute(
+                    update(CaseworkRun)
+                    .where(
+                        CaseworkRun.run_id == run.run_id,
+                        CaseworkRun.progress_revision == run.progress_revision,
+                        CaseworkRun.state != "cancelled",
+                    )
+                    .values(source_results_json=source_results, state="completed", updated_at=now())
+                )
+                if published.rowcount != 1:
+                    return {"command_id": command["command_id"], "state": "stale"}
+                session.execute(
+                    update(WorkItem)
+                    .where(WorkItem.work_item_id == command["work_item_id"])
+                    .values(run_status="completed", updated_at=now())
+                )
                 result = {"command_id": command["command_id"], "state": "completed"}
         self._finish(command, state=result["state"], cursor={"stage": "retrieval", "result": result["state"]})
         return result
@@ -148,7 +187,7 @@ class CaseworkCommandProcessor:
         state: str,
         cursor: dict[str, Any] | None = None,
         error: dict[str, Any] | None = None,
-    ) -> None:
+    ) -> bool:
         with session_scope(self.engine) as session:
             result = session.execute(
                 update(CaseworkCommand)
@@ -160,4 +199,5 @@ class CaseworkCommandProcessor:
             )
             # A stale worker must not publish over the current generation.
             if result.rowcount != 1:
-                return
+                return False
+            return True
