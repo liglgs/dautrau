@@ -52,18 +52,20 @@ from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Header, Query, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
 
 from src.api.auth import Principal, require_permission
 from src.models.schemas import ErrorCode
 from src.services.casework.contract import contract_violations
+from src.services.casework.models import CaseworkWorkflow
 from src.services.casework.store import CaseWorkStore
-from src.services.errors import MvpError, forbidden, invalid_request, not_found
+from src.services.errors import MvpError, forbidden, invalid_request, invalid_state, not_found, version_conflict
 from src.services.identity import Permission
 from src.services.request_context import current_request_id
 from src.services.warehouse import db as wh_db
+from src.services.warehouse.db import session_scope
 
 router = APIRouter(tags=["v2"])
 
@@ -338,10 +340,13 @@ class ResponseCreate(BaseModel):
 class ReviewCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    action: ReviewAction
+    action: ReviewAction | Literal["changes_requested"]
     reason: str | None = Field(default=None, max_length=2000)
     #: Bắt buộc: duyệt một bản mà không nói rõ đang duyệt phiên bản nào là duyệt mù.
     expected_version: int = Field(ge=1)
+    #: Workflow-managed responses bind the decision to an exact work and evidence basis.
+    expected_work_version: int | None = Field(default=None, ge=1)
+    basis_hash: str | None = Field(default=None, min_length=64, max_length=64)
 
 
 class FollowUpCreate(BaseModel):
@@ -445,7 +450,10 @@ def _split_older_bundles(
         # dùng chung nên cả ca đổ theo — đúng thứ mà hàm này sinh ra để chặn.
         if not isinstance(bundle, dict):
             dropped.append(
-                {"bundle_id": None, "violations": [f"<gốc>: gói bằng chứng không phải đối tượng ({type(bundle).__name__})"]}
+                {
+                    "bundle_id": None,
+                    "violations": [f"<gốc>: gói bằng chứng không phải đối tượng ({type(bundle).__name__})"],
+                }
             )
             continue
         violations = contract_violations("EvidenceBundle", bundle)
@@ -621,6 +629,11 @@ def update_work_item(
     viết được nội dung của ca mà chính họ không được sửa.
     """
     current = _read_work_item(store, work_item_id, principal)
+    # Workflow-managed items carry immutable input/basis pointers.  Letting this
+    # generic legacy patch mutate them would bypass material invalidation and CAS.
+    with session_scope(store.engine) as session:
+        if session.get(CaseworkWorkflow, work_item_id) is not None:
+            raise invalid_state("Workflow-managed work item phải dùng workflow endpoints.")
     changes: dict[str, Any] = {}
     for field in ("question", "priority", "labels", "work_status"):
         value = getattr(payload, field)
@@ -665,6 +678,9 @@ def link_investigation(
     thể có nhiều lần chạy (``initial``/``additional``/``recheck``/``reproduce``) mà không lẫn chúng.
     """
     current = _read_work_item(store, work_item_id, principal)
+    with session_scope(store.engine) as session:
+        if session.get(CaseworkWorkflow, work_item_id) is not None:
+            raise invalid_state("Workflow-managed work item phải dùng workflow run endpoint.")
     _require_writable(current, principal)
     return store.add_investigation_link(
         work_item_id=work_item_id,
@@ -724,6 +740,9 @@ def create_response(
     ``superseded`` chứ không bị xoá, để còn đối chiếu được đã đổi cái gì.
     """
     current = _read_work_item(store, work_item_id, principal)
+    with session_scope(store.engine) as session:
+        if session.get(CaseworkWorkflow, work_item_id) is not None:
+            raise invalid_state("Workflow-managed response phải tạo qua workflow drafts.")
     _require_writable(current, principal)
     document = store.save_response(
         work_item_id=work_item_id,
@@ -745,6 +764,7 @@ def review_response(
     response: Response,
     store: StoreDep,
     principal: Annotated[Principal, Depends(require_permission(Permission.REVIEW_DECIDE))],
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> dict[str, Any]:
     """Duyệt phiếu trả lời. Chỉ vai có ``review:decide`` gọi được.
 
@@ -755,6 +775,38 @@ def review_response(
     không ai ký được quyết định dưới tên đồng nghiệp. Quyết định vừa ghi được trả kèm trong ``review``
     để giao diện vẽ được dấu duyệt ngay, khỏi phải gọi thêm một vòng.
     """
+    document = store.get_response(response_id)
+    current = _read_work_item(store, document["work_item_id"], principal)
+    with session_scope(store.engine) as session:
+        managed = session.get(CaseworkWorkflow, current["work_item_id"]) is not None
+
+    if managed:
+        if not idempotency_key:
+            raise invalid_request("Mọi POST workflow mutation phải có Idempotency-Key.")
+        if payload.expected_work_version is None or payload.basis_hash is None:
+            raise invalid_request("Managed response review cần expected_work_version và basis_hash.")
+        if document["version"] != payload.expected_version:
+            raise version_conflict(payload.expected_version, document["version"])
+        if payload.action not in {"approve", "reject", "request_changes", "changes_requested"}:
+            raise invalid_request("Managed review action không hợp lệ.")
+        decision = {
+            "approve": "approved",
+            "reject": "rejected",
+            "request_changes": "changes_requested",
+            "changes_requested": "changes_requested",
+        }[payload.action]
+        return store.decide_workflow_review(
+            work_item_id=current["work_item_id"],
+            response_id=response_id,
+            basis_hash=payload.basis_hash,
+            reviewer=_actor_of(principal),
+            decision=decision,
+            expected_version=payload.expected_work_version,
+            idempotency_key=idempotency_key,
+        )
+
+    if payload.action == "changes_requested":
+        raise invalid_request("Legacy review action không hợp lệ.")
     review = store.add_review(
         entity="response",
         entity_id=response_id,

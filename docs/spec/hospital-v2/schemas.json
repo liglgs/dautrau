@@ -2330,6 +2330,1037 @@
           }
         }
       ]
+    },
+    "InputSource": {
+      "type": "object",
+      "title": "InputSource",
+      "description": "Nguồn intake bất biến; text không bị sửa dưới cùng source_id/source_version.",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "source_version",
+        "kind",
+        "text",
+        "sha256",
+        "actor",
+        "created_at"
+      ],
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "source_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "enum": [
+            "raw_question",
+            "clarification_answer",
+            "manual_correction"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "actor": {
+          "$ref": "#/$defs/Actor"
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "SourceSpan": {
+      "type": "object",
+      "title": "SourceSpan",
+      "description": "Offset [start,end) theo Unicode code point; text[start:end] phải đúng quote.",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "start",
+        "end",
+        "quote"
+      ],
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quote": {
+          "type": "string"
+        }
+      }
+    },
+    "FieldAssertion": {
+      "type": "object",
+      "title": "FieldAssertion",
+      "additionalProperties": false,
+      "required": [
+        "assertion_id",
+        "version",
+        "field_key",
+        "value",
+        "status",
+        "source_spans"
+      ],
+      "properties": {
+        "assertion_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "value": {},
+        "status": {
+          "enum": [
+            "proposed",
+            "confirmed",
+            "unknown"
+          ]
+        },
+        "source_spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          }
+        },
+        "extractor_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirmed_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirmed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unknown_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Readiness": {
+      "type": "object",
+      "title": "Readiness",
+      "additionalProperties": false,
+      "required": [
+        "can_retrieve_preliminary",
+        "can_run_scoped_analysis",
+        "can_draft_limited",
+        "can_submit_review",
+        "blockers",
+        "warnings",
+        "policy_version"
+      ],
+      "properties": {
+        "can_retrieve_preliminary": {
+          "type": "boolean"
+        },
+        "can_run_scoped_analysis": {
+          "type": "boolean"
+        },
+        "can_draft_limited": {
+          "type": "boolean"
+        },
+        "can_submit_review": {
+          "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "policy_version": {
+          "type": "string"
+        }
+      }
+    },
+    "Clarification": {
+      "type": "object",
+      "title": "Clarification",
+      "additionalProperties": false,
+      "required": [
+        "clarification_id",
+        "work_item_id",
+        "field_key",
+        "question",
+        "classification",
+        "status",
+        "input_revision",
+        "semantic_key",
+        "created_at"
+      ],
+      "properties": {
+        "clarification_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "work_item_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "field_key": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "enum": [
+            "required_for_next_step",
+            "useful_for_completeness"
+          ]
+        },
+        "blocked_step": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "answered",
+            "unknown",
+            "superseded"
+          ]
+        },
+        "input_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semantic_key": {
+          "type": "string"
+        },
+        "answer_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputSource"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "answered_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "answered_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "AdrMinimumFour": {
+      "type": "object",
+      "title": "AdrMinimumFour",
+      "description": "Validity và reportability độc lập; complete minimum-four không suy ra reportable.",
+      "additionalProperties": false,
+      "required": [
+        "groups",
+        "validity"
+      ],
+      "properties": {
+        "groups": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "identifiable_patient",
+            "identifiable_reporter",
+            "suspected_medicinal_product",
+            "suspected_adverse_reaction"
+          ],
+          "properties": {
+            "identifiable_patient": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "assertion_refs",
+                "confirmed_by"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "present",
+                    "missing",
+                    "unknown"
+                  ]
+                },
+                "assertion_refs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/Identifier"
+                  }
+                },
+                "confirmed_by": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/Actor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            "identifiable_reporter": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "assertion_refs",
+                "confirmed_by"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "present",
+                    "missing",
+                    "unknown"
+                  ]
+                },
+                "assertion_refs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/Identifier"
+                  }
+                },
+                "confirmed_by": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/Actor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            "suspected_medicinal_product": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "assertion_refs",
+                "confirmed_by"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "present",
+                    "missing",
+                    "unknown"
+                  ]
+                },
+                "assertion_refs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/Identifier"
+                  }
+                },
+                "confirmed_by": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/Actor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            "suspected_adverse_reaction": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "assertion_refs",
+                "confirmed_by"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "present",
+                    "missing",
+                    "unknown"
+                  ]
+                },
+                "assertion_refs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/Identifier"
+                  }
+                },
+                "confirmed_by": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/Actor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "validity": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "undetermined"
+          ]
+        }
+      }
+    },
+    "AdrReportability": {
+      "type": "object",
+      "title": "AdrReportability",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "basis_input_revision",
+        "assessor",
+        "reason",
+        "policy_reference"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_assessed",
+            "needs_information",
+            "reportable",
+            "not_reportable"
+          ]
+        },
+        "basis_input_revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "assessor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policy_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "WorkflowIntake": {
+      "type": "object",
+      "title": "WorkflowIntake",
+      "description": "Body của intake v2; server lấy actor và requester từ session.",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "raw_text"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "di",
+            "adr"
+          ]
+        },
+        "raw_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 30
+        },
+        "priority": {
+          "enum": [
+            "routine",
+            "urgent",
+            "stat"
+          ]
+        },
+        "adr_minimum_four": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AdrMinimumFour"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "WorkflowAggregate": {
+      "type": "object",
+      "title": "WorkflowAggregate",
+      "additionalProperties": false,
+      "required": [
+        "work_item_id",
+        "kind",
+        "input_revision",
+        "field_assertions",
+        "clarifications",
+        "readiness"
+      ],
+      "properties": {
+        "work_item_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "kind": {
+          "enum": [
+            "di",
+            "adr"
+          ]
+        },
+        "input_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "input_sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InputSource"
+          }
+        },
+        "field_assertions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldAssertion"
+          }
+        },
+        "clarifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Clarification"
+          }
+        },
+        "readiness": {
+          "$ref": "#/$defs/Readiness"
+        },
+        "adr_minimum_four": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AdrMinimumFour"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "adr_reportability": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AdrReportability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "FieldAssertionsPatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_version",
+        "field_assertions"
+      ],
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field_assertions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldAssertionInput"
+          }
+        }
+      }
+    },
+    "ClarificationAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clarification_id",
+        "expected_version"
+      ],
+      "properties": {
+        "clarification_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "answer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unknown": {
+          "type": "boolean"
+        }
+      }
+    },
+    "WorkflowRunRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "expected_version"
+      ],
+      "properties": {
+        "purpose": {
+          "enum": [
+            "extraction",
+            "preliminary_retrieval",
+            "scoped_analysis"
+          ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "EditorDraftRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity",
+        "entity_id",
+        "base_versions",
+        "content"
+      ],
+      "properties": {
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "base_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "content": {
+          "type": "object"
+        }
+      }
+    },
+    "SubmitReviewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis_hash",
+        "expected_version",
+        "expected_work_version"
+      ],
+      "properties": {
+        "basis_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expected_work_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "WorkflowOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id"
+      ],
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "EditorDraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "draft_id",
+        "saved_version",
+        "base_versions",
+        "content"
+      ],
+      "properties": {
+        "draft_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "saved_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "base_versions": {
+          "type": "object"
+        },
+        "content": {
+          "type": "object"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "FieldAssertionInput": {
+      "type": "object",
+      "title": "FieldAssertionInput",
+      "additionalProperties": false,
+      "required": [
+        "field_key",
+        "value",
+        "status",
+        "source_spans"
+      ],
+      "properties": {
+        "field_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "value": {},
+        "status": {
+          "enum": [
+            "proposed",
+            "confirmed",
+            "unknown"
+          ]
+        },
+        "source_spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          }
+        },
+        "extractor_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unknown_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Intake": {
+      "$ref": "#/$defs/WorkflowIntake",
+      "title": "Intake",
+      "description": "Tên contract chung cho body intake v2; giữ tương thích với WorkflowIntake."
+    },
+    "AdrIntake": {
+      "type": "object",
+      "title": "AdrIntake",
+      "additionalProperties": false,
+      "required": [
+        "narrative",
+        "minimum_four",
+        "reportability"
+      ],
+      "properties": {
+        "narrative": {
+          "type": "string",
+          "minLength": 1
+        },
+        "patient_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reporter_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suspected_medications": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "reaction_description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplements": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "duplicate_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "minimum_four": {
+          "$ref": "#/$defs/AdrMinimumFour"
+        },
+        "reportability": {
+          "$ref": "#/$defs/AdrReportability"
+        }
+      }
+    },
+    "OutputBasis": {
+      "type": "object",
+      "title": "OutputBasis",
+      "additionalProperties": false,
+      "required": [
+        "basis_id",
+        "work_item_id",
+        "response_id",
+        "response_version",
+        "basis_hash",
+        "input_revision",
+        "basis",
+        "author_ids",
+        "valid",
+        "created_at"
+      ],
+      "properties": {
+        "basis_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "work_item_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "response_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "response_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "basis_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "input_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "basis": {
+          "type": "object"
+        },
+        "author_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "invalidated_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "ReviewBasis": {
+      "type": "object",
+      "title": "ReviewBasis",
+      "additionalProperties": false,
+      "required": [
+        "review_basis_id",
+        "basis_id",
+        "work_item_id",
+        "reviewer",
+        "decision",
+        "decided_at"
+      ],
+      "properties": {
+        "review_basis_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "basis_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "work_item_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "reviewer": {
+          "$ref": "#/$defs/Actor"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "rejected",
+            "changes_requested"
+          ]
+        },
+        "stale_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decided_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
     }
   }
 }

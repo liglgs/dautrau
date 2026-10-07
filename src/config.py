@@ -83,6 +83,10 @@ class Settings(BaseSettings):
     investigator_token: str = ""
     reviewer_token: str = ""
     mvp_db_path: str = "data/mvp.sqlite3"
+    #: Namespace SQLite riêng cho checkpoint runtime của workflow-managed work items.
+    #: Không dùng chung file v1 để replay command không tạo/chạm investigation legacy.
+    casework_runtime_db_path: str = "data/casework-runtime.sqlite3"
+    casework_worker_lease_seconds: int = Field(default=60, ge=10, le=3600)
     mvp_evidence_mode: Literal["fixture", "person3_demo", "person3"] = "fixture"
     mvp_dictionary_path: str = "data/dictionaries/mvp_candidates_2026_10_02.json"
     mvp_person3_demo_scenario: Literal[

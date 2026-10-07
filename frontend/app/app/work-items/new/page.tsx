@@ -1,0 +1,16 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import { Alert, Button, Card, CardBody, CardHeader, CardTitle, Label, Select, Textarea } from "@/components/ui";
+import { useCreateIntake } from "@/lib/hooks/use-casework";
+import { useIntentKey } from "@/lib/hooks/use-intent-key";
+import type { WorkKind } from "@/lib/api/casework-types";
+
+export default function NewWorkItemPage() {
+  const router = useRouter(); const create = useCreateIntake();
+  const [kind, setKind] = React.useState<WorkKind>("di"); const [rawText, setRawText] = React.useState(""); const [priority, setPriority] = React.useState("routine");
+  const intent = useIntentKey(`${kind}:${priority}:${rawText.trim()}`);
+  const submit = (event: React.FormEvent) => { event.preventDefault(); if (!rawText.trim() || create.isPending) return; create.mutate({ input: { kind, raw_text: rawText.trim(), language: "vi", priority }, idempotencyKey: intent.key }, { onSuccess: (item) => { intent.reset(); router.push(`/app/work-items/${encodeURIComponent(item.id)}/intake`); } }); };
+  return <div className="mx-auto max-w-3xl space-y-4"><header><h1 className="font-display text-[26px]">Tiếp nhận yêu cầu</h1><p className="mt-1 text-[14px] text-muted-foreground">Chỉ loại yêu cầu và nội dung nguyên văn là bắt buộc. Thuốc, biến cố và dữ kiện khác có thể bổ sung sau.</p></header><Card><CardHeader><CardTitle>Thông tin ban đầu</CardTitle></CardHeader><CardBody><form className="space-y-4" onSubmit={submit}><div className="grid gap-4 sm:grid-cols-2"><div><Label htmlFor="kind">Loại yêu cầu</Label><Select id="kind" className="mt-1" value={kind} onChange={(event) => setKind(event.target.value as WorkKind)}><option value="di">Thông tin thuốc</option><option value="adr">Nghi ngờ ADR</option></Select></div><div><Label htmlFor="priority">Ưu tiên</Label><Select id="priority" className="mt-1" value={priority} onChange={(event) => setPriority(event.target.value)}><option value="routine">Thông thường</option><option value="urgent">Khẩn</option></Select></div></div><div><Label htmlFor="raw-text">{kind === "adr" ? "Mô tả nghi ngờ ADR" : "Câu hỏi nguyên văn"}</Label><Textarea id="raw-text" className="mt-1 min-h-44" value={rawText} onChange={(event) => setRawText(event.target.value)} aria-invalid={Boolean(create.error)} aria-describedby="raw-text-hint" placeholder={kind === "adr" ? "Mô tả sự việc đã nhận được…" : "Ví dụ: Có bằng chứng nào về…"} /><p id="raw-text-hint" className="mt-1 text-[12px] text-muted-foreground">Không tự điền hoặc khẳng định thông tin lâm sàng chưa được cung cấp.</p></div>{kind === "adr" ? <Alert tone="caution" title="ADR luôn được lưu">Ngay cả khi thiếu cả bốn nhóm tối thiểu, phiếu vẫn được lưu. Tính hợp lệ và điều kiện báo cáo được đánh giá riêng.</Alert> : null}{create.error ? <p role="alert" className="text-sm text-contradict-fg">{create.error.message}</p> : null}<Button type="submit" disabled={create.isPending || !rawText.trim()}>{create.isPending ? "Đang lưu…" : "Lưu yêu cầu"}</Button><p role="status" className="text-[12px] text-muted-foreground">{create.isPending ? "Đang chờ máy chủ xác nhận lưu." : "Sau khi lưu, hệ thống sẽ mở đúng hồ sơ đã tạo."}</p></form></CardBody></Card></div>;
+}

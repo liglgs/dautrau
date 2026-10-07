@@ -20,6 +20,7 @@ from src.api.routes import router
 from src.api.v2_routes import router as v2_router
 from src.api.vmec_routes import router as vmec_router
 from src.api.warehouse_routes import router as warehouse_router
+from src.api.workflow_routes import router as workflow_router
 from src.config import get_settings
 from src.models.schemas import ErrorCode
 from src.services.errors import MvpError, validation_details
@@ -109,6 +110,7 @@ app.include_router(router, prefix="/api/v1")
 app.include_router(vmec_router, prefix="/api/v1")
 app.include_router(warehouse_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
+app.include_router(workflow_router, prefix="/api/v2")
 app.include_router(v2_router, prefix="/api/v2")
 app.include_router(research_router)
 
