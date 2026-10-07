@@ -22,6 +22,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     DateTime,
     ForeignKey,
     Index,
@@ -42,6 +43,15 @@ __all__ = [
     "ReviewRef",
     "VersionRef",
     "WorkItem",
+    "CaseworkWorkflow",
+    "InputRevision",
+    "Clarification",
+    "CaseworkRun",
+    "CaseworkCommand",
+    "OutputBasis",
+    "ReviewBasis",
+    "IdempotencyRecord",
+    "EditorDraft",
 ]
 
 
@@ -184,3 +194,149 @@ class ReviewRef(WarehouseBase):
     decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     previous_status: Mapped[str] = mapped_column(String(40), default="")
     new_status: Mapped[str] = mapped_column(String(40), default="")
+
+
+# Các bảng dưới đây là sidecar của WorkItem v1. Chúng không thêm cột vào bảng v1,
+# nhờ đó database đang chạy phiên bản cũ vẫn nâng cấp theo hướng chỉ thêm bảng.
+class CaseworkWorkflow(WarehouseBase):
+    __tablename__ = "casework_workflows"
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(10), index=True)
+    schema_version: Mapped[int] = mapped_column(Integer, default=1)
+    input_revision: Mapped[int] = mapped_column(Integer, default=1)
+    current_run_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    current_response_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    readiness_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    adr_intake_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class InputRevision(WarehouseBase):
+    __tablename__ = "casework_input_revisions"
+    __table_args__ = (Index("uq_casework_input_revision", "work_item_id", "revision", unique=True),)
+    input_revision_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    sources_json: Mapped[list] = mapped_column(JSON, default=list)
+    assertions_json: Mapped[list] = mapped_column(JSON, default=list)
+    adr_facts_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    content_hash: Mapped[str] = mapped_column(String(64), index=True)
+    created_by_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class Clarification(WarehouseBase):
+    __tablename__ = "casework_clarifications"
+    __table_args__ = (
+        Index(
+            "uq_casework_open_clarification",
+            "work_item_id",
+            "semantic_key",
+            unique=True,
+            postgresql_where=text("status = 'open'"),
+            sqlite_where=text("status = 'open'"),
+        ),
+    )
+    clarification_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
+    field_key: Mapped[str] = mapped_column(String(80), index=True)
+    question: Mapped[str] = mapped_column(Text)
+    classification: Mapped[str] = mapped_column(String(40))
+    blocked_step: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="open", index=True)
+    input_revision: Mapped[int] = mapped_column(Integer)
+    semantic_key: Mapped[str] = mapped_column(String(128), index=True)
+    answer_source_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    answered_by_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    supersedes: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class CaseworkRun(WarehouseBase):
+    __tablename__ = "casework_runs"
+    run_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
+    purpose: Mapped[str] = mapped_column(String(40))
+    input_revision: Mapped[int] = mapped_column(Integer)
+    input_hash: Mapped[str] = mapped_column(String(64))
+    runtime_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    state: Mapped[str] = mapped_column(String(30), default="queued", index=True)
+    progress_revision: Mapped[int] = mapped_column(Integer, default=1)
+    source_results_json: Mapped[list] = mapped_column(JSON, default=list)
+    error_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class CaseworkCommand(WarehouseBase):
+    __tablename__ = "casework_commands"
+    __table_args__ = (Index("uq_casework_operation", "work_item_id", "operation_key", unique=True),)
+    command_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
+    run_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    command_type: Mapped[str] = mapped_column(String(50), index=True)
+    operation_key: Mapped[str] = mapped_column(String(160))
+    payload_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    state: Mapped[str] = mapped_column(String(20), default="queued", index=True)
+    generation: Mapped[int] = mapped_column(Integer, default=1)
+    lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    cursor_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    error_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class OutputBasis(WarehouseBase):
+    __tablename__ = "casework_output_basis"
+    __table_args__ = (Index("uq_casework_current_output_basis", "response_id", "response_version", unique=True),)
+    basis_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
+    response_id: Mapped[str] = mapped_column(String(80), index=True)
+    response_version: Mapped[int] = mapped_column(Integer)
+    basis_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    input_revision: Mapped[int] = mapped_column(Integer)
+    basis_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    author_ids_json: Mapped[list] = mapped_column(JSON, default=list)
+    valid: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    invalidated_reason: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class ReviewBasis(WarehouseBase):
+    __tablename__ = "casework_review_basis"
+    review_basis_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    basis_id: Mapped[str] = mapped_column(ForeignKey("casework_output_basis.basis_id"), index=True)
+    work_item_id: Mapped[str] = mapped_column(ForeignKey("work_items.work_item_id"), index=True)
+    reviewer_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    decision: Mapped[str] = mapped_column(String(30))
+    stale_reason: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class IdempotencyRecord(WarehouseBase):
+    __tablename__ = "casework_idempotency"
+    __table_args__ = (Index("uq_casework_idempotency", "actor_id", "route", "idempotency_key", unique=True),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    actor_id: Mapped[str] = mapped_column(String(120), index=True)
+    route: Mapped[str] = mapped_column(String(160))
+    idempotency_key: Mapped[str] = mapped_column(String(160))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    response_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class EditorDraft(WarehouseBase):
+    __tablename__ = "casework_editor_drafts"
+    __table_args__ = (Index("uq_casework_editor_draft", "actor_id", "entity", "entity_id", unique=True),)
+    draft_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    actor_id: Mapped[str] = mapped_column(String(120), index=True)
+    entity: Mapped[str] = mapped_column(String(30))
+    entity_id: Mapped[str] = mapped_column(String(80), index=True)
+    base_versions_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    content_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    saved_version: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

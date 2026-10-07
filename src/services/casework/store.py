@@ -76,6 +76,15 @@ CASEWORK_TABLES = (
     "follow_ups",
     "version_refs",
     "review_refs",
+    "casework_workflows",
+    "casework_input_revisions",
+    "casework_clarifications",
+    "casework_runs",
+    "casework_commands",
+    "casework_output_basis",
+    "casework_review_basis",
+    "casework_idempotency",
+    "casework_editor_drafts",
 )
 
 WORK_STATUSES = frozenset(
@@ -217,7 +226,9 @@ def _actor(value: Any, field: str = "actor") -> dict[str, Any] | None:
     role = value.get("role")
     if role is not None:
         if role not in ACTOR_ROLES:
-            raise invalid_request(f"Vai trò không hợp lệ trong {field}.role: {role!r}.", {"allowed": sorted(ACTOR_ROLES)})
+            raise invalid_request(
+                f"Vai trò không hợp lệ trong {field}.role: {role!r}.", {"allowed": sorted(ACTOR_ROLES)}
+            )
         actor["role"] = role
     unit = value.get("unit")
     if unit is not None:
@@ -277,9 +288,7 @@ def ensure_casework_schema(engine: Engine) -> list[str]:
     missing = [name for name in CASEWORK_TABLES if name not in existing]
     if not missing:
         return []
-    WarehouseBase.metadata.create_all(
-        engine, tables=[WarehouseBase.metadata.tables[name] for name in missing]
-    )
+    WarehouseBase.metadata.create_all(engine, tables=[WarehouseBase.metadata.tables[name] for name in missing])
     return sorted(missing)
 
 
@@ -490,6 +499,45 @@ class CaseWorkStore:
         if ensure_schema:
             ensure_casework_schema(engine)
 
+    @property
+    def workflow(self):
+        """V2 workflow service, loaded lazily to keep all legacy store imports stable."""
+        from src.services.casework.workflow import CaseWorkflowService
+
+        return CaseWorkflowService(self.engine)
+
+    # These thin delegates make workflow operations available from the store that
+    # routes already depend on, without changing the legacy WorkItem contract.
+    def create_intake(self, **kwargs):
+        return self.workflow.create_intake(**kwargs)
+
+    def update_fields(self, **kwargs):
+        return self.workflow.update_fields(**kwargs)
+
+    def transition_work_state(self, **kwargs):
+        return self.workflow.transition_work_state(**kwargs)
+
+    def create_clarification(self, **kwargs):
+        return self.workflow.create_clarification(**kwargs)
+
+    def answer_clarification(self, **kwargs):
+        return self.workflow.answer_clarification(**kwargs)
+
+    def create_casework_run(self, **kwargs):
+        return self.workflow.create_run(**kwargs)
+
+    def save_editor_draft(self, **kwargs):
+        return self.workflow.save_editor_draft(**kwargs)
+
+    def get_editor_draft(self, **kwargs):
+        return self.workflow.get_editor_draft(**kwargs)
+
+    def create_output_basis(self, **kwargs):
+        return self.workflow.create_output_basis(**kwargs)
+
+    def decide_workflow_review(self, **kwargs):
+        return self.workflow.decide_review(**kwargs)
+
     # ------------------------------------------------------------------ tiện ích
 
     def _record_version(
@@ -506,9 +554,7 @@ class CaseWorkStore:
     ) -> None:
         """Ghi một dòng nhật ký append-only; ``revision`` đếm riêng cho từng thực thể."""
         current = session.execute(
-            select(func.max(VersionRef.revision)).where(
-                VersionRef.entity == entity, VersionRef.entity_id == entity_id
-            )
+            select(func.max(VersionRef.revision)).where(VersionRef.entity == entity, VersionRef.entity_id == entity_id)
         ).scalar_one()
         session.add(
             VersionRef(
@@ -581,9 +627,7 @@ class CaseWorkStore:
             updated_at=now(),
         )
         result = session.execute(
-            update(WorkItem)
-            .where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected)
-            .values(**values)
+            update(WorkItem).where(WorkItem.work_item_id == work_item_id, WorkItem.version == expected).values(**values)
         )
         session.expire_all()
         if result.rowcount != 1:
@@ -634,9 +678,7 @@ class CaseWorkStore:
             new_id("wi") if work_item_id is None else _text(work_item_id, "work_item_id", max_length=ID_MAX_LENGTH)
         )
         revision_of = _optional_text(revision_of, "revision_of", max_length=ID_MAX_LENGTH)
-        revision_reason = _optional_text(
-            revision_reason, "revision_reason", max_length=REVISION_REASON_MAX_LENGTH
-        )
+        revision_reason = _optional_text(revision_reason, "revision_reason", max_length=REVISION_REASON_MAX_LENGTH)
 
         work_item_id = work_item_id or new_id("wi")
         stamp = now()
@@ -782,9 +824,7 @@ class CaseWorkStore:
             "labels": _json_object,
             "owner": _actor,
             "revision_of": lambda value, field: _optional_text(value, field, max_length=ID_MAX_LENGTH),
-            "revision_reason": lambda value, field: _optional_text(
-                value, field, max_length=REVISION_REASON_MAX_LENGTH
-            ),
+            "revision_reason": lambda value, field: _optional_text(value, field, max_length=REVISION_REASON_MAX_LENGTH),
         }
         changes = {
             **changes,
@@ -932,9 +972,7 @@ class CaseWorkStore:
         if not isinstance(coverage, dict):
             raise invalid_request("coverage phải là đối tượng.")
         claim = _optional_object(claim, "claim")
-        bundle_id = (
-            new_id("eb") if bundle_id is None else _text(bundle_id, "bundle_id", max_length=ID_MAX_LENGTH)
-        )
+        bundle_id = new_id("eb") if bundle_id is None else _text(bundle_id, "bundle_id", max_length=ID_MAX_LENGTH)
         row = EvidenceBundle(
             bundle_id=bundle_id,
             work_item_id=work_item_id,
@@ -1136,9 +1174,7 @@ class CaseWorkStore:
         reason = _optional_text(reason, "reason", max_length=REVIEW_REASON_MAX_LENGTH)
         if reason is not None and len(reason) > 1000:
             raise invalid_request("reason tối đa 1000 ký tự.")
-        review_id = (
-            new_id("rev") if review_id is None else _text(review_id, "review_id", max_length=ID_MAX_LENGTH)
-        )
+        review_id = new_id("rev") if review_id is None else _text(review_id, "review_id", max_length=ID_MAX_LENGTH)
         expected = _as_int(expected_version, "expected_version") if expected_version is not None else None
 
         with session_scope(self.engine) as session:
@@ -1278,13 +1314,13 @@ class CaseWorkStore:
                     select(ReviewRef)
                     .where(ReviewRef.entity == entity, ReviewRef.entity_id == entity_id)
                     # ``entity_version`` là số phiên bản của đối tượng bị duyệt tại lúc ra quyết định, và mỗi
-            # quyết định đều tăng số đó lên đúng một (``_apply_response_review`` ghi ``expected + 1``
-            # và chặn nếu ``expected`` không khớp bản đang có), nên trong một đối tượng nó chính là
-            # thứ tự ghi. Vì vậy nó phải đứng TRƯỚC ``decided_at``: ``decided_at`` là giờ tường, giờ
-            # này có thể lùi (NTP, máy lệch giờ, đồng hồ chậm), và khi đó bản ghi sau lại mang dấu cũ
-            # rồi bị bản cũ đè về mặt thứ tự. ``decided_at`` xuống làm khoá phụ, ``review_id`` là chốt
-            # cuối cho trường hợp hoà hoàn toàn — mã đó ngẫu nhiên nên không phản ánh thứ tự ghi.
-            .order_by(ReviewRef.entity_version, ReviewRef.decided_at, ReviewRef.review_id)
+                    # quyết định đều tăng số đó lên đúng một (``_apply_response_review`` ghi ``expected + 1``
+                    # và chặn nếu ``expected`` không khớp bản đang có), nên trong một đối tượng nó chính là
+                    # thứ tự ghi. Vì vậy nó phải đứng TRƯỚC ``decided_at``: ``decided_at`` là giờ tường, giờ
+                    # này có thể lùi (NTP, máy lệch giờ, đồng hồ chậm), và khi đó bản ghi sau lại mang dấu cũ
+                    # rồi bị bản cũ đè về mặt thứ tự. ``decided_at`` xuống làm khoá phụ, ``review_id`` là chốt
+                    # cuối cho trường hợp hoà hoàn toàn — mã đó ngẫu nhiên nên không phản ánh thứ tự ghi.
+                    .order_by(ReviewRef.entity_version, ReviewRef.decided_at, ReviewRef.review_id)
                 )
                 .scalars()
                 .all()
@@ -1463,9 +1499,7 @@ class CaseWorkStore:
                 ),
                 "investigation_links": [_link_document(item) for item in links],
                 "evidence_bundles": [_bundle_document(item) for item in bundles],
-                "responses": [
-                    _response_document(item, response_reviews.get(item.response_id)) for item in responses
-                ],
+                "responses": [_response_document(item, response_reviews.get(item.response_id)) for item in responses],
                 "follow_ups": [_follow_up_document(item) for item in follow_ups],
             }
 

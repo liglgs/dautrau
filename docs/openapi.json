@@ -48,6 +48,39 @@
         "title": "Actor",
         "type": "object"
       },
+      "AdrPatchIn": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "patch": {
+            "additionalProperties": true,
+            "title": "Patch",
+            "type": "object"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "expected_version",
+          "patch"
+        ],
+        "title": "AdrPatchIn",
+        "type": "object"
+      },
       "AssessmentStatus": {
         "description": "Kết luận an toàn thuốc được phép.\n\nLưu ý: ``causal`` (kết luận nhân quả) KHÔNG nằm trong enum này — agent không bao giờ\nđược phép tự kết luận quan hệ nhân quả.",
         "enum": [
@@ -274,6 +307,72 @@
           "event"
         ],
         "title": "ClaimInput",
+        "type": "object"
+      },
+      "ClarificationAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "answer_state": {
+            "enum": [
+              "answered",
+              "unknown"
+            ],
+            "title": "Answer State",
+            "type": "string"
+          },
+          "clarification_id": {
+            "title": "Clarification Id",
+            "type": "string"
+          },
+          "expected_clarification_version": {
+            "minimum": 1.0,
+            "title": "Expected Clarification Version",
+            "type": "integer"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "required": [
+          "clarification_id",
+          "expected_clarification_version",
+          "answer_state"
+        ],
+        "title": "ClarificationAnswer",
+        "type": "object"
+      },
+      "ClarificationAnswersIn": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/ClarificationAnswer"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Answers",
+            "type": "array"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version",
+          "answers"
+        ],
+        "title": "ClarificationAnswersIn",
         "type": "object"
       },
       "ContinueRequest": {
@@ -683,6 +782,56 @@
         "title": "DossierStatement",
         "type": "object"
       },
+      "DraftIn": {
+        "additionalProperties": false,
+        "properties": {
+          "bundle_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bundle Id"
+          },
+          "expected_input_revision": {
+            "minimum": 1.0,
+            "title": "Expected Input Revision",
+            "type": "integer"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "previous_response_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Response Id"
+          },
+          "sections": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Sections",
+            "type": "object"
+          }
+        },
+        "required": [
+          "expected_version",
+          "expected_input_revision"
+        ],
+        "title": "DraftIn",
+        "type": "object"
+      },
       "DrugLookup": {
         "additionalProperties": true,
         "properties": {
@@ -732,6 +881,40 @@
           "origin"
         ],
         "title": "DrugLookup",
+        "type": "object"
+      },
+      "EditorDraftIn": {
+        "additionalProperties": false,
+        "properties": {
+          "base_versions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Base Versions",
+            "type": "object"
+          },
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "base_versions",
+          "content"
+        ],
+        "title": "EditorDraftIn",
         "type": "object"
       },
       "EventListResponse": {
@@ -832,6 +1015,87 @@
         "title": "EvidenceReference",
         "type": "object"
       },
+      "FieldOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "confirm",
+              "correct",
+              "mark_unknown"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "assertion_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Assertion Id",
+            "type": "string"
+          },
+          "expected_assertion_version": {
+            "minimum": 1.0,
+            "title": "Expected Assertion Version",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "assertion_id",
+          "expected_assertion_version",
+          "action"
+        ],
+        "title": "FieldOperation",
+        "type": "object"
+      },
+      "FieldsIn": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "operations": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOperation"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Operations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "expected_version",
+          "operations"
+        ],
+        "title": "FieldsIn",
+        "type": "object"
+      },
       "FollowUpCreate": {
         "additionalProperties": false,
         "properties": {
@@ -879,6 +1143,37 @@
           "note"
         ],
         "title": "FollowUpCreate",
+        "type": "object"
+      },
+      "FollowUpPatchIn": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "resolution": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Resolution",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "done",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "status",
+          "resolution"
+        ],
+        "title": "FollowUpPatchIn",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -945,6 +1240,65 @@
           "text"
         ],
         "title": "IngestRequest",
+        "type": "object"
+      },
+      "IntakeIn": {
+        "additionalProperties": false,
+        "properties": {
+          "adr_facts": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adr Facts"
+          },
+          "kind": {
+            "enum": [
+              "di",
+              "adr"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "priority": {
+            "default": "routine",
+            "enum": [
+              "routine",
+              "urgent",
+              "stat"
+            ],
+            "title": "Priority",
+            "type": "string"
+          },
+          "raw_text": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Raw Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "raw_text"
+        ],
+        "title": "IntakeIn",
         "type": "object"
       },
       "InvestigationConfig": {
@@ -1493,6 +1847,56 @@
         "title": "RagSearchRequest",
         "type": "object"
       },
+      "ReportabilityIn": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "policy_reference": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Reference"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "enum": [
+              "not_assessed",
+              "needs_information",
+              "reportable",
+              "not_reportable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "status"
+        ],
+        "title": "ReportabilityIn",
+        "type": "object"
+      },
       "RequestContext": {
         "additionalProperties": false,
         "description": "Bối cảnh tiếp nhận. ``request_id`` và ``received_at`` do máy chủ sinh, không nhận từ người gọi.",
@@ -1646,22 +2050,55 @@
         "additionalProperties": false,
         "properties": {
           "action": {
-            "enum": [
-              "approve",
-              "reject",
-              "request_changes",
-              "edit_claim",
-              "edit_evidence",
-              "exclude_evidence",
-              "request_more"
+            "anyOf": [
+              {
+                "enum": [
+                  "approve",
+                  "reject",
+                  "request_changes",
+                  "edit_claim",
+                  "edit_evidence",
+                  "exclude_evidence",
+                  "request_more"
+                ],
+                "type": "string"
+              },
+              {
+                "const": "changes_requested",
+                "type": "string"
+              }
             ],
-            "title": "Action",
-            "type": "string"
+            "title": "Action"
+          },
+          "basis_hash": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis Hash"
           },
           "expected_version": {
             "minimum": 1.0,
             "title": "Expected Version",
             "type": "integer"
+          },
+          "expected_work_version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Work Version"
           },
           "reason": {
             "anyOf": [
@@ -1788,6 +2225,68 @@
         ],
         "title": "ReviewStatus",
         "type": "string"
+      },
+      "RunIn": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "purpose": {
+            "enum": [
+              "extraction",
+              "preliminary_retrieval",
+              "preliminary",
+              "scoped_analysis"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "purpose"
+        ],
+        "title": "RunIn",
+        "type": "object"
+      },
+      "RunReviewIn": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "approve",
+              "request_changes"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "expected_work_version": {
+            "minimum": 1.0,
+            "title": "Expected Work Version",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "expected_work_version",
+          "action"
+        ],
+        "title": "RunReviewIn",
+        "type": "object"
       },
       "RunStatus": {
         "description": "Vòng đời một cuộc điều tra.",
@@ -2119,6 +2618,34 @@
           "deidentified"
         ],
         "title": "SourceSystem",
+        "type": "object"
+      },
+      "SubmitIn": {
+        "additionalProperties": false,
+        "properties": {
+          "basis_hash": {
+            "maxLength": 64,
+            "minLength": 64,
+            "title": "Basis Hash",
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "expected_work_version": {
+            "minimum": 1.0,
+            "title": "Expected Work Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version",
+          "expected_work_version",
+          "basis_hash"
+        ],
+        "title": "SubmitIn",
         "type": "object"
       },
       "TraceResponse": {
@@ -4985,6 +5512,22 @@
               "title": "Response Id",
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
           }
         ],
         "requestBody": {
@@ -5024,6 +5567,76 @@
         "summary": "Review Response",
         "tags": [
           "v2"
+        ]
+      }
+    },
+    "/api/v2/responses/{response_id}/submit-review": {
+      "post": {
+        "operationId": "submit_review_api_v2_responses__response_id__submit_review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "response_id",
+            "required": true,
+            "schema": {
+              "title": "Response Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Submit Review Api V2 Responses  Response Id  Submit Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Review",
+        "tags": [
+          "workflow-v2"
         ]
       }
     },
@@ -5184,6 +5797,67 @@
         ]
       }
     },
+    "/api/v2/work-items/intake": {
+      "post": {
+        "operationId": "intake_api_v2_work_items_intake_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntakeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Intake Api V2 Work Items Intake Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Intake",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
     "/api/v2/work-items/{work_item_id}": {
       "get": {
         "description": "Đọc một yêu cầu kèm mọi thứ thuộc về nó, trong một phiên đọc.\n\nGói bằng chứng trong lớp bọc cũng được đối chiếu ``schemas.json`` như ở đường đọc gói riêng:\ncùng một tài liệu thì phải cùng một luật, nếu không thì chỗ dễ lách nhất lại là chỗ ít ai nhìn.\nRiêng gói **cũ** hỏng thì bị gỡ ra kèm danh sách ``dropped_evidence_bundles`` chứ không làm đổ\ncả lớp bọc — xem ``_split_older_bundles``.",
@@ -5282,6 +5956,460 @@
         ]
       }
     },
+    "/api/v2/work-items/{work_item_id}/adr-intake": {
+      "patch": {
+        "operationId": "patch_adr_api_v2_work_items__work_item_id__adr_intake_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdrPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Patch Adr Api V2 Work Items  Work Item Id  Adr Intake Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Adr",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/adr-reportability": {
+      "post": {
+        "operationId": "adr_reportability_api_v2_work_items__work_item_id__adr_reportability_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportabilityIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Adr Reportability Api V2 Work Items  Work Item Id  Adr Reportability Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Adr Reportability",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/clarification-answers": {
+      "post": {
+        "operationId": "clarification_answers_api_v2_work_items__work_item_id__clarification_answers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClarificationAnswersIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Clarification Answers Api V2 Work Items  Work Item Id  Clarification Answers Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clarification Answers",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/drafts": {
+      "post": {
+        "operationId": "create_draft_api_v2_work_items__work_item_id__drafts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Draft Api V2 Work Items  Work Item Id  Drafts Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Draft",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/editor-draft": {
+      "get": {
+        "operationId": "get_editor_draft_api_v2_work_items__work_item_id__editor_draft_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Editor Draft Api V2 Work Items  Work Item Id  Editor Draft Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Editor Draft",
+        "tags": [
+          "workflow-v2"
+        ]
+      },
+      "patch": {
+        "operationId": "save_editor_draft_api_v2_work_items__work_item_id__editor_draft_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditorDraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Save Editor Draft Api V2 Work Items  Work Item Id  Editor Draft Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Editor Draft",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/events": {
+      "get": {
+        "operationId": "events_api_v2_work_items__work_item_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after_id",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "After Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Events Api V2 Work Items  Work Item Id  Events Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Events",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
     "/api/v2/work-items/{work_item_id}/evidence-bundle": {
       "get": {
         "description": "Gói bằng chứng của lần chạy gần nhất.\n\nChưa có gói nào trả **404** kèm lý do, không trả một gói rỗng — gói rỗng trông y hệt \"đã tìm mà\nkhông thấy gì\", và đó là hai chuyện khác nhau.\n\nGói là tài liệu duy nhất đi thẳng từ kho ra mà không qua một mô hình Pydantic nào — hình dạng\ncủa nó do bên ghi quyết định. Nên trước khi trả, gói được đối chiếu với ``schemas.json``. Sai\nlược đồ thì trả **500** kèm đường dẫn từng chỗ sai, chứ **không** trả tài liệu hỏng: một khách\nhàng sinh kiểu từ hợp đồng sẽ đọc sai trường mà không có lỗi nào để lần theo. Đây là lỗi của máy\nchủ (đã ghi một thứ không phục vụ được), không phải lỗi của người gọi.",
@@ -5324,6 +6452,92 @@
         "summary": "Read Evidence Bundle",
         "tags": [
           "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/fields": {
+      "patch": {
+        "operationId": "fields_api_v2_work_items__work_item_id__fields_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Fields Api V2 Work Items  Work Item Id  Fields Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fields",
+        "tags": [
+          "workflow-v2"
         ]
       }
     },
@@ -5382,6 +6596,85 @@
         ]
       }
     },
+    "/api/v2/work-items/{work_item_id}/follow-ups/{follow_up_id}": {
+      "patch": {
+        "operationId": "close_follow_up_api_v2_work_items__work_item_id__follow_ups__follow_up_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "follow_up_id",
+            "required": true,
+            "schema": {
+              "title": "Follow Up Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowUpPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Close Follow Up Api V2 Work Items  Work Item Id  Follow Ups  Follow Up Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Close Follow Up",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
     "/api/v2/work-items/{work_item_id}/investigations": {
       "post": {
         "description": "Liên kết một lần chạy điều tra với yêu cầu.\n\nĐây là **liên kết**, không phải lệnh chạy: tệp này không khởi động agent. Nhờ vậy một yêu cầu có\nthể có nhiều lần chạy (``initial``/``additional``/``recheck``/``reproduce``) mà không lẫn chúng.",
@@ -5437,6 +6730,103 @@
         ]
       }
     },
+    "/api/v2/work-items/{work_item_id}/operations/{operation_id}": {
+      "get": {
+        "operationId": "operation_api_v2_work_items__work_item_id__operations__operation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "title": "Operation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Operation Api V2 Work Items  Work Item Id  Operations  Operation Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Operation",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/response-export": {
+      "get": {
+        "operationId": "export_response_api_v2_work_items__work_item_id__response_export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Export Response Api V2 Work Items  Work Item Id  Response Export Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Response",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
     "/api/v2/work-items/{work_item_id}/responses": {
       "post": {
         "description": "Tạo phiếu trả lời. Luôn là **bản nháp**.\n\nKhông có tham số nào để tạo bản đã duyệt. Bản nháp trước đó của cùng yêu cầu chuyển sang\n``superseded`` chứ không bị xoá, để còn đối chiếu được đã đổi cái gì.",
@@ -5489,6 +6879,338 @@
         "summary": "Create Response",
         "tags": [
           "v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs": {
+      "post": {
+        "operationId": "start_run_api_v2_work_items__work_item_id__runs_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Run Api V2 Work Items  Work Item Id  Runs Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Run",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs/{run_id}/cancel": {
+      "post": {
+        "operationId": "cancel_run_api_v2_work_items__work_item_id__runs__run_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Cancel Run Api V2 Work Items  Work Item Id  Runs  Run Id  Cancel Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Run",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs/{run_id}/continue": {
+      "post": {
+        "operationId": "continue_run_api_v2_work_items__work_item_id__runs__run_id__continue_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Continue Run Api V2 Work Items  Work Item Id  Runs  Run Id  Continue Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Continue Run",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs/{run_id}/review": {
+      "post": {
+        "description": "Record a human run checkpoint without treating it as response approval.",
+        "operationId": "review_run_api_v2_work_items__work_item_id__runs__run_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunReviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Review Run Api V2 Work Items  Work Item Id  Runs  Run Id  Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Run",
+        "tags": [
+          "workflow-v2"
+        ]
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/workflow": {
+      "get": {
+        "operationId": "workflow_api_v2_work_items__work_item_id__workflow_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_item_id",
+            "required": true,
+            "schema": {
+              "title": "Work Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Workflow Api V2 Work Items  Work Item Id  Workflow Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Workflow",
+        "tags": [
+          "workflow-v2"
         ]
       }
     },

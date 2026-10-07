@@ -228,3 +228,30 @@ tiếp. Các tên trường chung (`case_id`, `case_version`, `supersedes_versio
 
 Việc chọn rubric, xác nhận ngữ nghĩa và mở API chỉ thực hiện sau khi có SOP/dữ liệu được phép và
 dược sĩ xác nhận.
+
+## Workflow intake v2 (additive)
+
+Các object workflow sau là hợp đồng additive, không thay đổi `WorkItem`,
+`ProfessionalResponse` hoặc route v1 có `additionalProperties: false`:
+
+- `WorkflowIntake` lưu `kind` (`di` hoặc `adr`) và `raw_text` nguyên văn trước mọi
+  thao tác extraction. Mỗi thay đổi tạo `InputSource` bất biến, có SHA-256 và actor.
+- `FieldAssertion` chỉ có thể là `proposed`, `confirmed` hoặc `unknown`. `SourceSpan`
+  dùng chỉ số Unicode code point `[start,end)` và quote phải khớp đúng source text.
+  `unknown`, `not_recorded`, `not_applicable` và `not_assessed` không có nghĩa false.
+- `Clarification` dùng semantic key để không mở lại cùng câu hỏi đang `open`; câu trả
+  lời `unknown` đóng câu hỏi đó. Required chỉ chặn bước liên quan, useful không chặn
+  draft giới hạn.
+- `Readiness` tách preliminary retrieval, scoped analysis, limited draft và submit
+  review. Không namespace assessment nào được suy ra từ namespace khác.
+- `AdrIntake` giữ narrative ngay cả khi thiếu dữ kiện; `AdrMinimumFour` biểu diễn
+  bốn nhóm `present|missing|unknown`, với validity
+  `complete|incomplete|undetermined` độc lập với `AdrReportability`. Không có SOP
+  đã xác nhận thì reportability bắt đầu ở `not_assessed`.
+
+`WorkflowAggregate` là hình dạng đọc của workflow v2. `OutputBasis` và
+`ReviewBasis` luôn pin
+`input_revision`, assertion/evidence/runtime/response hashes trong basis bất biến.
+Người có mặt trong `author_ids` của basis không thể approve basis đó; thay đổi material
+làm approval cũ stale. Các body mutation dùng Idempotency-Key theo actor + route và
+CAS `expected_version`; cùng key với body khác trả `idempotency_conflict`.

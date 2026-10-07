@@ -1,7 +1,7 @@
 """Nâng cấp lược đồ cho bảng lát cắt DI (WorkItem/Response/FollowUp) — chỉ thêm bảng.
 
 Kho ELT chưa dùng Alembic; các bảng cũ do ``create_all`` dựng nên. Vì vậy bước nâng cấp
-ở đây cũng chỉ **thêm** bảy bảng mới (và chỉ mục duy nhất còn thiếu), không đụng tới bảng
+ở đây cũng chỉ **thêm** 16 bảng mới (và chỉ mục duy nhất còn thiếu), không đụng tới bảng
 đang có:
 
     work_items, investigation_links, evidence_bundles, professional_responses,
@@ -11,7 +11,7 @@ Cách dùng:
 
     python -m scripts.elt.migrate_casework             # xem kế hoạch rồi thực hiện
     python -m scripts.elt.migrate_casework --check     # chỉ kiểm tra, mã thoát 1 nếu thiếu
-    python -m scripts.elt.migrate_casework --rollback --yes   # bỏ bảy bảng mới (mất dữ liệu DI)
+    python -m scripts.elt.migrate_casework --rollback --yes   # bỏ 16 bảng mới (mất dữ liệu DI)
 
 An toàn: trước khi ghi, script đếm số dòng của mọi bảng cũ; sau khi ghi, đếm lại và so
 sánh. Lệch thì báo lỗi rõ ràng (thực tế không thể lệch vì chỉ có ``CREATE TABLE`` và
@@ -47,7 +47,9 @@ def casework_indexes() -> dict[str, dict[str, tuple[str, ...]]]:
     expected: dict[str, dict[str, tuple[str, ...]]] = {}
     for name in CASEWORK_TABLES:
         table = WarehouseBase.metadata.tables[name]
-        indexes = {index.name: tuple(column.name for column in index.columns) for index in table.indexes if index.unique}
+        indexes = {
+            index.name: tuple(column.name for column in index.columns) for index in table.indexes if index.unique
+        }
         if indexes:
             expected[name] = indexes
     return expected
@@ -68,7 +70,7 @@ def _index_predicate(index) -> str:
 
 
 def duplicate_keys(engine: Engine) -> dict[str, list[list[Any]]]:
-    """Nhóm khoá đang trùng trên các ràng buộc duy nhất của bảy bảng.
+    """Nhóm khoá đang trùng trên các ràng buộc duy nhất của 16 bảng.
 
     Phải kiểm trước khi tạo chỉ mục duy nhất: bản cũ cho phép trùng, nên một máy đã chạy
     bản cũ có thể đang có dữ liệu làm `CREATE UNIQUE INDEX` nổ giữa đường.
@@ -88,10 +90,7 @@ def duplicate_keys(engine: Engine) -> dict[str, list[list[Any]]]:
                 predicate = _index_predicate(index)
                 where = f" WHERE {predicate}" if predicate else ""
                 rows = conn.execute(
-                    text(
-                        f'SELECT {listed} FROM "{name}"{where}'
-                        f" GROUP BY {listed} HAVING count(*) > 1"
-                    )
+                    text(f'SELECT {listed} FROM "{name}"{where} GROUP BY {listed} HAVING count(*) > 1')
                 ).fetchall()
                 if rows:
                     duplicates[index.name] = [list(row) for row in rows]
@@ -129,9 +128,7 @@ def _index_gaps(engine: Engine) -> dict[str, list[str]]:
         if name not in existing:
             continue
         actual = {
-            index["name"]: tuple(index["column_names"])
-            for index in inspector.get_indexes(name)
-            if index.get("unique")
+            index["name"]: tuple(index["column_names"]) for index in inspector.get_indexes(name) if index.get("unique")
         }
         problems = [
             f"{index_name} (cần duy nhất trên {', '.join(columns)})"
@@ -166,7 +163,7 @@ def _row_counts(engine: Engine, names: list[str]) -> dict[str, int]:
 
 
 def create_missing_indexes(engine: Engine) -> list[str]:
-    """Tạo (hoặc dựng lại) chỉ mục duy nhất còn thiếu/sai của bảy bảng."""
+    """Tạo (hoặc dựng lại) chỉ mục duy nhất còn thiếu/sai của 16 bảng."""
     inspector = inspect(engine)
     existing = set(inspector.get_table_names())
     created: list[str] = []
@@ -175,9 +172,7 @@ def create_missing_indexes(engine: Engine) -> list[str]:
             continue
         table = WarehouseBase.metadata.tables[name]
         actual = {
-            index["name"]: tuple(index["column_names"])
-            for index in inspector.get_indexes(name)
-            if index.get("unique")
+            index["name"]: tuple(index["column_names"]) for index in inspector.get_indexes(name) if index.get("unique")
         }
         for index in sorted(table.indexes, key=lambda item: item.name or ""):
             if index.name not in expected or actual.get(index.name) == expected[index.name]:
@@ -236,7 +231,7 @@ def migrate(engine: Engine) -> dict[str, object]:
 
 
 def rollback(engine: Engine) -> list[str]:
-    """Bỏ bảy bảng mới. Chỉ dùng khi thật sự muốn mất dữ liệu DI."""
+    """Bỏ 16 bảng mới. Chỉ dùng khi thật sự muốn mất dữ liệu DI."""
     existing = set(inspect(engine).get_table_names())
     dropped: list[str] = []
     # Thứ tự ngược để bảng con đi trước bảng cha.
@@ -271,7 +266,7 @@ def _warnings(state: dict[str, object]) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Nâng cấp lược đồ bảng lát cắt DI (chỉ thêm bảng).")
     parser.add_argument("--check", action="store_true", help="Chỉ kiểm tra, không ghi.")
-    parser.add_argument("--rollback", action="store_true", help="Bỏ bảy bảng lát cắt DI.")
+    parser.add_argument("--rollback", action="store_true", help="Bỏ 16 bảng lát cắt DI.")
     parser.add_argument("--yes", action="store_true", help="Xác nhận cho --rollback.")
     parser.add_argument("--json", action="store_true", help="In kết quả dạng JSON.")
     parser.add_argument("--database-url", default="", help="Ghi đè địa chỉ kho (mặc định lấy từ cấu hình).")
@@ -299,7 +294,7 @@ def main() -> int:
 
     if args.rollback:
         if not args.yes:
-            print("Từ chối chạy: thêm --yes để xác nhận bỏ bảy bảng lát cắt DI.")
+            print("Từ chối chạy: thêm --yes để xác nhận bỏ 16 bảng lát cắt DI.")
             return 2
         dropped = rollback(engine)
         print(f"Đã bỏ {len(dropped)} bảng: {', '.join(dropped) if dropped else '(không có bảng nào)'}.")
@@ -338,7 +333,7 @@ def main() -> int:
 def _describe(problems: list[str]) -> str:
     if problems:
         return "Chưa đạt: " + "; ".join(problems) + "."
-    return "Đủ bảy bảng lát cắt DI (cột khớp, chỉ mục duy nhất đúng)."
+    return "Đủ 16 bảng lát cắt DI (cột khớp, chỉ mục duy nhất đúng)."
 
 
 if __name__ == "__main__":

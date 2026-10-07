@@ -36,9 +36,9 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
     }
   }
   // Chỉ cho phép đúng nhánh API của backend, không mở proxy tới mọi tuyến.
-  if (path[0] !== "api" || path[1] !== "v1") {
+  if (path[0] !== "api" || (path[1] !== "v1" && path[1] !== "v2")) {
     return Response.json(
-      { error: { code: "proxy_path_rejected", message: "Cầu nối chỉ phục vụ các tuyến /api/v1/* của backend." } },
+      { error: { code: "proxy_path_rejected", message: "Cầu nối chỉ phục vụ các tuyến /api/v1/* và /api/v2/* của backend." } },
       { status: 404 },
     );
   }
@@ -55,6 +55,8 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
   if (contentType) headers["Content-Type"] = contentType;
   const idempotencyKey = request.headers.get("idempotency-key");
   if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+  const ifMatch = request.headers.get("if-match");
+  if (ifMatch) headers["If-Match"] = ifMatch;
 
   const method = request.method.toUpperCase();
   const body =
@@ -86,6 +88,10 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
     "Content-Type": upstream.headers.get("content-type") ?? "application/json",
     "Cache-Control": "no-store",
   });
+  for (const name of ["etag", "x-request-id", "retry-after"]) {
+    const value = upstream.headers.get(name);
+    if (value) responseHeaders.set(name, value);
+  }
   if (authRoute) {
     for (const cookie of upstream.headers.getSetCookie()) {
       if (cookie.startsWith("session_id=")) {

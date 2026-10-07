@@ -50,6 +50,7 @@ interface NavItem {
 
 const WORKSPACE_NAV: NavItem[] = [
   { href: "/app", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" aria-hidden /> },
+  { href: "/app/work-items", label: "Công việc", icon: <FolderSearch className="h-4 w-4" aria-hidden /> },
   { href: "/app/investigations", label: "Cuộc điều tra", icon: <FolderSearch className="h-4 w-4" aria-hidden />, badgeKey: "investigations" },
   { href: "/app/drugs", label: "Tra cứu thuốc", icon: <Pill className="h-4 w-4" aria-hidden /> },
   { href: "/app/reviews", label: "Hàng chờ duyệt", icon: <ShieldCheck className="h-4 w-4" aria-hidden />, roles: ["reviewer"], badgeKey: "reviews" },
@@ -334,11 +335,11 @@ export function AppShell({
               {ROLE_LABEL[role]}
             </span>
             <Link
-              href="/app/investigations/new"
+              href="/app/work-items/new"
               className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] bg-primary px-3 text-[13px] font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-3.5 w-3.5" aria-hidden />
-              Điều tra mới
+              Tiếp nhận mới
             </Link>
           </header>
 
@@ -371,7 +372,8 @@ function CommandPalette({
 }) {
   const [query, setQuery] = React.useState("");
   const commands = [
-    { label: "Điều tra mới", href: "/app/investigations/new" },
+    { label: "Tiếp nhận mới", href: "/app/work-items/new" },
+    { label: "Danh sách công việc", href: "/app/work-items" },
     { label: "Tra cứu thuốc", href: "/app/drugs" },
     { label: "Mở hàng chờ duyệt", href: "/app/reviews" },
     { label: "Danh sách cuộc điều tra", href: "/app/investigations" },

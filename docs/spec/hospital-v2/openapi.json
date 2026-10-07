@@ -603,6 +603,281 @@
           }
         }
       }
+    },
+    "/api/v2/work-items/intake": {
+      "post": {
+        "summary": "Lưu intake workflow nguyên văn trước extraction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/WorkflowIntake"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkflowAggregate"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work_items_intake"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/workflow": {
+      "get": {
+        "summary": "Đọc aggregate workflow nhất quán",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkflowAggregate"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "operationId": "workflow_get_api_v2_work_items_work_item_id_workflow"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/fields": {
+      "patch": {
+        "summary": "Ghi assertion với expected version",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/FieldAssertionsPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkflowAggregate"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_patch_api_v2_work_items_work_item_id_fields"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/clarification-answers": {
+      "post": {
+        "summary": "Đóng clarification bằng answer hoặc unknown",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/ClarificationAnswer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Clarification"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work_items_work_item_id_clarification_answers"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/runs": {
+      "post": {
+        "summary": "Tạo durable run command",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/WorkflowRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Command đã xếp hàng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkflowOperation"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_work_items_work_item_id_runs"
+      }
+    },
+    "/api/v2/work-items/{work_item_id}/editor-draft": {
+      "get": {
+        "summary": "Đọc autosave riêng theo actor",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Draft đã lưu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/EditorDraft"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "operationId": "workflow_get_api_v2_work_items_work_item_id_editor_draft"
+      },
+      "patch": {
+        "summary": "Autosave draft riêng theo actor",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkItemId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/EditorDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server ACK draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/EditorDraft"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "workflow_patch_api_v2_work_items_work_item_id_editor_draft"
+      }
+    },
+    "/api/v2/responses/{response_id}/submit-review": {
+      "post": {
+        "summary": "Pin immutable output basis trước review",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/SubmitReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Response được submit với basis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/WorkflowOperation"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/VersionConflict"
+          }
+        },
+        "operationId": "workflow_post_api_v2_responses_response_id_submit_review"
+      }
     }
   }
 }
